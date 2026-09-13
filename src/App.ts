@@ -21,6 +21,7 @@ import { WaveSpawnerSystem } from './game/systems/WaveSpawnerSystem';
 import { TowerAttackSystem } from './game/systems/TowerAttackSystem';
 import { MoveSystem, PATH, setPath } from './game/systems/MoveSystem';
 import { EnvironmentSystem } from './game/systems/EnvironmentSystem';
+import { BossSystem } from './game/systems/BossSystem';
 import { LevelConfig } from './game/levels/types';
 import { LevelLoader } from './game/levels/LevelLoader';
 import { RulesSystem } from './game/systems/RulesSystem';
@@ -161,6 +162,8 @@ export class MainScene extends Container {
 
     WaveSpawnerSystem.reset();
     TowerAttackSystem.reset();
+    BossSystem.reset();
+    EnvironmentSystem.reset();
     EnemyFactory.resetDifficulty();
     GameStateManager.reset(level.difficulty.startingGold);
     EnemyFactory.setDifficulty(level.difficulty);
@@ -606,6 +609,7 @@ export class MainScene extends Container {
     this.drainToasts();
     this.syncCloudSprite();
     TowerAttackSystem.update(this.world, dt);
+    BossSystem.update(this.world);
     MoveSystem.update(this.world, dt);
     RulesSystem.update(this.world, dt);
     this.spawnShotEffects(prevFire, prevPos);
