@@ -503,6 +503,8 @@ export class MainScene extends Container {
   private drainToasts(): void {
     let t: string | null;
     while ((t = EnvironmentSystem.takeToast()) !== null) this.showToast(t);
+    let e: { text: string } | null;
+    while ((e = BossSystem.takeEvent()) !== null) this.showToast(e.text);
   }
 
   private tickToast(dt: number): void {

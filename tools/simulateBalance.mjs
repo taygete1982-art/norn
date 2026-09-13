@@ -157,6 +157,12 @@ function simulateLevel(level, policy) {
   let cloud = null;
   let nextDanceAt = 40;
   let dance = null;
+  // boss-таймеры: окно frostWave (кулдаун ×2) и shieldWave (неуязвимость).
+  let frostUntil = -1;
+  let shieldUntil = -1;
+
+  // cycle для carnivaldirector
+  const CYCLE_TYPES = ['summon', 'sleepPulse', 'frostWave', 'shieldWave'];
 
   const startWave = () => {
     queue = [];
@@ -191,12 +197,15 @@ function simulateLevel(level, policy) {
       damage: st.damage,
       abilities: st.abilities ?? [],
       splitInto: st.splitInto,
+      bossAbility: st.bossAbility ?? null,
       x: gx,
       y: gy,
       seg: 0,
       segT: 0,
       slowUntil: -1,
       noSplit: false,
+      bossNextAt: st.bossAbility ? t + st.bossAbility.period : Infinity,
+      bossCycleIdx: 0,
     });
   };
 
@@ -264,10 +273,12 @@ function simulateLevel(level, policy) {
     }
     // стрельба
     for (const tw of towers) {
+      if (tw.stunnedUntil && t < tw.stunnedUntil) continue;
       if (cloud && Math.hypot(tw.gx - cloud.x, tw.gy - cloud.y) <= 1.5) continue;
       if (dance && dance.tower === tw && t < dance.danceUntil) continue;
       const eff = effStats(TW[tw.type], tw.tier);
       let cd = eff.cooldown;
+      if (frostUntil > t) cd *= 2;
       if (inBubble(tw.gx, tw.gy)) cd *= 1.25;
       if (dance && dance.tower === tw && t >= dance.danceUntil && t < dance.buffUntil) cd /= 1.5;
       if (t - tw.lastFire < cd) continue;
@@ -297,6 +308,7 @@ function simulateLevel(level, policy) {
           ? enemies.filter((e) => e.hp > 0 && Math.hypot(e.x - best.x, e.y - best.y) <= eff.aoe)
           : [best];
       for (const e of victims) {
+        if (t < shieldUntil) continue; // shieldWave: враги неуязвимы
         if (TW[tw.type].damageType === 'physical' && e.abilities.includes('armorPhysical')) continue;
         let dmg = eff.damage;
         if (TW[tw.type].damageType === 'magic' && isChoco(e.x, e.y)) dmg *= 1.2;
@@ -305,6 +317,33 @@ function simulateLevel(level, policy) {
         if (twCfg.slowAmount !== undefined) e.slowUntil = Math.max(e.slowUntil, t + twCfg.slowDuration);
       }
       tw.lastFire = t;
+    }
+    // boss abilities
+    for (const e of enemies) {
+      if (e.hp <= 0 || !e.bossAbility) continue;
+      if (t < e.bossNextAt) continue;
+      const ba = e.bossAbility;
+      e.bossNextAt = t + ba.period;
+      let type = ba.type;
+      let params = { ...ba };
+      if (type === 'cycle') {
+        const cycleType = CYCLE_TYPES[e.bossCycleIdx % CYCLE_TYPES.length];
+        type = cycleType;
+        e.bossCycleIdx += 1;
+        if (cycleType === 'summon') { params.enemy = 'imp'; params.count = 2; }
+        else if (cycleType === 'sleepPulse') { params.radius = 2.5; params.duration = 2; }
+        else if (cycleType === 'frostWave') { params.duration = 4; }
+        else if (cycleType === 'shieldWave') { params.duration = 3; }
+      }
+      if (type === 'summon' && params.enemy) {
+        for (let i = 0; i < (params.count ?? 2); i++) spawnEnemy(params.enemy, e.x, e.y, false, false, undefined);
+      } else if (type === 'sleepPulse') {
+        const radius = params.radius ?? 2.5;
+        for (const tw of towers) {
+          if (Math.hypot(tw.gx - e.x, tw.gy - e.y) <= radius) tw.stunnedUntil = Math.max(tw.stunnedUntil ?? -1, t + (params.duration ?? 2));
+        }
+      } else if (type === 'frostWave') frostUntil = t + (params.duration ?? 4);
+      else if (type === 'shieldWave') shieldUntil = t + (params.duration ?? 3);
     }
     // движение
     for (const e of enemies) {
