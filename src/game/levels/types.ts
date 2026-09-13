@@ -12,6 +12,8 @@ export interface LevelConfig {
   buildPoints: Array<{ x: number; y: number }>;
   /** массив волн уровня */
   waves: WaveConfig[];
+  /** формулы сложности уровня */
+  difficulty: { hpMul: number; rewardMul: number; startingGold: number };
   /** активные механики биома (пока только структура) */
   environmentEffects: string[];
   /** уровень-босс или null */

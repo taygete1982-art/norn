@@ -8,6 +8,7 @@ export type WaveStatus = 'idle' | 'spawning' | 'completed';
 interface SpawnEvent {
   type: EnemyType;
   at: number;
+  elite?: boolean;
 }
 
 /**
@@ -70,16 +71,23 @@ export class WaveSpawnerSystem {
       this.status = 'completed';
       return;
     }
-    const wave = waves[this.waveIndex];
-    const now = world.getCurrentTime();
+    this.buildQueue(waves[this.waveIndex], world.getCurrentTime());
+    this.status = 'spawning';
+  }
+
+  /** Очередь спавна волны: count записей со сдвигом delay. */
+  private static buildQueue(wave: WaveConfig, now: number): void {
     this.queue = [];
     for (const spawn of wave.spawns) {
       for (let i = 0; i < spawn.count; i++) {
-        this.queue.push({ type: spawn.enemy as EnemyType, at: now + i * spawn.delay });
+        this.queue.push({
+          type: spawn.enemy as EnemyType,
+          at: now + i * spawn.delay,
+          elite: spawn.elite ?? false,
+        });
       }
     }
     this.queue.sort((a, b) => a.at - b.at);
-    this.status = 'spawning';
   }
 
   public static update(world: World, dt: number): void {
@@ -90,7 +98,8 @@ export class WaveSpawnerSystem {
     const now = world.getCurrentTime();
     while (this.queue.length > 0 && this.queue[0].at <= now) {
       const ev = this.queue.shift()!;
-      EnemyFactory.create(world, ev.type, PATH[0].gx, PATH[0].gy);
+      const id = EnemyFactory.create(world, ev.type, PATH[0].gx, PATH[0].gy);
+      if (ev.elite) EnemyFactory.makeElite(world, id);
     }
 
     if (this.queue.length === 0) {
@@ -101,15 +110,7 @@ export class WaveSpawnerSystem {
         if (this.waveIndex >= waves.length) {
           this.status = 'completed';
         } else {
-          const wave = waves[this.waveIndex];
-          const t = world.getCurrentTime();
-          this.queue = [];
-          for (const spawn of wave.spawns) {
-            for (let i = 0; i < spawn.count; i++) {
-              this.queue.push({ type: spawn.enemy as EnemyType, at: t + i * spawn.delay });
-            }
-          }
-          this.queue.sort((a, b) => a.at - b.at);
+          this.buildQueue(waves[this.waveIndex], world.getCurrentTime());
         }
       }
     }

@@ -15,6 +15,17 @@ export interface EnemyData {
 const iso = new IsoMath({ x: 32, y: 16 });
 
 export class EnemyFactory {
+  /** Множители сложности забега (из LevelConfig.difficulty). Дефолт 1/1. */
+  private static difficulty = { hpMul: 1, rewardMul: 1 };
+
+  public static setDifficulty(d: { hpMul: number; rewardMul: number }): void {
+    this.difficulty = { hpMul: d.hpMul, rewardMul: d.rewardMul };
+  }
+
+  public static resetDifficulty(): void {
+    this.difficulty = { hpMul: 1, rewardMul: 1 };
+  }
+
   public static create(world: World, type: EnemyType, gx: number, gy: number): number {
     const stats = ConfigLoader.getEnemies().find((e) => e.id === type);
     if (!stats) throw new Error(`Unknown enemy type: ${type}`);
@@ -22,7 +33,7 @@ export class EnemyFactory {
     const p = iso.gridToScreen(gx, gy);
     const enemy: EnemyData = {
       type,
-      reward: stats.reward,
+      reward: Math.round(stats.reward * this.difficulty.rewardMul),
       damage: stats.damage,
       abilities: stats.abilities ?? [],
     };
@@ -31,10 +42,25 @@ export class EnemyFactory {
     return world.spawnEntity({
       GridPos: { gx, gy },
       ScreenPos: { x: p.x, y: p.y },
-      Health: { hp: stats.hp, maxHp: stats.hp },
+      Health: {
+        hp: Math.round(stats.hp * this.difficulty.hpMul),
+        maxHp: Math.round(stats.hp * this.difficulty.hpMul),
+      },
       MoveSpeed: { speed: stats.speed },
       PathIndex: { index: 0, t: 0 },
       Enemy: enemy,
     });
+  }
+
+  /** Элита босс-волны: hp ×8, награда ×10, маркер масштаба 1.5. */
+  public static makeElite(world: World, id: number): void {
+    const health = world.getComponent<{ hp: number; maxHp: number }>(id, 'Health');
+    const enemy = world.getComponent<{ reward: number }>(id, 'Enemy');
+    if (health) {
+      health.hp = health.hp * 8;
+      health.maxHp = health.maxHp * 8;
+    }
+    if (enemy) enemy.reward = enemy.reward * 10;
+    world.addComponent(id, 'Elite', { scale: 1.5 });
   }
 }

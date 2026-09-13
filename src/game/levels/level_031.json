@@ -1,0 +1,235 @@
+{
+  "biomeId": 1,
+  "levelNumber": 31,
+  "gridSize": {
+    "width": 8,
+    "height": 12
+  },
+  "path": [
+    {
+      "x": 5,
+      "y": 0
+    },
+    {
+      "x": 4,
+      "y": 0
+    },
+    {
+      "x": 3,
+      "y": 0
+    },
+    {
+      "x": 4,
+      "y": 1
+    },
+    {
+      "x": 3,
+      "y": 1
+    },
+    {
+      "x": 2,
+      "y": 1
+    },
+    {
+      "x": 2,
+      "y": 2
+    },
+    {
+      "x": 3,
+      "y": 2
+    },
+    {
+      "x": 2,
+      "y": 3
+    },
+    {
+      "x": 3,
+      "y": 3
+    },
+    {
+      "x": 4,
+      "y": 3
+    },
+    {
+      "x": 5,
+      "y": 3
+    },
+    {
+      "x": 6,
+      "y": 4
+    },
+    {
+      "x": 6,
+      "y": 5
+    },
+    {
+      "x": 6,
+      "y": 6
+    },
+    {
+      "x": 7,
+      "y": 7
+    },
+    {
+      "x": 6,
+      "y": 8
+    },
+    {
+      "x": 7,
+      "y": 9
+    },
+    {
+      "x": 6,
+      "y": 9
+    },
+    {
+      "x": 5,
+      "y": 9
+    },
+    {
+      "x": 4,
+      "y": 9
+    },
+    {
+      "x": 5,
+      "y": 10
+    },
+    {
+      "x": 4,
+      "y": 10
+    },
+    {
+      "x": 5,
+      "y": 11
+    }
+  ],
+  "buildPoints": [
+    {
+      "x": 6,
+      "y": 0
+    },
+    {
+      "x": 5,
+      "y": 2
+    },
+    {
+      "x": 2,
+      "y": 0
+    },
+    {
+      "x": 6,
+      "y": 2
+    },
+    {
+      "x": 4,
+      "y": 2
+    },
+    {
+      "x": 7,
+      "y": 5
+    },
+    {
+      "x": 7,
+      "y": 6
+    }
+  ],
+  "waves": [
+    {
+      "number": 1,
+      "spawns": [
+        {
+          "enemy": "imp",
+          "count": 2,
+          "delay": 1
+        },
+        {
+          "enemy": "goblin",
+          "count": 3,
+          "delay": 1
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "spawns": [
+        {
+          "enemy": "imp",
+          "count": 4,
+          "delay": 0.85
+        },
+        {
+          "enemy": "goblin",
+          "count": 3,
+          "delay": 0.85
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "spawns": [
+        {
+          "enemy": "imp",
+          "count": 4,
+          "delay": 0.7
+        },
+        {
+          "enemy": "goblin",
+          "count": 4,
+          "delay": 0.7
+        },
+        {
+          "enemy": "troll",
+          "count": 2,
+          "delay": 0.7
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "spawns": [
+        {
+          "enemy": "imp",
+          "count": 5,
+          "delay": 0.55
+        },
+        {
+          "enemy": "goblin",
+          "count": 3,
+          "delay": 0.55
+        },
+        {
+          "enemy": "troll",
+          "count": 4,
+          "delay": 0.55
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "spawns": [
+        {
+          "enemy": "imp",
+          "count": 6,
+          "delay": 0.4
+        },
+        {
+          "enemy": "goblin",
+          "count": 4,
+          "delay": 0.4
+        },
+        {
+          "enemy": "troll",
+          "count": 4,
+          "delay": 0.4
+        }
+      ]
+    }
+  ],
+  "difficulty": {
+    "hpMul": 4,
+    "rewardMul": 2.5,
+    "startingGold": 250
+  },
+  "environmentEffects": [],
+  "boss": null
+}

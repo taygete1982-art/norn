@@ -1,0 +1,187 @@
+{
+  "biomeId": 1,
+  "levelNumber": 7,
+  "gridSize": {
+    "width": 8,
+    "height": 12
+  },
+  "path": [
+    {
+      "x": 0,
+      "y": 0
+    },
+    {
+      "x": 1,
+      "y": 0
+    },
+    {
+      "x": 2,
+      "y": 0
+    },
+    {
+      "x": 3,
+      "y": 0
+    },
+    {
+      "x": 3,
+      "y": 1
+    },
+    {
+      "x": 4,
+      "y": 1
+    },
+    {
+      "x": 4,
+      "y": 2
+    },
+    {
+      "x": 4,
+      "y": 3
+    },
+    {
+      "x": 3,
+      "y": 4
+    },
+    {
+      "x": 3,
+      "y": 5
+    },
+    {
+      "x": 4,
+      "y": 6
+    },
+    {
+      "x": 3,
+      "y": 7
+    },
+    {
+      "x": 2,
+      "y": 8
+    },
+    {
+      "x": 3,
+      "y": 9
+    },
+    {
+      "x": 3,
+      "y": 10
+    },
+    {
+      "x": 2,
+      "y": 11
+    }
+  ],
+  "buildPoints": [
+    {
+      "x": 4,
+      "y": 7
+    },
+    {
+      "x": 2,
+      "y": 3
+    },
+    {
+      "x": 1,
+      "y": 1
+    }
+  ],
+  "waves": [
+    {
+      "number": 1,
+      "spawns": [
+        {
+          "enemy": "imp",
+          "count": 2,
+          "delay": 1
+        },
+        {
+          "enemy": "goblin",
+          "count": 3,
+          "delay": 1
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "spawns": [
+        {
+          "enemy": "imp",
+          "count": 3,
+          "delay": 0.85
+        },
+        {
+          "enemy": "goblin",
+          "count": 4,
+          "delay": 0.85
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "spawns": [
+        {
+          "enemy": "imp",
+          "count": 3,
+          "delay": 0.7
+        },
+        {
+          "enemy": "goblin",
+          "count": 4,
+          "delay": 0.7
+        },
+        {
+          "enemy": "troll",
+          "count": 3,
+          "delay": 0.7
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "spawns": [
+        {
+          "enemy": "imp",
+          "count": 4,
+          "delay": 0.55
+        },
+        {
+          "enemy": "goblin",
+          "count": 3,
+          "delay": 0.55
+        },
+        {
+          "enemy": "troll",
+          "count": 5,
+          "delay": 0.55
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "spawns": [
+        {
+          "enemy": "imp",
+          "count": 5,
+          "delay": 0.4
+        },
+        {
+          "enemy": "goblin",
+          "count": 4,
+          "delay": 0.4
+        },
+        {
+          "enemy": "troll",
+          "count": 5,
+          "delay": 0.4
+        }
+      ]
+    }
+  ],
+  "difficulty": {
+    "hpMul": 1.6,
+    "rewardMul": 1.3,
+    "startingGold": 130
+  },
+  "environmentEffects": [],
+  "boss": null
+}

@@ -21,9 +21,9 @@ export class GameStateManager {
     this.currentState = { ...state };
   }
 
-  public static reset(): void {
+  public static reset(startingGold?: number): void {
     this.currentState = {
-      gold: ConfigLoader.getEconomy().startingGold,
+      gold: startingGold ?? ConfigLoader.getEconomy().startingGold,
       crystalHP: ConfigLoader.getEconomy().crystalHP,
       status: 'playing',
     };

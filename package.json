@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "test:iso": "vitest run src/test/iso.test.ts"
+    "test:iso": "vitest run src/test/iso.test.ts",
+    "gen:levels": "node tools/generateLevels.mjs"
   },
   "dependencies": {
     "bitecs": "^0.4.0",

@@ -5,6 +5,7 @@ import { GameStateManager } from './game/GameState';
 import { ConfigLoader } from './game/config/ConfigLoader';
 import { getTile, getRoadKeys, PAL, TileId } from './art/PixelArt';
 import { TowerFactory } from './game/entities/TowerFactory';
+import { EnemyFactory } from './game/entities/EnemyFactory';
 import { TowerSelectMenu } from './ui/TowerSelectMenu';
 import { EffectsLayer } from './ui/EffectsLayer';
 import { WaveSpawnerSystem } from './game/systems/WaveSpawnerSystem';
@@ -80,7 +81,7 @@ export class MainScene extends Container {
   // Пиксельные спрайты сущностей (reconcile по id): тени < unitLayer < dynamicLayer.
   private unitLayer = new Container();
   private towerSprites = new Map<number, Sprite>();
-  private enemySprites = new Map<number, { s: Sprite; t: number; f: number; lx: number }>();
+  private enemySprites = new Map<number, { s: Sprite; t: number; f: number; lx: number; dir: number }>();
   private hudWave!: Text;
   private hudGold!: Text;
   private hudCrystal!: Text;
@@ -116,7 +117,9 @@ export class MainScene extends Container {
 
     WaveSpawnerSystem.reset();
     TowerAttackSystem.reset();
-    GameStateManager.reset();
+    EnemyFactory.resetDifficulty();
+    GameStateManager.reset(level.difficulty.startingGold);
+    EnemyFactory.setDifficulty(level.difficulty);
     setPath(level.path.map((p) => ({ gx: p.x, gy: p.y })));
     WaveSpawnerSystem.setWaves(level.waves);
     WaveSpawnerSystem.startWave(this.world);
@@ -323,7 +326,9 @@ export class MainScene extends Container {
     this.buildPoints = this.level.buildPoints.map((p) => ({ gx: p.x, gy: p.y, towerId: null }));
     WaveSpawnerSystem.reset();
     TowerAttackSystem.reset();
-    GameStateManager.reset();
+    EnemyFactory.resetDifficulty();
+    GameStateManager.reset(this.level.difficulty.startingGold);
+    EnemyFactory.setDifficulty(this.level.difficulty);
     WaveSpawnerSystem.setWaves(this.level.waves);
     this.hudCenter.text = '';
     this.hudSub.text = '';
@@ -524,14 +529,16 @@ export class MainScene extends Container {
         const s = new Sprite(getTile(`enemy_${prefix}_f0` as TileId));
         s.anchor.set(0.5, 1);
         this.unitLayer.addChild(s);
-        st = { s, t: 0, f: 0, lx: pos.gx };
+        st = { s, t: 0, f: 0, lx: pos.gx, dir: 1 };
         this.enemySprites.set(id, st);
       }
       const s = st.s;
       s.position.set(p.x, p.y + (flying ? -6 : 8));
-      // Flip по знаку dx; стоит — сохраняет последний разворот.
-      if (pos.gx > st.lx + 0.02) s.scale.x = 1;
-      else if (pos.gx < st.lx - 0.02) s.scale.x = -1;
+      // Flip по знаку dx (стоит — сохраняет разворот); элита в 1.5 раза больше.
+      if (pos.gx > st.lx + 0.02) st.dir = 1;
+      else if (pos.gx < st.lx - 0.02) st.dir = -1;
+      const eliteScale = this.world.hasComponent(id, 'Elite') ? 1.5 : 1;
+      s.scale.set(eliteScale * st.dir, eliteScale);
       const moving = Math.abs(pos.gx - st.lx) > 0.02;
       st.lx = pos.gx;
       // Кадры ~4/сек; стоит — кадр f0.

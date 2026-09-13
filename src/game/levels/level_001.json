@@ -14,6 +14,7 @@
   "waves": [
     { "number": 1, "spawns": [{ "enemy": "imp", "count": 5, "delay": 1.0 }] }
   ],
+  "difficulty": { "hpMul": 1, "rewardMul": 1, "startingGold": 100 },
   "environmentEffects": [],
   "boss": null
 }

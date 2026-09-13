@@ -8,6 +8,7 @@ import { RulesSystem } from '../game/systems/RulesSystem';
 import { HealthSystem } from '../game/systems/HealthSystem';
 import { TowerFactory } from '../game/entities/TowerFactory';
 import { EnemyFactory } from '../game/entities/EnemyFactory';
+import { WaveSpawnerSystem } from '../game/systems/WaveSpawnerSystem';
 
 describe('Enemy abilities (data-driven)', () => {
   let world: World;
@@ -117,5 +118,45 @@ describe('Enemy abilities (data-driven)', () => {
     w.updateTime(1.0);
     TowerAttackSystem.update(w, 1.0);
     expect(w.getComponent<{ hp: number }>(e, 'Health')!.hp).toBe(35);
+  });
+
+  it('elite: hp ×8, награда ×10, спавн из волны и убивается', () => {
+    // makeElite напрямую
+    const w = new World();
+    const e = EnemyFactory.create(w, 'goblin', 0, 0);
+    EnemyFactory.makeElite(w, e);
+    expect(w.getComponent<{ hp: number; maxHp: number }>(e, 'Health')).toEqual({
+      hp: 400,
+      maxHp: 400,
+    });
+    expect(w.getComponent<{ reward: number }>(e, 'Enemy')!.reward).toBe(100);
+    expect(w.hasComponent(e, 'Elite')).toBe(true);
+
+    // спавн элиты из волны
+    const w2 = new World();
+    GameStateManager.reset();
+    WaveSpawnerSystem.reset();
+    WaveSpawnerSystem.setWaves([
+      { number: 1, spawns: [{ enemy: 'goblin', count: 1, delay: 0, elite: true }] },
+    ]);
+    WaveSpawnerSystem.startWave(w2);
+    WaveSpawnerSystem.update(w2, 0.5);
+    const elites = w2.query('Health', 'Enemy', 'Elite');
+    expect(elites.length).toBe(1);
+    expect(w2.getComponent<{ hp: number }>(elites[0], 'Health')!.hp).toBe(400);
+
+    // элита убивается обычным уроном, награда ×10
+    TowerAttackSystem.reset();
+    TowerFactory.create(w2, 'cannon', 1, 1);
+    const startGold = GameStateManager.getGold();
+    for (let i = 0; i < 30; i++) {
+      w2.updateTime(1.0);
+      TowerAttackSystem.update(w2, 1.0);
+      RulesSystem.update(w2, 1.0);
+      HealthSystem.update(w2, 1.0);
+      if (w2.query('Health', 'Enemy').length === 0) break;
+    }
+    expect(w2.query('Health', 'Enemy').length).toBe(0);
+    expect(GameStateManager.getGold()).toBe(startGold + 100);
   });
 });

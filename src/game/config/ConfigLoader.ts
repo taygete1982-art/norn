@@ -29,6 +29,7 @@ export interface WaveSpawnConfig {
   enemy: string
   count: number
   delay: number
+  elite?: boolean
 }
 
 export interface WaveConfig {
