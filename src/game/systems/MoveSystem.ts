@@ -1,13 +1,24 @@
 import { World } from '../../ecs/world';
 
-/** Фиксированный путь врагов в координатах сетки (5 точек). */
-export const PATH: Array<{ gx: number; gy: number }> = [
+/** Путь по умолчанию. Уровень заменяет его через setPath (рефакторинг хардкода). */
+const DEFAULT_PATH: Array<{ gx: number; gy: number }> = [
   { gx: 0, gy: 0 },
   { gx: 2, gy: 3 },
   { gx: 4, gy: 6 },
   { gx: 6, gy: 9 },
   { gx: 7, gy: 11 },
 ];
+
+export let PATH: Array<{ gx: number; gy: number }> = [...DEFAULT_PATH];
+
+/** Подменить активный путь точками уровня (формат {gx,gy}). */
+export function setPath(points: Array<{ gx: number; gy: number }>): void {
+  if (points.length > 0) PATH = points.map((p) => ({ gx: p.gx, gy: p.gy }));
+}
+
+export function resetPath(): void {
+  PATH = [...DEFAULT_PATH];
+}
 
 function segLen(a: { gx: number; gy: number }, b: { gx: number; gy: number }): number {
   return Math.hypot(b.gx - a.gx, b.gy - a.gy);

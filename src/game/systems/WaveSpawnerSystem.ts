@@ -19,12 +19,24 @@ export class WaveSpawnerSystem {
   private static status: WaveStatus = 'idle';
   private static queue: SpawnEvent[] = [];
   private static paused = false;
+  /** Волны уровня (setWaves). null — волны из ConfigLoader (дефолт/тесты). */
+  private static customWaves: WaveConfig[] | null = null;
 
   public static reset(): void {
     this.waveIndex = 0;
     this.status = 'idle';
     this.queue = [];
     this.paused = false;
+    this.customWaves = null;
+  }
+
+  /** Подменить волны волнами уровня. */
+  public static setWaves(waves: WaveConfig[]): void {
+    this.customWaves = [...waves];
+  }
+
+  private static waves(): WaveConfig[] {
+    return this.customWaves ?? ConfigLoader.getWaves();
   }
 
   public static pause(): void {
@@ -41,19 +53,19 @@ export class WaveSpawnerSystem {
 
   /** Номер текущей волны для HUD (1-based). */
   public static getCurrentWaveNumber(): number {
-    const waves = ConfigLoader.getWaves();
+    const waves = this.waves();
     if (this.status === 'completed') return waves.length;
     return Math.min(this.waveIndex + 1, waves.length);
   }
 
   public static getTotalWaves(): number {
-    return ConfigLoader.getWaves().length;
+    return this.waves().length;
   }
 
   public static startWave(world: World): void {
     if (this.status === 'spawning') return;
     if (this.status === 'completed') return;
-    const waves: WaveConfig[] = ConfigLoader.getWaves();
+    const waves: WaveConfig[] = this.waves();
     if (this.waveIndex >= waves.length) {
       this.status = 'completed';
       return;
@@ -85,7 +97,7 @@ export class WaveSpawnerSystem {
       const alive = world.query('Health', 'Enemy');
       if (alive.length === 0) {
         this.waveIndex += 1;
-        const waves = ConfigLoader.getWaves();
+        const waves = this.waves();
         if (this.waveIndex >= waves.length) {
           this.status = 'completed';
         } else {

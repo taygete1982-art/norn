@@ -9,7 +9,9 @@ import { TowerSelectMenu } from './ui/TowerSelectMenu';
 import { EffectsLayer } from './ui/EffectsLayer';
 import { WaveSpawnerSystem } from './game/systems/WaveSpawnerSystem';
 import { TowerAttackSystem } from './game/systems/TowerAttackSystem';
-import { MoveSystem, PATH } from './game/systems/MoveSystem';
+import { MoveSystem, PATH, setPath } from './game/systems/MoveSystem';
+import { LevelConfig } from './game/levels/types';
+import { LevelLoader } from './game/levels/LevelLoader';
 import { RulesSystem } from './game/systems/RulesSystem';
 import { HealthSystem } from './game/systems/HealthSystem';
 
@@ -24,11 +26,11 @@ interface BuildPoint {
   towerId: number | null;
 }
 
-const BUILD_POINTS: BuildPoint[] = [
-  { gx: 3, gy: 2, towerId: null },
-  { gx: 5, gy: 4, towerId: null },
-  { gx: 2, gy: 6, towerId: null },
-];
+export interface GameEndResult {
+  won: boolean;
+  crystalHP: number;
+  crystalMax: number;
+}
 
 const PROJ_TILES: Record<string, TileId> = {
   arrow: 'proj_arrow',
@@ -49,6 +51,12 @@ const SLOW_TINT_COLOR = 0x6fd3ff;
 
 export class MainScene extends Container {
   private world = new World();
+  private level: LevelConfig;
+  private buildPoints: BuildPoint[] = [];
+  private gridW = 8;
+  private gridH = 12;
+  private onGameEnd: ((r: GameEndResult) => void) | null = null;
+  private endNotified = false;
   private iso = new IsoMath({ x: 32, y: 16 });
   // Порядок слоёв: фон < остров < тени < сущности < fx < UI-плашка < bottom-sheet.
   private bgLayer = new Container();
@@ -70,8 +78,13 @@ export class MainScene extends Container {
   private menu: TowerSelectMenu | null = null;
   private fx = new EffectsLayer();
 
-  constructor() {
+  constructor(level: LevelConfig, opts: { onGameEnd?: (r: GameEndResult) => void } = {}) {
     super();
+    this.level = level;
+    this.onGameEnd = opts.onGameEnd ?? null;
+    this.gridW = level.gridSize.width;
+    this.gridH = level.gridSize.height;
+    this.buildPoints = level.buildPoints.map((p) => ({ gx: p.x, gy: p.y, towerId: null }));
     this.addChild(this.bgLayer);
     this.addChild(this.islandLayer);
     this.addChild(this.shadowStatic, this.shadowDyn);
@@ -93,6 +106,8 @@ export class MainScene extends Container {
     WaveSpawnerSystem.reset();
     TowerAttackSystem.reset();
     GameStateManager.reset();
+    setPath(level.path.map((p) => ({ gx: p.x, gy: p.y })));
+    WaveSpawnerSystem.setWaves(level.waves);
     WaveSpawnerSystem.startWave(this.world);
   }
 
@@ -133,8 +148,8 @@ export class MainScene extends Container {
 
   private buildIsland(): void {
     const road = getRoadKeys(PATH);
-    for (let gy = 0; gy <= 11; gy++) {
-      for (let gx = 0; gx <= 7; gx++) {
+    for (let gy = 0; gy < this.gridH; gy++) {
+      for (let gx = 0; gx < this.gridW; gx++) {
         const p = this.sx(gx, gy);
         const isRoad = road.has(`${gx},${gy}`);
         const variant = (gx + gy) % 2 === 0;
@@ -145,7 +160,7 @@ export class MainScene extends Container {
         tile.position.set(p.x, p.y);
         this.islandLayer.addChild(tile);
         // Юбка острова по южным краям: кромка травы, бока земля/камень.
-        if (gx === 7 || gy === 11) {
+        if (gx === this.gridW - 1 || gy === this.gridH - 1) {
           const tall = (gx * 7 + gy * 13) % 2 === 0;
           const skirt = new Sprite(getTile(tall ? 'skirt-tall' : 'skirt-short'));
           skirt.anchor.set(0.5, 0);
@@ -155,7 +170,7 @@ export class MainScene extends Container {
       }
     }
     // Постаменты точек строительства.
-    for (const bp of BUILD_POINTS) {
+    for (const bp of this.buildPoints) {
       const p = this.sx(bp.gx, bp.gy);
       const ped = new Sprite(getTile('pedestal'));
       ped.anchor.set(0.5);
@@ -173,7 +188,7 @@ export class MainScene extends Container {
 
   private drawStaticShadows(): void {
     const g = this.shadowStatic;
-    for (const bp of BUILD_POINTS) {
+    for (const bp of this.buildPoints) {
       const p = this.sx(bp.gx, bp.gy);
       g.ellipse(p.x, p.y + 14, 26, 10);
       g.fill({ color: 0x000000, alpha: 0.3 });
@@ -223,10 +238,12 @@ export class MainScene extends Container {
     if (this.menu) return;
 
     if (GameStateManager.getStatus() !== 'playing') {
+      // С EndScreen выходы — его кнопки; без колбэка — старый тап-рестарт.
+      if (this.onGameEnd) return;
       this.resetGame();
       return;
     }
-    for (const bp of BUILD_POINTS) {
+    for (const bp of this.buildPoints) {
       if (bp.towerId !== null) continue;
       const p = this.sx(bp.gx, bp.gy);
       if (Math.hypot(p.x - x, p.y - y) < 44) {
@@ -246,7 +263,7 @@ export class MainScene extends Container {
       screenY: p.y,
       gold: GameStateManager.getGold(),
       onSelect: (type) => {
-        const bp = BUILD_POINTS.find((b) => b.gx === gx && b.gy === gy);
+        const bp = this.buildPoints.find((b) => b.gx === gx && b.gy === gy);
         if (!bp || bp.towerId !== null) {
           this.closeMenu();
           return;
@@ -290,11 +307,13 @@ export class MainScene extends Container {
     this.closeMenu();
     this.fx.clear();
     this.clearUnitSprites();
+    this.endNotified = false;
     this.world = new World();
-    for (const bp of BUILD_POINTS) bp.towerId = null;
+    this.buildPoints = this.level.buildPoints.map((p) => ({ gx: p.x, gy: p.y, towerId: null }));
     WaveSpawnerSystem.reset();
     TowerAttackSystem.reset();
     GameStateManager.reset();
+    WaveSpawnerSystem.setWaves(this.level.waves);
     this.hudCenter.text = '';
     this.hudSub.text = '';
     WaveSpawnerSystem.startWave(this.world);
@@ -305,6 +324,18 @@ export class MainScene extends Container {
       this.updateClouds(dt);
       this.fx.update(dt);
       this.refreshEndScreen();
+      // Уведомить один раз сразу в момент конца игры (main покажет EndScreen).
+      if (!this.endNotified) {
+        this.endNotified = true;
+        if (this.onGameEnd) {
+          const status = GameStateManager.getStatus();
+          this.onGameEnd({
+            won: status === 'won',
+            crystalHP: GameStateManager.getCrystalHP(),
+            crystalMax: ConfigLoader.getEconomy().crystalHP,
+          });
+        }
+      }
       return;
     }
     this.updateClouds(dt);
@@ -538,7 +569,7 @@ export async function createApp(): Promise<Application> {
   if (host) host.appendChild(app.canvas);
   else document.body.appendChild(app.canvas);
 
-  const scene = new MainScene();
+  const scene = new MainScene(await LevelLoader.loadLevel(1));
   app.stage.addChild(scene);
   (window as any).__norn = { app, scene, GameStateManager };
   app.ticker.add((ticker) => {

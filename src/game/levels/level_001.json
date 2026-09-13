@@ -1,0 +1,19 @@
+{
+  "biomeId": 1,
+  "levelNumber": 1,
+  "gridSize": { "width": 8, "height": 12 },
+  "path": [
+    { "x": 4, "y": 0 }, { "x": 4, "y": 1 }, { "x": 4, "y": 2 },
+    { "x": 3, "y": 3 }, { "x": 3, "y": 4 }, { "x": 3, "y": 5 },
+    { "x": 4, "y": 6 }, { "x": 4, "y": 7 }, { "x": 4, "y": 8 },
+    { "x": 5, "y": 9 }, { "x": 5, "y": 10 }, { "x": 5, "y": 11 }
+  ],
+  "buildPoints": [
+    { "x": 2, "y": 3 }, { "x": 5, "y": 3 }, { "x": 1, "y": 6 }
+  ],
+  "waves": [
+    { "number": 1, "spawns": [{ "enemy": "imp", "count": 5, "delay": 1.0 }] }
+  ],
+  "environmentEffects": [],
+  "boss": null
+}

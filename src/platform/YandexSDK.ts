@@ -47,13 +47,35 @@ export class YandexSDK implements IPlatformSDK {
 
   save(d: object): Promise<void> {
     const key = 'norn_save';
-    this._saveData.set(key, d);
+    const payload = JSON.stringify(d);
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(key, payload);
+      } else {
+        this._saveData.set(key, d);
+      }
+    } catch {
+      this._saveData.set(key, d);
+    }
     console.log(`Saved:`, d);
     return Promise.resolve();
   }
 
   load(): Promise<object | null> {
     const key = 'norn_save';
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const parsed = JSON.parse(raw) as object;
+          console.log('Loaded:', parsed);
+          return Promise.resolve(parsed);
+        }
+        return Promise.resolve(null);
+      }
+    } catch {
+      // приватный режим / битый JSON — падаем на in-memory
+    }
     const saved = this._saveData.get(key);
     if (saved) {
       console.log('Loaded:', saved);
