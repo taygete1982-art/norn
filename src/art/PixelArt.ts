@@ -70,6 +70,40 @@ export type TileId =
   | 'enemy_puffling_f1'
   | 'enemy_truffle_f0'
   | 'enemy_truffle_f1'
+  | 'enemy_jelly_f0'
+  | 'enemy_jelly_f1'
+  | 'enemy_jellymini_f0'
+  | 'enemy_jellymini_f1'
+  | 'enemy_caramel_f0'
+  | 'enemy_caramel_f1'
+  | 'enemy_chocgolem_f0'
+  | 'enemy_chocgolem_f1'
+  | 'enemy_candyfairy_f0'
+  | 'enemy_candyfairy_f1'
+  | 'enemy_balloon_f0'
+  | 'enemy_balloon_f1'
+  | 'enemy_cloudsheep_f0'
+  | 'enemy_cloudsheep_f1'
+  | 'enemy_stormling_f0'
+  | 'enemy_stormling_f1'
+  | 'enemy_fluffdragon_f0'
+  | 'enemy_fluffdragon_f1'
+  | 'enemy_clownfish_f0'
+  | 'enemy_clownfish_f1'
+  | 'enemy_jellyfish_f0'
+  | 'enemy_jellyfish_f1'
+  | 'enemy_seahorse_f0'
+  | 'enemy_seahorse_f1'
+  | 'enemy_pearlwhale_f0'
+  | 'enemy_pearlwhale_f1'
+  | 'enemy_clown_f0'
+  | 'enemy_clown_f1'
+  | 'enemy_juggler_f0'
+  | 'enemy_juggler_f1'
+  | 'enemy_magician_f0'
+  | 'enemy_magician_f1'
+  | 'enemy_elephant_f0'
+  | 'enemy_elephant_f1'
   | 'proj_arrow'
   | 'proj_cannon'
   | 'proj_ice'
@@ -720,6 +754,518 @@ function drawTruffle(ctx: CanvasRenderingContext2D, frame: number): void {
   R(ctx, cx + 2, 34, 3, 2, PALETTE.void);
 }
 
+/** Jelly 40×44: желейный куб, кадр 1 шире и ниже (wobble). */
+function drawJelly(ctx: CanvasRenderingContext2D, frame: number): void {
+  const w = frame === 1 ? 32 : 28;
+  const h = frame === 1 ? 30 : 34;
+  const x0 = 20 - w / 2;
+  const y0 = 40 - h;
+  for (let y = 0; y < h; y++) {
+    const inset = y < 4 ? 4 - y : 0;
+    for (let x = inset; x < w - inset; x++) {
+      ctx.fillStyle = PALETTE.roadLight;
+      ctx.fillRect(x0 + x, y0 + y, 1, 1);
+    }
+  }
+  ctx.fillStyle = PALETTE.crystal;
+  ctx.fillRect(x0 + 5, y0 + 5, 3, h - 12);
+  ctx.fillRect(x0 + 5, y0 + 5, 8, 3);
+  R(ctx, x0 + 10, y0 + 14, 3, 4, PALETTE.void);
+  R(ctx, x0 + 18, y0 + 14, 3, 4, PALETTE.void);
+  R(ctx, x0 + 11, y0 + 15, 1, 2, PALETTE.gold);
+  R(ctx, x0 + 19, y0 + 15, 1, 2, PALETTE.gold);
+}
+
+/** Jellymini 24×28: малая копия jelly. */
+function drawJellymini(ctx: CanvasRenderingContext2D, frame: number): void {
+  const w = frame === 1 ? 19 : 17;
+  const h = frame === 1 ? 18 : 20;
+  const x0 = 12 - w / 2;
+  const y0 = 26 - h;
+  for (let y = 0; y < h; y++) {
+    const inset = y < 3 ? 3 - y : 0;
+    for (let x = inset; x < w - inset; x++) {
+      ctx.fillStyle = PALETTE.roadLight;
+      ctx.fillRect(x0 + x, y0 + y, 1, 1);
+    }
+  }
+  ctx.fillStyle = PALETTE.crystal;
+  ctx.fillRect(x0 + 3, y0 + 3, 2, h - 7);
+  R(ctx, x0 + 6, y0 + 8, 2, 3, PALETTE.void);
+  R(ctx, x0 + 11, y0 + 8, 2, 3, PALETTE.void);
+}
+
+/** Caramel 36×44: конфета-овал в фантике с twist-концами. */
+function drawCaramel(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -2 : 0;
+  // Twist-концы фантика.
+  for (let i = 0; i < 5; i++) {
+    R(ctx, 2 + i, 20 + oy + i, 2, 2, PALETTE.earthDark);
+    R(ctx, 32 - i, 20 + oy + i, 2, 2, PALETTE.earthDark);
+  }
+  // Овал-корпус.
+  for (let y = 0; y < 24; y++) {
+    const half = 11 * Math.sin((Math.PI * (y + 1)) / 25);
+    for (let x = Math.ceil(18 - half); x < 18 + half; x++) {
+      ctx.fillStyle = PALETTE.gold;
+      ctx.fillRect(x, y + 10 + oy, 1, 1);
+    }
+  }
+  // Полоски карамели.
+  R(ctx, 12, 12 + oy, 3, 20, PALETTE.earth);
+  R(ctx, 21, 12 + oy, 3, 20, PALETTE.earth);
+  R(ctx, 12, 12 + oy, 12, 2, shade(PALETTE.gold, 1.2));
+  // Глаза.
+  R(ctx, 15, 19 + oy, 2, 3, PALETTE.void);
+  R(ctx, 20, 19 + oy, 2, 3, PALETTE.void);
+}
+
+/** Chocgolem 56×56: шоколадная глыба с трещинами, каменные кулаки. */
+function drawChocgolem(ctx: CanvasRenderingContext2D, frame: number): void {
+  const lean = frame === 1 ? 2 : 0;
+  R(ctx, 16 + lean, 44, 8, 10, PALETTE.earthDark);
+  R(ctx, 32 - lean, 44, 8, 10, PALETTE.earthDark);
+  R(ctx, 12 + lean, 16, 32, 30, PALETTE.earth);
+  R(ctx, 12 + lean, 16, 32, 3, shade(PALETTE.earth, 1.2));
+  R(ctx, 12 + lean, 16, 3, 30, PALETTE.earthDark);
+  // Трещины светлее.
+  R(ctx, 22 + lean, 22, 2, 14, PALETTE.roadLight);
+  R(ctx, 30 + lean, 28, 6, 2, PALETTE.roadLight);
+  R(ctx, 33 + lean, 20, 2, 8, PALETTE.roadLight);
+  // Кулаки.
+  R(ctx, 4 + lean, 30 + (frame === 1 ? 3 : 0), 9, 10, PALETTE.stoneDark);
+  R(ctx, 43 + lean, 30 - (frame === 1 ? 3 : 0), 9, 10, PALETTE.stoneDark);
+  R(ctx, 4 + lean, 30 + (frame === 1 ? 3 : 0), 9, 2, PALETTE.stone);
+  R(ctx, 43 + lean, 30 - (frame === 1 ? 3 : 0), 9, 2, PALETTE.stone);
+  // Брови и глаза.
+  R(ctx, 20 + lean, 22, 16, 3, PALETTE.earthDark);
+  R(ctx, 22 + lean, 25, 3, 3, PALETTE.gold);
+  R(ctx, 31 + lean, 25, 3, 3, PALETTE.gold);
+}
+
+/** Candyfairy 32×44: кроха в золотом платье, крылья машут по кадрам. */
+function drawCandyfairy(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -2 : 0;
+  const wy = frame === 1 ? 10 : 16;
+  // Крылья.
+  R(ctx, 1, wy + oy, 9, 6, PALETTE.cloud);
+  R(ctx, 22, wy + oy, 9, 6, PALETTE.cloud);
+  R(ctx, 3, wy + oy - 3, 5, 3, PALETTE.cloud);
+  R(ctx, 24, wy + oy - 3, 5, 3, PALETTE.cloud);
+  // Платье-треугольник.
+  for (let y = 0; y < 14; y++) {
+    const half = 2 + y * 0.55;
+    for (let x = Math.ceil(16 - half); x < 16 + half; x++) {
+      ctx.fillStyle = PALETTE.gold;
+      ctx.fillRect(x, y + 22 + oy, 1, 1);
+    }
+  }
+  R(ctx, 13, 30 + oy, 6, 2, PALETTE.earth);
+  // Голова и пучок.
+  R(ctx, 12, 12 + oy, 8, 8, PALETTE.roadLight);
+  R(ctx, 14, 8 + oy, 4, 4, PALETTE.earthDark);
+  R(ctx, 13, 15 + oy, 2, 2, PALETTE.void);
+  R(ctx, 17, 15 + oy, 2, 2, PALETTE.void);
+  // Палочка.
+  R(ctx, 23, 22 + oy, 2, 10, PALETTE.earthDark);
+  R(ctx, 22, 19 + oy, 4, 4, PALETTE.crystal);
+}
+
+/** Balloon 36×48: шар-конверт с корзиной на стропах. */
+function drawBalloon(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -2 : 0;
+  // Конверт.
+  for (let y = 0; y < 22; y++) {
+    const half = 14 * Math.sin((Math.PI * (y + 2)) / 25);
+    for (let x = Math.ceil(18 - half); x < 18 + half; x++) {
+      ctx.fillStyle = PALETTE.crystal;
+      ctx.fillRect(x, y + 2 + oy, 1, 1);
+    }
+  }
+  // Полосы.
+  R(ctx, 12, 3 + oy, 3, 20, PALETTE.cloud);
+  R(ctx, 21, 3 + oy, 3, 20, PALETTE.cloud);
+  R(ctx, 16, 4 + oy, 4, 6, PALETTE.cloud);
+  // Стропы.
+  R(ctx, 12, 24 + oy, 2, 10, PALETTE.earthDark);
+  R(ctx, 22, 24 + oy, 2, 10, PALETTE.earthDark);
+  // Корзина.
+  R(ctx, 11, 34 + oy, 14, 8, PALETTE.earth);
+  R(ctx, 11, 34 + oy, 14, 2, shade(PALETTE.earth, 1.2));
+  R(ctx, 13, 36 + oy, 2, 6, PALETTE.earthDark);
+  R(ctx, 17, 36 + oy, 2, 6, PALETTE.earthDark);
+  R(ctx, 21, 36 + oy, 2, 6, PALETTE.earthDark);
+  // Пассажир-глаза.
+  R(ctx, 15, 30 + oy, 2, 2, PALETTE.void);
+  R(ctx, 19, 30 + oy, 2, 2, PALETTE.void);
+}
+
+/** Cloudsheep 48×40: овца из облачных клубов, тёмная морда. */
+function drawCloudsheep(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -1 : 0;
+  const puff = (x: number, y: number, r: number): void => {
+    for (let yy = -r; yy <= r; yy++) {
+      for (let xx = -r; xx <= r; xx++) {
+        if (xx * xx + yy * yy <= r * r) {
+          ctx.fillStyle = PALETTE.cloud;
+          ctx.fillRect(x + xx, y + yy + oy, 1, 1);
+        }
+      }
+    }
+  };
+  puff(16, 18, 8);
+  puff(26, 14, 9);
+  puff(34, 19, 7);
+  puff(24, 22, 8);
+  // Морда.
+  R(ctx, 32, 20 + oy, 10, 9, PALETTE.stoneDark);
+  R(ctx, 34, 22 + oy, 2, 3, PALETTE.gold);
+  R(ctx, 38, 22 + oy, 2, 3, PALETTE.gold);
+  R(ctx, 30, 18 + oy, 4, 3, PALETTE.stoneDark);
+  // Ножки (шаг чередуется).
+  if (frame === 0) {
+    R(ctx, 14, 30, 3, 8, PALETTE.stoneDark);
+    R(ctx, 28, 30, 3, 8, PALETTE.stoneDark);
+  } else {
+    R(ctx, 13, 30, 3, 8, PALETTE.stoneDark);
+    R(ctx, 29, 28, 3, 10, PALETTE.stoneDark);
+  }
+}
+
+/** Stormling 40×44: грозовая туча с молнией. */
+function drawStormling(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -2 : 0;
+  const puff = (x: number, y: number, r: number, c: string): void => {
+    for (let yy = -r; yy <= r; yy++) {
+      for (let xx = -r; xx <= r; xx++) {
+        if (xx * xx + yy * yy <= r * r) {
+          ctx.fillStyle = c;
+          ctx.fillRect(x + xx, y + yy + oy, 1, 1);
+        }
+      }
+    }
+  };
+  puff(14, 14, 7, PALETTE.stoneDark);
+  puff(24, 11, 8, PALETTE.stoneDark);
+  puff(20, 18, 7, PALETTE.void);
+  puff(24, 11, 5, PALETTE.stoneDark);
+  // Глаза-молнии.
+  R(ctx, 16, 13 + oy, 3, 3, PALETTE.gold);
+  R(ctx, 23, 13 + oy, 3, 3, PALETTE.gold);
+  // Молния из тучи (длина по кадру).
+  const len = frame === 1 ? 16 : 11;
+  for (let i = 0; i < len; i++) {
+    R(ctx, 20 + (i % 2 === 0 ? 0 : -2), 22 + oy + i, 3, 1, PALETTE.gold);
+  }
+}
+
+/** Fluffdragon 56×48: пушистый змей с крыльями, рогами и хвостом. */
+function drawFluffdragon(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -2 : 0;
+  const wy = frame === 1 ? 6 : 12;
+  // Крылья вверх/вниз.
+  R(ctx, 18, wy + oy, 12, 3, PALETTE.cloud);
+  R(ctx, 20, wy + oy - 4, 8, 4, PALETTE.cloud);
+  // Тело-колбаса.
+  R(ctx, 8, 24 + oy, 34, 12, PALETTE.roadLight);
+  R(ctx, 8, 24 + oy, 34, 3, shade(PALETTE.roadLight, 1.1));
+  R(ctx, 8, 33 + oy, 34, 3, PALETTE.earth);
+  // Пушковые вихры.
+  R(ctx, 12, 21 + oy, 3, 3, PALETTE.cloud);
+  R(ctx, 24, 21 + oy, 3, 3, PALETTE.cloud);
+  R(ctx, 34, 21 + oy, 3, 3, PALETTE.cloud);
+  // Хвост с кисточкой.
+  R(ctx, 4, 27 + oy, 5, 4, PALETTE.roadLight);
+  R(ctx, 1, 25 + oy, 4, 4, PALETTE.gold);
+  // Голова.
+  R(ctx, 40, 22 + oy, 12, 13, PALETTE.roadLight);
+  R(ctx, 40, 22 + oy, 12, 3, shade(PALETTE.roadLight, 1.1));
+  // Рожки.
+  R(ctx, 42, 17 + oy, 3, 5, PALETTE.earthDark);
+  R(ctx, 47, 17 + oy, 3, 5, PALETTE.earthDark);
+  // Глаз и ноздря.
+  R(ctx, 44, 26 + oy, 3, 4, PALETTE.void);
+  R(ctx, 45, 27 + oy, 1, 2, PALETTE.gold);
+  R(ctx, 50, 31 + oy, 2, 2, PALETTE.earthDark);
+}
+
+/** Clownfish 40×36: рыбка боком, хвост виляет по кадрам. */
+function drawClownfish(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -1 : 0;
+  const tailY = frame === 1 ? -3 : 3;
+  // Хвост-треугольник.
+  for (let i = 0; i < 8; i++) {
+    R(ctx, 2 + i, 16 + oy + tailY + Math.floor(i / 2), 2, 8 - i, PALETTE.earth);
+  }
+  // Тело.
+  for (let y = 0; y < 18; y++) {
+    const half = 9 * Math.sin((Math.PI * (y + 1)) / 19);
+    for (let x = Math.ceil(24 - half); x < 24 + half; x++) {
+      ctx.fillStyle = PALETTE.gold;
+      ctx.fillRect(x, y + 9 + oy, 1, 1);
+    }
+  }
+  // Белые полосы с тёмной окантовкой.
+  for (const sy of [13, 20]) {
+    R(ctx, 17, sy + oy, 13, 1, PALETTE.void);
+    R(ctx, 17, sy + oy + 1, 13, 3, PALETTE.cloud);
+    R(ctx, 17, sy + oy + 4, 13, 1, PALETTE.void);
+  }
+  // Плавник и глаз.
+  R(ctx, 22, 5 + oy, 5, 5, PALETTE.earth);
+  R(ctx, 29, 14 + oy, 3, 4, PALETTE.void);
+  R(ctx, 30, 15 + oy, 1, 2, PALETTE.cloud);
+}
+
+/** Jellyfish 40×48: купол со щупальцами разной длины по кадрам. */
+function drawJellyfish(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -2 : 0;
+  // Купол.
+  for (let y = 0; y < 16; y++) {
+    const half = 16 * Math.sin((Math.PI * (y + 4)) / 22);
+    for (let x = Math.ceil(20 - half); x < 20 + half; x++) {
+      ctx.fillStyle = PALETTE.crystal;
+      ctx.fillRect(x, y + 4 + oy, 1, 1);
+    }
+  }
+  R(ctx, 10, 8 + oy, 4, 8, PALETTE.cloud);
+  R(ctx, 10, 8 + oy, 9, 2, PALETTE.cloud);
+  // Ободок.
+  R(ctx, 5, 19 + oy, 30, 3, shade(PALETTE.crystal, 0.7));
+  // Щупальца.
+  const lens = frame === 1 ? [20, 14, 22, 14, 20] : [16, 20, 15, 20, 16];
+  for (let t = 0; t < 5; t++) {
+    const x = 9 + t * 6;
+    for (let i = 0; i < lens[t]; i++) {
+      const sway = i > 6 ? (t % 2 === 0 ? 1 : -1) : 0;
+      ctx.fillStyle = PALETTE.crystal;
+      ctx.fillRect(x + sway, 22 + oy + i, 2, 1);
+    }
+  }
+  // Мордочка на куполе.
+  R(ctx, 15, 12 + oy, 3, 4, PALETTE.void);
+  R(ctx, 22, 12 + oy, 3, 4, PALETTE.void);
+}
+
+/** Seahorse 32×48: S-силуэт, бронированные кольца, хоботок и гребень. */
+function drawSeahorse(ctx: CanvasRenderingContext2D, frame: number): void {
+  const sway = frame === 1 ? 1 : 0;
+  // Тело дугой.
+  const spine: Array<[number, number, number]> = [
+    [14, 8, 8],
+    [16, 16, 9],
+    [15, 24, 8],
+    [13, 32, 7],
+    [14, 39, 6],
+  ];
+  for (const [sx, sy, w] of spine) {
+    R(ctx, sx + sway, sy, w, 8, PALETTE.gold);
+  }
+  // Броневые кольца.
+  for (const [sx, sy, w] of spine) {
+    R(ctx, sx + sway, sy + 6, w, 2, PALETTE.stoneDark);
+  }
+  // Хоботок и глаз.
+  R(ctx, 20 + sway, 8, 7, 4, PALETTE.gold);
+  R(ctx, 25 + sway, 9, 2, 2, PALETTE.earthDark);
+  R(ctx, 13 + sway, 10, 3, 4, PALETTE.void);
+  R(ctx, 14 + sway, 11, 1, 2, PALETTE.cloud);
+  // Гребень-корона.
+  R(ctx, 11 + sway, 4, 2, 5, PALETTE.earthDark);
+  R(ctx, 14 + sway, 2, 2, 5, PALETTE.earthDark);
+  R(ctx, 17 + sway, 4, 2, 5, PALETTE.earthDark);
+  // Спинной плавник.
+  for (let i = 0; i < 6; i++) {
+    R(ctx, 23 + sway - Math.floor(i / 2), 22 + i * 2, 4, 2, PALETTE.cloud);
+  }
+  // Закрученный хвост.
+  R(ctx, 12 + sway, 44, 8, 3, PALETTE.gold);
+  R(ctx, 12 + sway, 44, 8, 1, PALETTE.stoneDark);
+}
+
+/** Pearlwhale 60×44: кит с фонтаном, светлое брюхо. */
+function drawPearlwhale(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -2 : 0;
+  // Туша.
+  for (let y = 0; y < 24; y++) {
+    const half = 24 * Math.sin((Math.PI * (y + 2)) / 27);
+    for (let x = Math.ceil(28 - half); x < 28 + half; x++) {
+      ctx.fillStyle = PALETTE.stone;
+      ctx.fillRect(x, y + 10 + oy, 1, 1);
+    }
+  }
+  // Брюхо.
+  for (let y = 0; y < 8; y++) {
+    const half = 18 * Math.sin((Math.PI * (y + 1)) / 10);
+    for (let x = Math.ceil(28 - half); x < 28 + half; x++) {
+      ctx.fillStyle = PALETTE.roadLight;
+      ctx.fillRect(x, y + 26 + oy, 1, 1);
+    }
+  }
+  // Хвостовой плавник слева.
+  for (let i = 0; i < 8; i++) {
+    R(ctx, 6 - Math.floor(i / 2), 12 + oy + i, 4, 2, PALETTE.stoneDark);
+  }
+  // Спинной плавник.
+  R(ctx, 26, 4 + oy, 5, 7, PALETTE.stoneDark);
+  // Фонтан (выше в кадре 1).
+  const spout = frame === 1 ? 3 : 0;
+  R(ctx, 27, 0 + oy - spout, 2, 5, PALETTE.cloud);
+  R(ctx, 24, 1 + oy - spout, 2, 2, PALETTE.cloud);
+  R(ctx, 30, 1 + oy - spout, 2, 2, PALETTE.cloud);
+  // Глаз и жемчужина-щёчка.
+  R(ctx, 42, 18 + oy, 3, 4, PALETTE.void);
+  R(ctx, 43, 19 + oy, 1, 2, PALETTE.cloud);
+  R(ctx, 36, 24 + oy, 4, 4, PALETTE.crystal);
+}
+
+/** Clown 36×48: колпак, круглое лицо, жабо, пуговки. */
+function drawClown(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -1 : 0;
+  // Колпак.
+  for (let y = 0; y < 12; y++) {
+    const half = 2 + y * 0.5;
+    for (let x = Math.ceil(18 - half); x < 18 + half; x++) {
+      ctx.fillStyle = y % 4 < 2 ? PALETTE.gold : PALETTE.earth;
+      ctx.fillRect(x, y + 2 + oy, 1, 1);
+    }
+  }
+  R(ctx, 16, 0 + oy, 4, 3, PALETTE.crystal);
+  R(ctx, 11, 12 + oy, 14, 3, PALETTE.earthDark);
+  // Лицо.
+  for (let y = 0; y < 14; y++) {
+    const half = 10 * Math.sin((Math.PI * (y + 2)) / 17);
+    for (let x = Math.ceil(18 - half); x < 18 + half; x++) {
+      ctx.fillStyle = PALETTE.roadLight;
+      ctx.fillRect(x, y + 15 + oy, 1, 1);
+    }
+  }
+  // Нос, глаза, улыбка.
+  R(ctx, 16, 21 + oy, 4, 4, PALETTE.earth);
+  R(ctx, 12, 19 + oy, 3, 3, PALETTE.void);
+  R(ctx, 21, 19 + oy, 3, 3, PALETTE.void);
+  R(ctx, 13, 26 + oy, 10, 1, PALETTE.earthDark);
+  R(ctx, 13, 25 + oy, 1, 2, PALETTE.earthDark);
+  R(ctx, 22, 25 + oy, 1, 2, PALETTE.earthDark);
+  // Жабо и тело.
+  R(ctx, 10, 29 + oy, 16, 4, PALETTE.cloud);
+  R(ctx, 12, 33 + oy, 12, 11, PALETTE.crystal);
+  R(ctx, 17, 35 + oy, 2, 3, PALETTE.gold);
+  R(ctx, 17, 40 + oy, 2, 3, PALETTE.gold);
+  // Руки (одна поднята по кадру).
+  R(ctx, 8, 34 + oy + (frame === 1 ? -3 : 0), 3, 8, PALETTE.crystal);
+  R(ctx, 25, 34 + oy + (frame === 1 ? 3 : 0), 3, 8, PALETTE.crystal);
+}
+
+/** Juggler 40×52: жонглёр, три мяча на разной высоте по кадрам. */
+function drawJuggler(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -1 : 0;
+  // Мячи в воздухе.
+  const balls: Array<[number, number, string]> =
+    frame === 0
+      ? [
+          [8, 6, PALETTE.gold],
+          [20, 2, PALETTE.crystal],
+          [32, 6, PALETTE.earth],
+        ]
+      : [
+          [8, 2, PALETTE.gold],
+          [20, 8, PALETTE.crystal],
+          [32, 2, PALETTE.earth],
+        ];
+  for (const [bx, by, c] of balls) {
+    for (let y = -3; y <= 3; y++) {
+      for (let x = -3; x <= 3; x++) {
+        if (x * x + y * y <= 9) {
+          ctx.fillStyle = c;
+          ctx.fillRect(bx + x, by + y + oy, 1, 1);
+        }
+      }
+    }
+  }
+  // Шляпа-цилиндр.
+  R(ctx, 15, 14 + oy, 10, 9, PALETTE.void);
+  R(ctx, 12, 22 + oy, 16, 3, PALETTE.void);
+  R(ctx, 15, 18 + oy, 10, 2, PALETTE.gold);
+  // Лицо.
+  R(ctx, 16, 25 + oy, 8, 7, PALETTE.roadLight);
+  R(ctx, 17, 27 + oy, 2, 2, PALETTE.void);
+  R(ctx, 21, 27 + oy, 2, 2, PALETTE.void);
+  R(ctx, 18, 30 + oy, 4, 1, PALETTE.earthDark);
+  // Камзол и руки вверх.
+  R(ctx, 14, 32 + oy, 12, 14, PALETTE.earth);
+  R(ctx, 14, 32 + oy, 12, 2, PALETTE.gold);
+  R(ctx, 10, 24 + oy, 3, 10, PALETTE.earth);
+  R(ctx, 27, 24 + oy, 3, 10, PALETTE.earth);
+  R(ctx, 15, 46 + oy, 4, 5, PALETTE.earthDark);
+  R(ctx, 21, 46 + oy, 4, 5, PALETTE.earthDark);
+}
+
+/** Magician 36×52: цилиндр, плащ, палочка со звездой. */
+function drawMagician(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -1 : 0;
+  const wandUp = frame === 1 ? -3 : 0;
+  // Цилиндр.
+  R(ctx, 12, 4 + oy, 12, 13, PALETTE.void);
+  R(ctx, 12, 13 + oy, 12, 3, PALETTE.gold);
+  R(ctx, 9, 16 + oy, 18, 3, PALETTE.void);
+  // Плащ.
+  for (let y = 0; y < 26; y++) {
+    const half = 6 + y * 0.35;
+    for (let x = Math.ceil(18 - half); x < 18 + half; x++) {
+      ctx.fillStyle = PALETTE.void;
+      ctx.fillRect(x, y + 22 + oy, 1, 1);
+    }
+  }
+  R(ctx, 11, 22 + oy, 14, 2, PALETTE.earthDark);
+  // Лицо и бабочка.
+  R(ctx, 14, 20 + oy, 8, 7, PALETTE.roadLight);
+  R(ctx, 15, 22 + oy, 2, 2, PALETTE.void);
+  R(ctx, 19, 22 + oy, 2, 2, PALETTE.void);
+  R(ctx, 15, 27 + oy, 6, 3, PALETTE.gold);
+  // Палочка со звездой.
+  R(ctx, 27, 26 + oy + wandUp, 2, 12, PALETTE.earth);
+  R(ctx, 25, 22 + oy + wandUp, 6, 2, PALETTE.gold);
+  R(ctx, 27, 20 + oy + wandUp, 2, 6, PALETTE.gold);
+  R(ctx, 24, 23 + oy + wandUp, 2, 2, PALETTE.gold);
+  R(ctx, 30, 23 + oy + wandUp, 2, 2, PALETTE.gold);
+}
+
+/** Elephant 60×52: туша, уши, хобот (кадр 1 закручен), бивни. */
+function drawElephant(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -1 : 0;
+  // Ноги-тумбы.
+  R(ctx, 14, 40 + oy, 9, 10, PALETTE.stoneDark);
+  R(ctx, 38, 40 + oy, 9, 10, PALETTE.stoneDark);
+  // Туша.
+  R(ctx, 10, 18 + oy, 42, 24, PALETTE.stone);
+  R(ctx, 10, 18 + oy, 42, 3, shade(PALETTE.stone, 1.18));
+  R(ctx, 10, 39 + oy, 42, 3, PALETTE.stoneDark);
+  // Ухо.
+  R(ctx, 36, 14 + oy, 12, 14, shade(PALETTE.stone, 0.85));
+  R(ctx, 38, 16 + oy, 8, 10, shade(PALETTE.stone, 1.1));
+  // Голова.
+  R(ctx, 44, 20 + oy, 12, 16, PALETTE.stone);
+  // Глаз.
+  R(ctx, 48, 24 + oy, 3, 4, PALETTE.void);
+  R(ctx, 49, 25 + oy, 1, 2, PALETTE.cloud);
+  // Бивни.
+  R(ctx, 54, 30 + oy, 4, 2, PALETTE.roadLight);
+  R(ctx, 54, 34 + oy, 3, 2, PALETTE.roadLight);
+  // Хобот: висит или закручен.
+  if (frame === 0) {
+    R(ctx, 52, 28 + oy, 5, 14, PALETTE.stone);
+    R(ctx, 52, 28 + oy, 1, 14, PALETTE.stoneDark);
+  } else {
+    R(ctx, 52, 28 + oy, 5, 8, PALETTE.stone);
+    R(ctx, 52, 34 + oy, 8, 4, PALETTE.stone);
+    R(ctx, 52, 28 + oy, 1, 8, PALETTE.stoneDark);
+  }
+  // Хвост.
+  R(ctx, 8, 24 + oy, 3, 10, PALETTE.stoneDark);
+  R(ctx, 7, 33 + oy, 4, 3, PALETTE.earthDark);
+}
+
 function buildTile(id: TileId): Texture {
   let cv: HTMLCanvasElement;
   switch (id) {
@@ -870,6 +1416,210 @@ function buildTile(id: TileId): Texture {
     case 'enemy_truffle_f1': {
       const [c, ctx] = makeCanvas(52, 52);
       drawTruffle(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_jelly_f0': {
+      const [c, ctx] = makeCanvas(40, 44);
+      drawJelly(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_jelly_f1': {
+      const [c, ctx] = makeCanvas(40, 44);
+      drawJelly(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_jellymini_f0': {
+      const [c, ctx] = makeCanvas(24, 28);
+      drawJellymini(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_jellymini_f1': {
+      const [c, ctx] = makeCanvas(24, 28);
+      drawJellymini(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_caramel_f0': {
+      const [c, ctx] = makeCanvas(36, 44);
+      drawCaramel(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_caramel_f1': {
+      const [c, ctx] = makeCanvas(36, 44);
+      drawCaramel(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_chocgolem_f0': {
+      const [c, ctx] = makeCanvas(56, 56);
+      drawChocgolem(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_chocgolem_f1': {
+      const [c, ctx] = makeCanvas(56, 56);
+      drawChocgolem(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_candyfairy_f0': {
+      const [c, ctx] = makeCanvas(32, 44);
+      drawCandyfairy(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_candyfairy_f1': {
+      const [c, ctx] = makeCanvas(32, 44);
+      drawCandyfairy(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_balloon_f0': {
+      const [c, ctx] = makeCanvas(36, 48);
+      drawBalloon(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_balloon_f1': {
+      const [c, ctx] = makeCanvas(36, 48);
+      drawBalloon(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_cloudsheep_f0': {
+      const [c, ctx] = makeCanvas(48, 40);
+      drawCloudsheep(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_cloudsheep_f1': {
+      const [c, ctx] = makeCanvas(48, 40);
+      drawCloudsheep(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_stormling_f0': {
+      const [c, ctx] = makeCanvas(40, 44);
+      drawStormling(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_stormling_f1': {
+      const [c, ctx] = makeCanvas(40, 44);
+      drawStormling(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_fluffdragon_f0': {
+      const [c, ctx] = makeCanvas(56, 48);
+      drawFluffdragon(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_fluffdragon_f1': {
+      const [c, ctx] = makeCanvas(56, 48);
+      drawFluffdragon(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_clownfish_f0': {
+      const [c, ctx] = makeCanvas(40, 36);
+      drawClownfish(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_clownfish_f1': {
+      const [c, ctx] = makeCanvas(40, 36);
+      drawClownfish(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_jellyfish_f0': {
+      const [c, ctx] = makeCanvas(40, 48);
+      drawJellyfish(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_jellyfish_f1': {
+      const [c, ctx] = makeCanvas(40, 48);
+      drawJellyfish(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_seahorse_f0': {
+      const [c, ctx] = makeCanvas(32, 48);
+      drawSeahorse(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_seahorse_f1': {
+      const [c, ctx] = makeCanvas(32, 48);
+      drawSeahorse(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_pearlwhale_f0': {
+      const [c, ctx] = makeCanvas(60, 44);
+      drawPearlwhale(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_pearlwhale_f1': {
+      const [c, ctx] = makeCanvas(60, 44);
+      drawPearlwhale(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_clown_f0': {
+      const [c, ctx] = makeCanvas(36, 48);
+      drawClown(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_clown_f1': {
+      const [c, ctx] = makeCanvas(36, 48);
+      drawClown(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_juggler_f0': {
+      const [c, ctx] = makeCanvas(40, 52);
+      drawJuggler(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_juggler_f1': {
+      const [c, ctx] = makeCanvas(40, 52);
+      drawJuggler(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_magician_f0': {
+      const [c, ctx] = makeCanvas(36, 52);
+      drawMagician(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_magician_f1': {
+      const [c, ctx] = makeCanvas(36, 52);
+      drawMagician(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_elephant_f0': {
+      const [c, ctx] = makeCanvas(60, 52);
+      drawElephant(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_elephant_f1': {
+      const [c, ctx] = makeCanvas(60, 52);
+      drawElephant(ctx, 1);
       cv = c;
       break;
     }

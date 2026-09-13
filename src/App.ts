@@ -46,14 +46,34 @@ const TOWER_TILES: Record<string, TileId> = {
 };
 
 /** Префикс тайла врага; неизвестные типы падают на гоблина. */
+const KNOWN_ENEMY_PREFIXES = new Set([
+  'goblin',
+  'troll',
+  'imp',
+  'spore',
+  'puffling',
+  'truffle',
+  'jelly',
+  'jellymini',
+  'caramel',
+  'chocgolem',
+  'candyfairy',
+  'balloon',
+  'cloudsheep',
+  'stormling',
+  'fluffdragon',
+  'clownfish',
+  'jellyfish',
+  'seahorse',
+  'pearlwhale',
+  'clown',
+  'juggler',
+  'magician',
+  'elephant',
+]);
+
 function enemyTilePrefix(type: string): string {
-  return type === 'troll' ||
-    type === 'imp' ||
-    type === 'spore' ||
-    type === 'puffling' ||
-    type === 'truffle'
-    ? type
-    : 'goblin';
+  return KNOWN_ENEMY_PREFIXES.has(type) ? type : 'goblin';
 }
 
 /** ~4 кадра/сек покачивания врагов. */

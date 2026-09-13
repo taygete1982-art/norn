@@ -24,6 +24,13 @@ const GH = 12;
 const BIOMES = {
   1: { roster: ['imp', 'goblin', 'troll'], hpBase: 1, rwBase: 1, heavy: 'troll' },
   2: { roster: ['spore', 'puffling', 'truffle'], hpBase: 2, rwBase: 1.5, heavy: 'truffle' },
+  // Биомы 3–6: пулы волн и базы сложности.
+  // Числа предварительные, финализируются после шага апгрейдов и симулятора.
+  // Уровни 73–216 пока НЕ генерируются (цикл ниже идёт только до 72).
+  3: { roster: ['jelly', 'caramel', 'chocgolem', 'candyfairy'], hpBase: 3, rwBase: 2.2, heavy: 'chocgolem' },
+  4: { roster: ['balloon', 'cloudsheep', 'stormling', 'fluffdragon'], hpBase: 4.5, rwBase: 3.2, heavy: 'fluffdragon' },
+  5: { roster: ['clownfish', 'jellyfish', 'seahorse', 'pearlwhale'], hpBase: 6.5, rwBase: 4.6, heavy: 'pearlwhale' },
+  6: { roster: ['clown', 'juggler', 'magician', 'elephant'], hpBase: 9, rwBase: 6.5, heavy: 'elephant' },
 };
 
 const r2 = (v) => Math.round(v * 100) / 100;

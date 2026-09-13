@@ -2,7 +2,30 @@ import { World } from '../../ecs/world';
 import { ConfigLoader } from '../config/ConfigLoader';
 import { IsoMath } from '../../iso/IsoMath';
 
-export type EnemyType = 'goblin' | 'troll' | 'imp' | 'spore' | 'puffling' | 'truffle';
+export type EnemyType =
+  | 'goblin'
+  | 'troll'
+  | 'imp'
+  | 'spore'
+  | 'puffling'
+  | 'truffle'
+  | 'jelly'
+  | 'jellymini'
+  | 'caramel'
+  | 'chocgolem'
+  | 'candyfairy'
+  | 'balloon'
+  | 'cloudsheep'
+  | 'stormling'
+  | 'fluffdragon'
+  | 'clownfish'
+  | 'jellyfish'
+  | 'seahorse'
+  | 'pearlwhale'
+  | 'clown'
+  | 'juggler'
+  | 'magician'
+  | 'elephant';
 
 export interface EnemyData {
   type: string;
