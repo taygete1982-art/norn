@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:iso": "vitest run src/test/iso.test.ts",
-    "gen:levels": "node tools/generateLevels.mjs"
+    "gen:levels": "node tools/generateLevels.mjs",
+    "sim:balance": "node tools/simulateBalance.mjs"
   },
   "dependencies": {
     "bitecs": "^0.4.0",
