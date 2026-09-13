@@ -22,6 +22,12 @@
     { "id": "clown", "hp": 40, "speed": 1.9, "reward": 9, "damage": 1, "abilities": [] },
     { "id": "juggler", "hp": 70, "speed": 1.2, "reward": 13, "damage": 1, "abilities": ["splitOnDeath"], "splitInto": { "type": "clown", "count": 2 } },
     { "id": "magician", "hp": 35, "speed": 1.6, "reward": 10, "damage": 1, "abilities": ["flying"] },
-    { "id": "elephant", "hp": 210, "speed": 0.7, "reward": 36, "damage": 3, "abilities": ["armorPhysical"] }
+    { "id": "elephant", "hp": 210, "speed": 0.7, "reward": 36, "damage": 3, "abilities": ["armorPhysical"] },
+    { "id": "queenbee", "hp": 900, "speed": 0.6, "reward": 150, "damage": 5, "abilities": ["boss"], "scaling": "flat", "bossAbility": { "type": "summon", "period": 10, "enemy": "imp", "count": 2 } },
+    { "id": "mushroomking", "hp": 1400, "speed": 0.55, "reward": 220, "damage": 5, "abilities": ["boss"], "scaling": "flat", "bossAbility": { "type": "sleepPulse", "period": 14, "radius": 2.5, "duration": 2 } },
+    { "id": "cakemonster", "hp": 2000, "speed": 0.5, "reward": 300, "damage": 6, "abilities": ["boss"], "scaling": "flat", "bossAbility": { "type": "frostWave", "period": 20, "duration": 4 } },
+    { "id": "cloudgiant", "hp": 2600, "speed": 0.55, "reward": 380, "damage": 6, "abilities": ["boss", "flying"], "scaling": "flat", "bossAbility": { "type": "summon", "period": 12, "enemy": "balloon", "count": 2 } },
+    { "id": "seaking", "hp": 3400, "speed": 0.5, "reward": 470, "damage": 7, "abilities": ["boss"], "scaling": "flat", "bossAbility": { "type": "shieldWave", "period": 18, "duration": 3 } },
+    { "id": "carnivaldirector", "hp": 4500, "speed": 0.5, "reward": 600, "damage": 8, "abilities": ["boss"], "scaling": "flat", "bossAbility": { "type": "cycle", "period": 10 } }
   ]
 }

@@ -250,10 +250,11 @@
           "delay": 0.45
         },
         {
-          "enemy": "fluffdragon",
+          "enemy": "cloudgiant",
           "count": 1,
           "delay": 1,
-          "elite": true
+          "boss": true,
+          "hpOverride": 7280
         }
       ]
     }
@@ -270,6 +271,6 @@
     "dy": -1
   },
   "boss": {
-    "type": "elite"
+    "type": "cloudgiant"
   }
 }

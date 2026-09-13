@@ -121,7 +121,7 @@ describe('Enemy abilities (data-driven)', () => {
   });
 
   it('elite: hp ×6, награда ×8, спавн из волны и убивается', () => {
-    // makeElite напрямую
+    // elite hp 50×3×2 = 300, награда 10×8 = 80.
     const w = new World();
     const e = EnemyFactory.create(w, 'goblin', 0, 0);
     EnemyFactory.makeElite(w, e);

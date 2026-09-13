@@ -163,16 +163,25 @@ function simulateLevel(level, policy) {
     const wave = level.waves[waveIdx];
     for (const s of wave.spawns) {
       for (let i = 0; i < s.count; i++) {
-        queue.push({ type: s.enemy, at: t + i * s.delay, elite: s.elite ?? false });
+        queue.push({
+          type: s.enemy,
+          at: t + i * s.delay,
+          elite: s.elite ?? false,
+          boss: s.boss ?? false,
+          hpOverride: s.hpOverride,
+        });
       }
     }
     queue.sort((a, b) => a.at - b.at);
     spawnedThisWave = 0;
   };
 
-  const spawnEnemy = (type, gx, gy, elite) => {
+  const spawnEnemy = (type, gx, gy, elite, boss, hpOverride) => {
     const st = EN[type];
-    const hp = Math.round(st.hp * level.difficulty.hpMul) * (elite ? 6 : 1);
+    // Босс: flat scaling — hp из hpOverride спавна, не из hpMul.
+    const hp = boss && hpOverride !== undefined
+      ? hpOverride
+      : Math.round(st.hp * level.difficulty.hpMul) * (elite ? 6 : 1);
     enemies.push({
       type,
       hp,
@@ -229,7 +238,7 @@ function simulateLevel(level, policy) {
     // спавн
     while (queue.length > 0 && queue[0].at <= t) {
       const ev = queue.shift();
-      spawnEnemy(ev.type, path[0].x, path[0].y, ev.elite);
+      spawnEnemy(ev.type, path[0].x, path[0].y, ev.elite, ev.boss, ev.hpOverride);
     }
     // env: споры
     if (level.biomeId === 2) {

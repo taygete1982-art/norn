@@ -38,6 +38,24 @@ const FLYING_TYPES = new Set(['spore', 'candyfairy', 'balloon', 'fluffdragon', '
 const TANK_TYPES = new Set(['truffle', 'chocgolem', 'pearlwhale', 'elephant']);
 const SPLITTER_TYPES = new Set(['puffling', 'jelly', 'stormling', 'jellyfish', 'juggler']);
 
+// Уникальные боссы биомов: id и bossBase hp (итог = base × biomeHpBase).
+const BOSS_IDS = {
+  1: 'queenbee',
+  2: 'mushroomking',
+  3: 'cakemonster',
+  4: 'cloudgiant',
+  5: 'seaking',
+  6: 'carnivaldirector',
+};
+const BOSS_BASE_HP = {
+  queenbee: 900,
+  mushroomking: 1400,
+  cakemonster: 2000,
+  cloudgiant: 2600,
+  seaking: 3400,
+  carnivaldirector: 4500,
+};
+
 const r2 = (v) => Math.round(v * 100) / 100;
 
 /** Путь: спуск сверху вниз (y 0→11) с боковыми вихорами; 8-связность, без повторов. */
@@ -156,7 +174,7 @@ function trimKind(spawns, isKind, cap) {
   let guard = 100;
   while (guard-- > 0) {
     if (kindOver(spawns, isKind) <= cap) return;
-    const kind = spawns.map((s, i) => (isKind(s.enemy) && !s.elite ? i : -1)).filter((i) => i >= 0);
+    const kind = spawns.map((s, i) => (isKind(s.enemy) && !s.elite && !s.boss ? i : -1)).filter((i) => i >= 0);
     let bi = kind[0];
     for (const idx of kind) if (spawns[idx].count > spawns[bi].count) bi = idx;
     if (bi === undefined || spawns[bi].count <= 0) return;
@@ -166,19 +184,19 @@ function trimKind(spawns, isKind, cap) {
 
 function kindOver(spawns, isKind) {
   return spawns
-    .filter((s) => isKind(s.enemy) && !s.elite)
+    .filter((s) => isKind(s.enemy) && !s.elite && !s.boss)
     .reduce((s, x) => s + x.count, 0);
 }
 
 /** Срезать вид сверх капа: переложить в наименьшую чужую запись,
- *  некуда — урезать. Элитные записи не трогает. */
+ *  некуда — урезать. Элитные и boss-записи не трогает. */
 function capKind(spawns, isKind, cap) {
   let guard = 100;
   while (guard-- > 0) {
     const over = kindOver(spawns, isKind) - cap;
     if (over <= 0) return;
-    const kind = spawns.map((s, i) => (isKind(s.enemy) && !s.elite ? i : -1)).filter((i) => i >= 0);
-    const rest = spawns.map((s, i) => (!isKind(s.enemy) && !s.elite ? i : -1)).filter((i) => i >= 0);
+    const kind = spawns.map((s, i) => (isKind(s.enemy) && !s.elite && !s.boss ? i : -1)).filter((i) => i >= 0);
+    const rest = spawns.map((s, i) => (!isKind(s.enemy) && !s.elite && !s.boss ? i : -1)).filter((i) => i >= 0);
     let bi = kind[0];
     for (const idx of kind) if (spawns[idx].count > spawns[bi].count) bi = idx;
     if (bi === undefined || spawns[bi].count <= 0) return;
@@ -280,8 +298,17 @@ export function generateLevel(n) {
   const waves = genWaves(rnd, B, lib);
   const { terrain, wind } = genTerrainWind(rnd, biomeId, path);
   const isBoss = n === 36 || n === 72 || n === 108 || n === 144 || n === 180 || n === 216;
+  let bossId = null;
   if (isBoss) {
-    waves[4].spawns.push({ enemy: B.heavy, count: 1, delay: 1.0, elite: true });
+    // Уникальный босс биома вместо elite-заглушки (elite-механика живёт дальше).
+    bossId = BOSS_IDS[biomeId];
+    waves[4].spawns.push({
+      enemy: bossId,
+      count: 1,
+      delay: 1.0,
+      boss: true,
+      hpOverride: Math.round(BOSS_BASE_HP[bossId] * B.hpBase),
+    });
     // Летящий босс занимает слот капа: срезать обычных летунов до 3.
     if (FLYING_TYPES.has(B.heavy)) capFlying(waves[4].spawns, 3);
     // Перекладывание могло раздуть другие виды — жёстко подтянуть.
@@ -303,7 +330,7 @@ export function generateLevel(n) {
     environmentEffects: [],
     terrain,
     wind,
-    boss: isBoss ? { type: 'elite' } : null,
+    boss: isBoss ? { type: bossId } : null,
   };
 }
 

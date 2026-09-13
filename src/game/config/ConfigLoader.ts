@@ -3,6 +3,15 @@ import towersJson from './towers.json'
 import wavesJson from './waves.json'
 import economyJson from './economy.json'
 
+export interface BossAbilityConfig {
+  type: string
+  period: number
+  enemy?: string
+  count?: number
+  radius?: number
+  duration?: number
+}
+
 export interface EnemyConfig {
   id: string
   hp: number
@@ -11,6 +20,9 @@ export interface EnemyConfig {
   damage: number
   abilities: string[]
   splitInto?: { type: string; count: number }
+  /** "flat": hp не масштабируется hpMul уровня (только hpOverride спавна) */
+  scaling?: string
+  bossAbility?: BossAbilityConfig
 }
 
 export interface TierConfig {
@@ -39,6 +51,9 @@ export interface WaveSpawnConfig {
   count: number
   delay: number
   elite?: boolean
+  /** спавн босса: hp берётся из hpOverride (flat scaling), не из hpMul */
+  boss?: boolean
+  hpOverride?: number
 }
 
 export interface WaveConfig {

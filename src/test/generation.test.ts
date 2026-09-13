@@ -192,23 +192,24 @@ describe('level generation (files on disk)', () => {
     }
   });
 
-  it('боссы ровно на 36/72/108/144/180/216: флаг + элитный спавн тяжёлого', () => {
-    const expected: Array<[number, string]> = [
-      [36, 'troll'],
-      [72, 'truffle'],
-      [108, 'chocgolem'],
-      [144, 'fluffdragon'],
-      [180, 'pearlwhale'],
-      [216, 'elephant'],
+  it('боссы ровно на 36/72/108/144/180/216: флаг + спавн уникального босса', () => {
+    const expected: Array<[number, string, number]> = [
+      [36, 'queenbee', 900],
+      [72, 'mushroomking', 2100],
+      [108, 'cakemonster', 4200],
+      [144, 'cloudgiant', 7280],
+      [180, 'seaking', 12240],
+      [216, 'carnivaldirector', 20700],
     ];
-    for (const [n, heavy] of expected) {
+    for (const [n, bossId, hp] of expected) {
       const L = read(`level_${String(n).padStart(3, '0')}.json`);
-      expect(L.boss, `level ${n}`).toEqual({ type: 'elite' });
+      expect(L.boss, `level ${n}`).toEqual({ type: bossId });
       const last = L.waves[4].spawns;
       expect(last[last.length - 1], `level ${n}`).toMatchObject({
-        enemy: heavy,
+        enemy: bossId,
         count: 1,
-        elite: true,
+        boss: true,
+        hpOverride: hp,
       });
     }
     // больше нигде боссов нет

@@ -25,7 +25,13 @@ export type EnemyType =
   | 'clown'
   | 'juggler'
   | 'magician'
-  | 'elephant';
+  | 'elephant'
+  | 'queenbee'
+  | 'mushroomking'
+  | 'cakemonster'
+  | 'cloudgiant'
+  | 'seaking'
+  | 'carnivaldirector';
 
 export interface EnemyData {
   type: string;
@@ -62,7 +68,7 @@ export class EnemyFactory {
     };
     if (stats.splitInto !== undefined) enemy.splitInto = { ...stats.splitInto };
 
-    return world.spawnEntity({
+    const comps: Record<string, unknown> = {
       GridPos: { gx, gy },
       ScreenPos: { x: p.x, y: p.y },
       Health: {
@@ -72,7 +78,23 @@ export class EnemyFactory {
       MoveSpeed: { speed: stats.speed },
       PathIndex: { index: 0, t: 0 },
       Enemy: enemy,
-    });
+    };
+    // Босс: состояние способности; hp правит спавнер через hpOverride (flat).
+    if (stats.bossAbility !== undefined) {
+      const ba = stats.bossAbility;
+      comps['Boss'] = {
+        abilityType: ba.type,
+        period: ba.period,
+        enemy: ba.enemy,
+        count: ba.count,
+        radius: ba.radius,
+        duration: ba.duration,
+        nextAt: world.getCurrentTime() + ba.period,
+        telegraphed: false,
+        cycleIdx: 0,
+      };
+    }
+    return world.spawnEntity(comps);
   }
 
   /** Элита босс-волны: hp ×6, награда ×8, маркер масштаба 1.5. */

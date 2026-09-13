@@ -224,10 +224,11 @@
           "delay": 0.45
         },
         {
-          "enemy": "truffle",
+          "enemy": "mushroomking",
           "count": 1,
           "delay": 1,
-          "elite": true
+          "boss": true,
+          "hpOverride": 2100
         }
       ]
     }
@@ -241,6 +242,6 @@
   "terrain": [],
   "wind": null,
   "boss": {
-    "type": "elite"
+    "type": "mushroomking"
   }
 }

@@ -41,7 +41,7 @@ const NEW_ROSTER: Array<{ id: string; abilities: string[]; splitInto?: string }>
 describe('biome 3-6 rosters (data + sprites)', () => {
   it('все 17 id грузятся с полными статами и способностями', () => {
     const all = ConfigLoader.getEnemies();
-    expect(all.length).toBe(6 + 17);
+    expect(all.length).toBe(6 + 17 + 6); // база 6 + ростеры 17 + боссы 6
     for (const e of NEW_ROSTER) {
       const cfg = all.find((c) => c.id === e.id);
       expect(cfg, e.id).toBeDefined();

@@ -1,6 +1,7 @@
 import { World } from '../../ecs/world';
 import { tierConfigOf, effectiveStats } from '../Upgrades';
 import { EnvironmentSystem } from './EnvironmentSystem';
+import { BossSystem } from './BossSystem';
 
 /**
  * Мгновенный урон ближайшему врагу в радиусе (дистанция в клетках сетки).
@@ -41,13 +42,15 @@ export class TowerAttackSystem {
       }>(towerId, 'Tower');
       const tpos = world.getComponent<{ gx: number; gy: number }>(towerId, 'GridPos');
       if (!tower || !tpos) continue;
-      // Споры глушат, карнавальный танец не даёт стрелять.
+      // Споры глушат, карнавальный танец не даёт стрелять, сонный пульс глушит.
       if (EnvironmentSystem.isSilenced(world, tpos.gx, tpos.gy)) continue;
       if (EnvironmentSystem.isDancing(world, towerId)) continue;
+      if (BossSystem.isStunned(world, towerId)) continue;
       const eff = effectiveStats(tower, tierConfigOf(tower.kind, tower.tier));
       const cd =
         (eff.cooldown *
-          EnvironmentSystem.cooldownMult(tpos.gx, tpos.gy)) /
+          EnvironmentSystem.cooldownMult(tpos.gx, tpos.gy) *
+          BossSystem.frostMult(world)) /
         EnvironmentSystem.hasteMult(world, towerId);
       if (now - tower.lastFireTime < cd) continue;
 
@@ -93,7 +96,8 @@ export class TowerAttackSystem {
             const vpos = world.getComponent<{ gx: number; gy: number }>(id, 'GridPos');
             if (vpos) dmg *= EnvironmentSystem.magicTakenMult(vpos.gx, vpos.gy);
           }
-          health.hp -= dmg;
+          // shieldWave: враги неуязвимы (slow всё равно вешается).
+          if (!BossSystem.isShielded(world)) health.hp -= dmg;
           if (tower.slowAmount !== undefined && tower.slowDuration !== undefined) {
             const until = now + tower.slowDuration;
             const cur = world.getComponent<{ amount?: number; factor?: number; until: number }>(

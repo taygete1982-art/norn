@@ -9,6 +9,8 @@ interface SpawnEvent {
   type: EnemyType;
   at: number;
   elite?: boolean;
+  boss?: boolean;
+  hpOverride?: number;
 }
 
 /**
@@ -84,6 +86,8 @@ export class WaveSpawnerSystem {
           type: spawn.enemy as EnemyType,
           at: now + i * spawn.delay,
           elite: spawn.elite ?? false,
+          boss: spawn.boss ?? false,
+          hpOverride: spawn.hpOverride,
         });
       }
     }
@@ -100,6 +104,14 @@ export class WaveSpawnerSystem {
       const ev = this.queue.shift()!;
       const id = EnemyFactory.create(world, ev.type, PATH[0].gx, PATH[0].gy);
       if (ev.elite) EnemyFactory.makeElite(world, id);
+      // Босс: flat scaling — hp из hpOverride спавна, не из hpMul.
+      if (ev.boss && ev.hpOverride !== undefined) {
+        const health = world.getComponent<{ hp: number; maxHp: number }>(id, 'Health');
+        if (health) {
+          health.hp = ev.hpOverride;
+          health.maxHp = ev.hpOverride;
+        }
+      }
     }
 
     if (this.queue.length === 0) {

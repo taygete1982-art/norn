@@ -235,10 +235,11 @@
           "delay": 0.45
         },
         {
-          "enemy": "troll",
+          "enemy": "queenbee",
           "count": 1,
           "delay": 1,
-          "elite": true
+          "boss": true,
+          "hpOverride": 900
         }
       ]
     }
@@ -252,6 +253,6 @@
   "terrain": [],
   "wind": null,
   "boss": {
-    "type": "elite"
+    "type": "queenbee"
   }
 }
