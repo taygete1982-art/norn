@@ -169,7 +169,7 @@
       "spawns": [
         {
           "enemy": "clownfish",
-          "count": 2,
+          "count": 3,
           "delay": 0.73
         },
         {
@@ -179,12 +179,7 @@
         },
         {
           "enemy": "seahorse",
-          "count": 2,
-          "delay": 0.73
-        },
-        {
-          "enemy": "pearlwhale",
-          "count": 2,
+          "count": 3,
           "delay": 0.73
         }
       ]
@@ -194,7 +189,7 @@
       "spawns": [
         {
           "enemy": "clownfish",
-          "count": 3,
+          "count": 2,
           "delay": 0.59
         },
         {
@@ -204,7 +199,7 @@
         },
         {
           "enemy": "seahorse",
-          "count": 2,
+          "count": 3,
           "delay": 0.59
         },
         {
@@ -248,51 +243,6 @@
   "environmentEffects": [],
   "terrain": [
     {
-      "x": 2,
-      "y": 9,
-      "kind": "bubble"
-    },
-    {
-      "x": 1,
-      "y": 10,
-      "kind": "bubble"
-    },
-    {
-      "x": 2,
-      "y": 10,
-      "kind": "bubble"
-    },
-    {
-      "x": 3,
-      "y": 10,
-      "kind": "bubble"
-    },
-    {
-      "x": 0,
-      "y": 11,
-      "kind": "bubble"
-    },
-    {
-      "x": 1,
-      "y": 11,
-      "kind": "bubble"
-    },
-    {
-      "x": 2,
-      "y": 11,
-      "kind": "bubble"
-    },
-    {
-      "x": 3,
-      "y": 11,
-      "kind": "bubble"
-    },
-    {
-      "x": 4,
-      "y": 11,
-      "kind": "bubble"
-    },
-    {
       "x": 0,
       "y": 0,
       "kind": "bubble"
@@ -320,6 +270,66 @@
     {
       "x": 0,
       "y": 2,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 8,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 1,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 11,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 11,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 11,
       "kind": "bubble"
     }
   ],

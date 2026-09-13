@@ -101,7 +101,7 @@ export class EnvironmentSystem {
     let m = 1;
     if (this.isChoco(gx, gy)) m *= 1.3;
     if (this.wind && this.biomeId === 4) {
-      m *= dx * this.wind.dx + dy * this.wind.dy > 0 ? 1.1 : 0.9;
+      m *= dx * this.wind.dx + dy * this.wind.dy > 0 ? 1.08 : 0.92;
     }
     return m;
   }

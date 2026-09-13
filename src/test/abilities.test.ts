@@ -86,7 +86,7 @@ describe('Enemy abilities (data-driven)', () => {
         w.updateTime(1.0);
         TowerAttackSystem.update(w, 1.0);
       }
-      expect(w.getComponent<{ hp: number }>(e, 'Health')!.hp).toBe(200);
+      expect(w.getComponent<{ hp: number }>(e, 'Health')!.hp).toBe(190);
     }
     // cannon
     {
@@ -96,7 +96,7 @@ describe('Enemy abilities (data-driven)', () => {
       const e = EnemyFactory.create(w, 'truffle', 4, 4);
       w.updateTime(3.0);
       TowerAttackSystem.update(w, 3.0);
-      expect(w.getComponent<{ hp: number }>(e, 'Health')!.hp).toBe(160);
+      expect(w.getComponent<{ hp: number }>(e, 'Health')!.hp).toBe(150);
     }
     // ice
     {
@@ -106,7 +106,7 @@ describe('Enemy abilities (data-driven)', () => {
       const e = EnemyFactory.create(w, 'truffle', 4, 4);
       w.updateTime(1.5);
       TowerAttackSystem.update(w, 1.5);
-      expect(w.getComponent<{ hp: number }>(e, 'Health')!.hp).toBe(190);
+      expect(w.getComponent<{ hp: number }>(e, 'Health')!.hp).toBe(180);
     }
   });
 

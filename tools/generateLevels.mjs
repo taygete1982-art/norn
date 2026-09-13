@@ -28,14 +28,14 @@ const BIOMES = {
   // Базы предполагают tier3-апгрейды к концу биома,
   // финальный тюнинг — после шага баланс-симулятора.
   3: { roster: ['jelly', 'caramel', 'chocgolem', 'candyfairy'], hpBase: 2.1, rwBase: 1.9, goldBase: 170, heavy: 'chocgolem' },
-  4: { roster: ['balloon', 'cloudsheep', 'stormling', 'fluffdragon'], hpBase: 2.8, rwBase: 2.8, goldBase: 230, heavy: 'fluffdragon' },
+  4: { roster: ['balloon', 'cloudsheep', 'stormling', 'fluffdragon'], hpBase: 2.8, rwBase: 2.8, goldBase: 250, heavy: 'fluffdragon' },
   5: { roster: ['clownfish', 'jellyfish', 'seahorse', 'pearlwhale'], hpBase: 3.6, rwBase: 3.9, goldBase: 290, heavy: 'pearlwhale' },
   6: { roster: ['clown', 'juggler', 'magician', 'elephant'], hpBase: 4.6, rwBase: 5.2, goldBase: 360, heavy: 'elephant' },
 };
 
 const FLYING_TYPES = new Set(['spore', 'candyfairy', 'balloon', 'fluffdragon', 'magician']);
-// Танки: базовый hp >= 200. Сплиттеры: способность splitOnDeath.
-const TANK_TYPES = new Set(['truffle', 'chocgolem', 'fluffdragon', 'pearlwhale', 'elephant']);
+// Танки: базовый hp >= 190 после среза статов (fluffdragon 160 — уже не танк).
+const TANK_TYPES = new Set(['truffle', 'chocgolem', 'pearlwhale', 'elephant']);
 const SPLITTER_TYPES = new Set(['puffling', 'jelly', 'stormling', 'jellyfish', 'juggler']);
 
 const r2 = (v) => Math.round(v * 100) / 100;
@@ -101,14 +101,19 @@ function genBuildPoints(rnd, path, lib) {
   return cand.slice(0, Math.min(target, cand.length));
 }
 
-/** 5 волн: ранние — 2 НЕлетающих типа, поздние — весь пул, flying ≤ 4 за волну. */
-function genWaves(rnd, biome) {
+/** 5 волн: ранние — 2 НЕлетающих типа, поздние — весь пул.
+ *  Гейты: танки только с волны 4 и только при lib >= 4.
+ *  Капы: танки ≤ 2, сплиттеры ≤ 4, летуны ≤ 4 (≤ 2 при lib < 4, с волны 3). */
+function genWaves(rnd, biome, lib) {
   const waves = [];
   const nonFly = biome.roster.filter((t) => !FLYING_TYPES.has(t));
+  const noTanks = (t) => !TANK_TYPES.has(t);
   for (let i = 0; i < 5; i++) {
     const count = Math.round(5 + i * (7 / 4)); // 5 → 12
     const delay = r2(1.0 - i * 0.1375); // 1.0 → 0.45
-    const types = i < 2 ? nonFly.slice(0, 2) : [...biome.roster];
+    let pool = i < 2 ? nonFly.slice(0, 2) : [...biome.roster];
+    if (i < 3 || lib < 4) pool = pool.filter(noTanks);
+    const types = pool.length > 0 ? pool : nonFly.filter(noTanks);
     const spawns = [];
     let rest = count;
     types.forEach((t, ti) => {
@@ -122,7 +127,7 @@ function genWaves(rnd, biome) {
       }
     });
     if (i >= 2) capFlying(spawns, 4);
-    capWave(spawns, i);
+    capWave(spawns, i, lib);
     waves.push({ number: i + 1, spawns });
   }
   return waves;
@@ -131,18 +136,19 @@ function genWaves(rnd, biome) {
 /** Капы состава волны: танки ≤ 2, сплиттеры ≤ 4, летуны ≤ 4 (с волны 3).
  *  Перекладывает излишки в чужие записи; если суммарный кап меньше总数
  *  волны (биом 2: puffling+truffle = макс 4+2 при总数 до 12) — урезает. */
-function capWave(spawns, waveIdx) {
+function capWave(spawns, waveIdx, lib) {
+  const flyCap = lib < 4 ? 2 : 4;
   for (let p = 0; p < 10; p++) {
     capKind(spawns, (t) => TANK_TYPES.has(t), 2);
     capKind(spawns, (t) => SPLITTER_TYPES.has(t), 4);
-    if (waveIdx >= 2) capKind(spawns, (t) => FLYING_TYPES.has(t), 4);
+    if (waveIdx >= 2) capKind(spawns, (t) => FLYING_TYPES.has(t), flyCap);
     if (kindOver(spawns, (t) => TANK_TYPES.has(t)) <= 0
       && kindOver(spawns, (t) => SPLITTER_TYPES.has(t)) <= 0
       && (waveIdx < 2 || kindOver(spawns, (t) => FLYING_TYPES.has(t)) <= 0)) break;
   }
   trimKind(spawns, (t) => TANK_TYPES.has(t), 2);
   trimKind(spawns, (t) => SPLITTER_TYPES.has(t), 4);
-  if (waveIdx >= 2) trimKind(spawns, (t) => FLYING_TYPES.has(t), 4);
+  if (waveIdx >= 2) trimKind(spawns, (t) => FLYING_TYPES.has(t), flyCap);
 }
 
 /** Жёсткая урезка вида до капа без перекладывания (элиту не трогает). */
@@ -271,7 +277,7 @@ export function generateLevel(n) {
       }
     }
   }
-  const waves = genWaves(rnd, B);
+  const waves = genWaves(rnd, B, lib);
   const { terrain, wind } = genTerrainWind(rnd, biomeId, path);
   const isBoss = n === 36 || n === 72 || n === 108 || n === 144 || n === 180 || n === 216;
   if (isBoss) {

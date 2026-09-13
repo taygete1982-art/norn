@@ -130,7 +130,7 @@ describe('level generation (files on disk)', () => {
   });
 
   it('капы состава: танки ≤ 2, сплиттеры ≤ 4 в каждой волне', () => {
-    const TANKS = new Set(['truffle', 'chocgolem', 'fluffdragon', 'pearlwhale', 'elephant']);
+    const TANKS = new Set(['truffle', 'chocgolem', 'pearlwhale', 'elephant']);
     const SPLIT = new Set(['puffling', 'jelly', 'stormling', 'jellyfish', 'juggler']);
     const sum = (spawns: any[], set: Set<string>) =>
       spawns
@@ -142,6 +142,25 @@ describe('level generation (files on disk)', () => {
       L.waves.forEach((w: any, i: number) => {
         expect(sum(w.spawns, TANKS), `${f} wave ${i + 1} tanks`).toBeLessThanOrEqual(2);
         expect(sum(w.spawns, SPLIT), `${f} wave ${i + 1} split`).toBeLessThanOrEqual(4);
+      });
+    }
+  });
+
+  it('гейты: танки только с волны 4 при lib>=4; летуны ≤2 при lib<4', () => {
+    const TANKS = new Set(['truffle', 'chocgolem', 'pearlwhale', 'elephant']);
+    const FLY = new Set(['spore', 'candyfairy', 'balloon', 'fluffdragon', 'magician']);
+    const sum = (spawns: any[], set: Set<string>) =>
+      spawns
+        .filter((s: any) => set.has(s.enemy) && !s.elite)
+        .reduce((n: number, s: any) => n + s.count, 0);
+    for (const f of files()) {
+      if (f === 'level_001.json') continue;
+      const L = read(f);
+      const lib = ((L.levelNumber - 1) % 36) + 1;
+      L.waves.forEach((w: any, i: number) => {
+        if (i < 3 || lib < 4) expect(sum(w.spawns, TANKS), `${f} wave ${i + 1}`).toBe(0);
+        else expect(sum(w.spawns, TANKS), `${f} wave ${i + 1}`).toBeLessThanOrEqual(2);
+        if (lib < 4 && i >= 2) expect(sum(w.spawns, FLY), `${f} wave ${i + 1}`).toBeLessThanOrEqual(2);
       });
     }
   });

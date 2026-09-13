@@ -166,17 +166,12 @@
         },
         {
           "enemy": "caramel",
-          "count": 2,
-          "delay": 0.73
-        },
-        {
-          "enemy": "chocgolem",
-          "count": 2,
+          "count": 3,
           "delay": 0.73
         },
         {
           "enemy": "candyfairy",
-          "count": 3,
+          "count": 4,
           "delay": 0.73
         }
       ]
@@ -211,12 +206,12 @@
       "spawns": [
         {
           "enemy": "jelly",
-          "count": 4,
+          "count": 3,
           "delay": 0.45
         },
         {
           "enemy": "caramel",
-          "count": 3,
+          "count": 4,
           "delay": 0.45
         },
         {
@@ -240,8 +235,8 @@
   "environmentEffects": [],
   "terrain": [
     {
-      "x": 2,
-      "y": 2,
+      "x": 4,
+      "y": 5,
       "kind": "choco"
     },
     {
@@ -250,18 +245,18 @@
       "kind": "choco"
     },
     {
-      "x": 4,
-      "y": 7,
+      "x": 3,
+      "y": 2,
+      "kind": "choco"
+    },
+    {
+      "x": 3,
+      "y": 9,
       "kind": "choco"
     },
     {
       "x": 1,
-      "y": 1,
-      "kind": "choco"
-    },
-    {
-      "x": 2,
-      "y": 10,
+      "y": 11,
       "kind": "choco"
     }
   ],

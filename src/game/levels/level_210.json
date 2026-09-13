@@ -182,17 +182,12 @@
         },
         {
           "enemy": "juggler",
-          "count": 2,
+          "count": 3,
           "delay": 0.73
         },
         {
           "enemy": "magician",
-          "count": 2,
-          "delay": 0.73
-        },
-        {
-          "enemy": "elephant",
-          "count": 2,
+          "count": 3,
           "delay": 0.73
         }
       ]
@@ -202,7 +197,7 @@
       "spawns": [
         {
           "enemy": "clown",
-          "count": 3,
+          "count": 2,
           "delay": 0.59
         },
         {
@@ -217,7 +212,7 @@
         },
         {
           "enemy": "elephant",
-          "count": 1,
+          "count": 2,
           "delay": 0.59
         }
       ]

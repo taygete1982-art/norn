@@ -159,12 +159,7 @@
         },
         {
           "enemy": "magician",
-          "count": 2,
-          "delay": 0.73
-        },
-        {
-          "enemy": "elephant",
-          "count": 1,
+          "count": 3,
           "delay": 0.73
         }
       ]
@@ -199,7 +194,7 @@
       "spawns": [
         {
           "enemy": "clown",
-          "count": 4,
+          "count": 2,
           "delay": 0.45
         },
         {
@@ -209,12 +204,12 @@
         },
         {
           "enemy": "magician",
-          "count": 3,
+          "count": 4,
           "delay": 0.45
         },
         {
           "enemy": "elephant",
-          "count": 1,
+          "count": 2,
           "delay": 0.45
         }
       ]

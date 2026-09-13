@@ -117,21 +117,16 @@
       "spawns": [
         {
           "enemy": "clown",
-          "count": 2,
+          "count": 4,
           "delay": 0.73
         },
         {
           "enemy": "juggler",
-          "count": 2,
-          "delay": 0.73
-        },
-        {
-          "enemy": "magician",
           "count": 3,
           "delay": 0.73
         },
         {
-          "enemy": "elephant",
+          "enemy": "magician",
           "count": 2,
           "delay": 0.73
         }
@@ -142,21 +137,16 @@
       "spawns": [
         {
           "enemy": "clown",
-          "count": 3,
+          "count": 4,
           "delay": 0.59
         },
         {
           "enemy": "juggler",
-          "count": 3,
+          "count": 4,
           "delay": 0.59
         },
         {
           "enemy": "magician",
-          "count": 2,
-          "delay": 0.59
-        },
-        {
-          "enemy": "elephant",
           "count": 2,
           "delay": 0.59
         }
@@ -167,7 +157,7 @@
       "spawns": [
         {
           "enemy": "clown",
-          "count": 3,
+          "count": 5,
           "delay": 0.45
         },
         {
@@ -177,11 +167,6 @@
         },
         {
           "enemy": "magician",
-          "count": 3,
-          "delay": 0.45
-        },
-        {
-          "enemy": "elephant",
           "count": 2,
           "delay": 0.45
         }

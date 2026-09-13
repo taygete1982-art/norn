@@ -103,12 +103,7 @@
       "spawns": [
         {
           "enemy": "puffling",
-          "count": 3,
-          "delay": 1
-        },
-        {
-          "enemy": "truffle",
-          "count": 2,
+          "count": 4,
           "delay": 1
         }
       ]
@@ -119,11 +114,6 @@
         {
           "enemy": "puffling",
           "count": 4,
-          "delay": 0.86
-        },
-        {
-          "enemy": "truffle",
-          "count": 2,
           "delay": 0.86
         }
       ]
@@ -138,12 +128,7 @@
         },
         {
           "enemy": "puffling",
-          "count": 3,
-          "delay": 0.73
-        },
-        {
-          "enemy": "truffle",
-          "count": 2,
+          "count": 4,
           "delay": 0.73
         }
       ]

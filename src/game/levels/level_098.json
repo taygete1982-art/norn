@@ -170,17 +170,12 @@
         },
         {
           "enemy": "caramel",
-          "count": 3,
-          "delay": 0.73
-        },
-        {
-          "enemy": "chocgolem",
-          "count": 2,
+          "count": 4,
           "delay": 0.73
         },
         {
           "enemy": "candyfairy",
-          "count": 2,
+          "count": 3,
           "delay": 0.73
         }
       ]
@@ -244,13 +239,18 @@
   "environmentEffects": [],
   "terrain": [
     {
+      "x": 5,
+      "y": 5,
+      "kind": "choco"
+    },
+    {
       "x": 4,
       "y": 0,
       "kind": "choco"
     },
     {
-      "x": 4,
-      "y": 5,
+      "x": 3,
+      "y": 4,
       "kind": "choco"
     },
     {
@@ -259,13 +259,18 @@
       "kind": "choco"
     },
     {
-      "x": 4,
-      "y": 2,
+      "x": 3,
+      "y": 5,
+      "kind": "choco"
+    },
+    {
+      "x": 5,
+      "y": 3,
       "kind": "choco"
     },
     {
       "x": 4,
-      "y": 6,
+      "y": 3,
       "kind": "choco"
     }
   ],

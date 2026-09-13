@@ -5,23 +5,23 @@
     { "id": "imp", "hp": 25, "speed": 2.2, "reward": 5, "damage": 1, "abilities": [] },
     { "id": "spore", "hp": 30, "speed": 2.0, "reward": 8, "damage": 1, "abilities": ["flying"] },
     { "id": "puffling", "hp": 60, "speed": 1.2, "reward": 12, "damage": 1, "abilities": ["splitOnDeath"], "splitInto": { "type": "spore", "count": 2 } },
-    { "id": "truffle", "hp": 200, "speed": 0.7, "reward": 30, "damage": 2, "abilities": ["armorPhysical"] },
+    { "id": "truffle", "hp": 190, "speed": 0.7, "reward": 30, "damage": 2, "abilities": ["armorPhysical"] },
     { "id": "jelly", "hp": 45, "speed": 1.4, "reward": 10, "damage": 1, "abilities": ["splitOnDeath"], "splitInto": { "type": "jellymini", "count": 2 } },
     { "id": "jellymini", "hp": 15, "speed": 1.8, "reward": 3, "damage": 1, "abilities": [] },
     { "id": "caramel", "hp": 90, "speed": 1.0, "reward": 14, "damage": 1, "abilities": [] },
-    { "id": "chocgolem", "hp": 220, "speed": 0.7, "reward": 32, "damage": 2, "abilities": ["armorPhysical"] },
+    { "id": "chocgolem", "hp": 190, "speed": 0.7, "reward": 32, "damage": 2, "abilities": ["armorPhysical"] },
     { "id": "candyfairy", "hp": 30, "speed": 2.2, "reward": 9, "damage": 1, "abilities": ["flying"] },
     { "id": "balloon", "hp": 35, "speed": 1.9, "reward": 9, "damage": 1, "abilities": ["flying"] },
     { "id": "cloudsheep", "hp": 50, "speed": 1.3, "reward": 10, "damage": 1, "abilities": [] },
     { "id": "stormling", "hp": 65, "speed": 1.2, "reward": 12, "damage": 1, "abilities": ["splitOnDeath"], "splitInto": { "type": "balloon", "count": 2 } },
-    { "id": "fluffdragon", "hp": 200, "speed": 0.8, "reward": 30, "damage": 2, "abilities": ["flying"] },
+    { "id": "fluffdragon", "hp": 160, "speed": 0.8, "reward": 30, "damage": 2, "abilities": ["flying"] },
     { "id": "clownfish", "hp": 28, "speed": 2.1, "reward": 7, "damage": 1, "abilities": [] },
     { "id": "jellyfish", "hp": 55, "speed": 1.1, "reward": 11, "damage": 1, "abilities": ["splitOnDeath"], "splitInto": { "type": "clownfish", "count": 2 } },
     { "id": "seahorse", "hp": 120, "speed": 0.9, "reward": 18, "damage": 1, "abilities": ["armorPhysical"] },
-    { "id": "pearlwhale", "hp": 210, "speed": 0.7, "reward": 34, "damage": 3, "abilities": [] },
+    { "id": "pearlwhale", "hp": 190, "speed": 0.7, "reward": 34, "damage": 3, "abilities": [] },
     { "id": "clown", "hp": 40, "speed": 1.9, "reward": 9, "damage": 1, "abilities": [] },
     { "id": "juggler", "hp": 70, "speed": 1.2, "reward": 13, "damage": 1, "abilities": ["splitOnDeath"], "splitInto": { "type": "clown", "count": 2 } },
     { "id": "magician", "hp": 35, "speed": 1.6, "reward": 10, "damage": 1, "abilities": ["flying"] },
-    { "id": "elephant", "hp": 230, "speed": 0.7, "reward": 36, "damage": 3, "abilities": ["armorPhysical"] }
+    { "id": "elephant", "hp": 210, "speed": 0.7, "reward": 36, "damage": 3, "abilities": ["armorPhysical"] }
   ]
 }

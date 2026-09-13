@@ -91,12 +91,7 @@
       "spawns": [
         {
           "enemy": "puffling",
-          "count": 3,
-          "delay": 1
-        },
-        {
-          "enemy": "truffle",
-          "count": 2,
+          "count": 4,
           "delay": 1
         }
       ]
@@ -108,11 +103,6 @@
           "enemy": "puffling",
           "count": 4,
           "delay": 0.86
-        },
-        {
-          "enemy": "truffle",
-          "count": 2,
-          "delay": 0.86
         }
       ]
     },
@@ -121,17 +111,12 @@
       "spawns": [
         {
           "enemy": "spore",
-          "count": 3,
+          "count": 2,
           "delay": 0.73
         },
         {
           "enemy": "puffling",
           "count": 4,
-          "delay": 0.73
-        },
-        {
-          "enemy": "truffle",
-          "count": 2,
           "delay": 0.73
         }
       ]
@@ -141,17 +126,12 @@
       "spawns": [
         {
           "enemy": "spore",
-          "count": 4,
+          "count": 2,
           "delay": 0.59
         },
         {
           "enemy": "puffling",
           "count": 4,
-          "delay": 0.59
-        },
-        {
-          "enemy": "truffle",
-          "count": 2,
           "delay": 0.59
         }
       ]
@@ -161,17 +141,12 @@
       "spawns": [
         {
           "enemy": "spore",
-          "count": 4,
+          "count": 2,
           "delay": 0.45
         },
         {
           "enemy": "puffling",
           "count": 4,
-          "delay": 0.45
-        },
-        {
-          "enemy": "truffle",
-          "count": 2,
           "delay": 0.45
         }
       ]

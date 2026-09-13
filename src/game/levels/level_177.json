@@ -173,22 +173,17 @@
       "spawns": [
         {
           "enemy": "clownfish",
-          "count": 2,
+          "count": 3,
           "delay": 0.73
         },
         {
           "enemy": "jellyfish",
-          "count": 3,
+          "count": 4,
           "delay": 0.73
         },
         {
           "enemy": "seahorse",
-          "count": 3,
-          "delay": 0.73
-        },
-        {
-          "enemy": "pearlwhale",
-          "count": 1,
+          "count": 2,
           "delay": 0.73
         }
       ]
@@ -208,12 +203,12 @@
         },
         {
           "enemy": "seahorse",
-          "count": 2,
+          "count": 3,
           "delay": 0.59
         },
         {
           "enemy": "pearlwhale",
-          "count": 2,
+          "count": 1,
           "delay": 0.59
         }
       ]
@@ -252,6 +247,66 @@
   "environmentEffects": [],
   "terrain": [
     {
+      "x": 6,
+      "y": 2,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 7,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 7,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 5,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 5,
+      "kind": "bubble"
+    },
+    {
+      "x": 7,
+      "y": 5,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 6,
+      "kind": "bubble"
+    },
+    {
       "x": 5,
       "y": 0,
       "kind": "bubble"
@@ -287,11 +342,6 @@
       "kind": "bubble"
     },
     {
-      "x": 6,
-      "y": 2,
-      "kind": "bubble"
-    },
-    {
       "x": 7,
       "y": 2,
       "kind": "bubble"
@@ -299,76 +349,6 @@
     {
       "x": 4,
       "y": 3,
-      "kind": "bubble"
-    },
-    {
-      "x": 5,
-      "y": 3,
-      "kind": "bubble"
-    },
-    {
-      "x": 6,
-      "y": 3,
-      "kind": "bubble"
-    },
-    {
-      "x": 5,
-      "y": 4,
-      "kind": "bubble"
-    },
-    {
-      "x": 3,
-      "y": 4,
-      "kind": "bubble"
-    },
-    {
-      "x": 4,
-      "y": 4,
-      "kind": "bubble"
-    },
-    {
-      "x": 2,
-      "y": 5,
-      "kind": "bubble"
-    },
-    {
-      "x": 3,
-      "y": 5,
-      "kind": "bubble"
-    },
-    {
-      "x": 4,
-      "y": 5,
-      "kind": "bubble"
-    },
-    {
-      "x": 5,
-      "y": 5,
-      "kind": "bubble"
-    },
-    {
-      "x": 6,
-      "y": 5,
-      "kind": "bubble"
-    },
-    {
-      "x": 3,
-      "y": 6,
-      "kind": "bubble"
-    },
-    {
-      "x": 4,
-      "y": 6,
-      "kind": "bubble"
-    },
-    {
-      "x": 5,
-      "y": 6,
-      "kind": "bubble"
-    },
-    {
-      "x": 4,
-      "y": 7,
       "kind": "bubble"
     }
   ],

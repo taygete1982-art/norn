@@ -141,17 +141,12 @@
       "spawns": [
         {
           "enemy": "jelly",
-          "count": 2,
-          "delay": 0.73
-        },
-        {
-          "enemy": "caramel",
           "count": 3,
           "delay": 0.73
         },
         {
-          "enemy": "chocgolem",
-          "count": 2,
+          "enemy": "caramel",
+          "count": 4,
           "delay": 0.73
         },
         {
@@ -225,18 +220,8 @@
       "kind": "choco"
     },
     {
-      "x": 1,
-      "y": 4,
-      "kind": "choco"
-    },
-    {
       "x": 4,
-      "y": 10,
-      "kind": "choco"
-    },
-    {
-      "x": 5,
-      "y": 7,
+      "y": 9,
       "kind": "choco"
     },
     {
@@ -245,8 +230,28 @@
       "kind": "choco"
     },
     {
+      "x": 4,
+      "y": 10,
+      "kind": "choco"
+    },
+    {
       "x": 3,
       "y": 0,
+      "kind": "choco"
+    },
+    {
+      "x": 4,
+      "y": 8,
+      "kind": "choco"
+    },
+    {
+      "x": 5,
+      "y": 8,
+      "kind": "choco"
+    },
+    {
+      "x": 2,
+      "y": 6,
       "kind": "choco"
     }
   ],

@@ -117,7 +117,7 @@
       "spawns": [
         {
           "enemy": "clownfish",
-          "count": 3,
+          "count": 4,
           "delay": 0.73
         },
         {
@@ -128,11 +128,6 @@
         {
           "enemy": "seahorse",
           "count": 2,
-          "delay": 0.73
-        },
-        {
-          "enemy": "pearlwhale",
-          "count": 1,
           "delay": 0.73
         }
       ]
@@ -142,21 +137,16 @@
       "spawns": [
         {
           "enemy": "clownfish",
-          "count": 3,
+          "count": 4,
           "delay": 0.59
         },
         {
           "enemy": "jellyfish",
-          "count": 3,
+          "count": 4,
           "delay": 0.59
         },
         {
           "enemy": "seahorse",
-          "count": 2,
-          "delay": 0.59
-        },
-        {
-          "enemy": "pearlwhale",
           "count": 2,
           "delay": 0.59
         }
@@ -167,7 +157,7 @@
       "spawns": [
         {
           "enemy": "clownfish",
-          "count": 3,
+          "count": 4,
           "delay": 0.45
         },
         {
@@ -177,12 +167,7 @@
         },
         {
           "enemy": "seahorse",
-          "count": 4,
-          "delay": 0.45
-        },
-        {
-          "enemy": "pearlwhale",
-          "count": 2,
+          "count": 5,
           "delay": 0.45
         }
       ]
@@ -196,86 +181,6 @@
   "environmentEffects": [],
   "terrain": [
     {
-      "x": 3,
-      "y": 9,
-      "kind": "bubble"
-    },
-    {
-      "x": 2,
-      "y": 10,
-      "kind": "bubble"
-    },
-    {
-      "x": 3,
-      "y": 10,
-      "kind": "bubble"
-    },
-    {
-      "x": 4,
-      "y": 10,
-      "kind": "bubble"
-    },
-    {
-      "x": 1,
-      "y": 11,
-      "kind": "bubble"
-    },
-    {
-      "x": 2,
-      "y": 11,
-      "kind": "bubble"
-    },
-    {
-      "x": 3,
-      "y": 11,
-      "kind": "bubble"
-    },
-    {
-      "x": 4,
-      "y": 11,
-      "kind": "bubble"
-    },
-    {
-      "x": 5,
-      "y": 11,
-      "kind": "bubble"
-    },
-    {
-      "x": 1,
-      "y": 0,
-      "kind": "bubble"
-    },
-    {
-      "x": 2,
-      "y": 0,
-      "kind": "bubble"
-    },
-    {
-      "x": 3,
-      "y": 0,
-      "kind": "bubble"
-    },
-    {
-      "x": 4,
-      "y": 0,
-      "kind": "bubble"
-    },
-    {
-      "x": 5,
-      "y": 0,
-      "kind": "bubble"
-    },
-    {
-      "x": 2,
-      "y": 1,
-      "kind": "bubble"
-    },
-    {
-      "x": 3,
-      "y": 1,
-      "kind": "bubble"
-    },
-    {
       "x": 4,
       "y": 1,
       "kind": "bubble"
@@ -286,43 +191,103 @@
       "kind": "bubble"
     },
     {
-      "x": 3,
-      "y": 7,
-      "kind": "bubble"
-    },
-    {
-      "x": 2,
-      "y": 8,
-      "kind": "bubble"
-    },
-    {
-      "x": 3,
-      "y": 8,
-      "kind": "bubble"
-    },
-    {
       "x": 4,
-      "y": 8,
-      "kind": "bubble"
-    },
-    {
-      "x": 1,
-      "y": 9,
-      "kind": "bubble"
-    },
-    {
-      "x": 2,
-      "y": 9,
-      "kind": "bubble"
-    },
-    {
-      "x": 4,
-      "y": 9,
+      "y": 2,
       "kind": "bubble"
     },
     {
       "x": 5,
+      "y": 2,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 5,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
       "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 1,
+      "y": 11,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 11,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 11,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 11,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 11,
       "kind": "bubble"
     }
   ],
