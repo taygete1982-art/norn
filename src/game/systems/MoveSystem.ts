@@ -26,7 +26,15 @@ export class MoveSystem {
       const pos = world.getComponent<{ gx: number; gy: number }>(id, 'GridPos');
       if (!speed || !path || !pos) continue;
 
-      let remaining = speed.speed * dt;
+      let mult = 1;
+      const slow = world.getComponent<{ amount?: number; factor?: number; until: number }>(
+        id,
+        'Slow',
+      );
+      if (slow && world.getCurrentTime() < slow.until) {
+        mult = 1 - (slow.amount ?? slow.factor ?? 0);
+      }
+      let remaining = speed.speed * mult * dt;
       while (remaining > 0 && path.index < PATH.length - 1) {
         const a = PATH[path.index];
         const b = PATH[path.index + 1];

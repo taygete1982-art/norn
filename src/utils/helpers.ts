@@ -5,7 +5,9 @@ import { Application } from 'pixi.js';
  * Get logical resolution from hardware scaling
  */
 export function getLogicalResolution(): number {
-  return window.devicePixelRatio * window.screen.devicePixelRatio || 2;
+  const screenScale =
+    (window.screen as Screen & { devicePixelRatio?: number }).devicePixelRatio ?? 1;
+  return window.devicePixelRatio * screenScale || 2;
 }
 
 /**
