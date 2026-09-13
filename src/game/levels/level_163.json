@@ -222,5 +222,193 @@
     "startingGold": 310
   },
   "environmentEffects": [],
+  "terrain": [
+    {
+      "x": 1,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 0,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 1,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 0,
+      "y": 5,
+      "kind": "bubble"
+    },
+    {
+      "x": 1,
+      "y": 5,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 5,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "kind": "bubble"
+    },
+    {
+      "x": 0,
+      "y": 6,
+      "kind": "bubble"
+    },
+    {
+      "x": 1,
+      "y": 6,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 6,
+      "kind": "bubble"
+    },
+    {
+      "x": 1,
+      "y": 7,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 0,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 0,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "kind": "bubble"
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 1,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 1,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 2,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 2,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 7,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 8,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 8,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 8,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 7,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 11,
+      "kind": "bubble"
+    }
+  ],
+  "wind": null,
   "boss": null
 }

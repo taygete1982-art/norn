@@ -264,6 +264,34 @@
     "startingGold": 325
   },
   "environmentEffects": [],
+  "terrain": [
+    {
+      "x": 4,
+      "y": 4,
+      "kind": "choco"
+    },
+    {
+      "x": 5,
+      "y": 8,
+      "kind": "choco"
+    },
+    {
+      "x": 4,
+      "y": 11,
+      "kind": "choco"
+    },
+    {
+      "x": 3,
+      "y": 8,
+      "kind": "choco"
+    },
+    {
+      "x": 4,
+      "y": 2,
+      "kind": "choco"
+    }
+  ],
+  "wind": null,
   "boss": {
     "type": "elite"
   }

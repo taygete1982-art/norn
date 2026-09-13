@@ -1,4 +1,5 @@
 import { World } from '../../ecs/world';
+import { EnvironmentSystem } from './EnvironmentSystem';
 
 /** Путь по умолчанию. Уровень заменяет его через setPath (рефакторинг хардкода). */
 const DEFAULT_PATH: Array<{ gx: number; gy: number }> = [
@@ -53,7 +54,8 @@ export class MoveSystem {
         const dx = target.gx - pos.gx;
         const dy = target.gy - pos.gy;
         const d = Math.hypot(dx, dy);
-        const step = speed.speed * mult * dt;
+        const step =
+          speed.speed * mult * EnvironmentSystem.moveMult(pos.gx, pos.gy, dx / (d || 1), dy / (d || 1)) * dt;
         if (d <= step || d === 0) {
           pos.gx = target.gx;
           pos.gy = target.gy;
@@ -64,7 +66,20 @@ export class MoveSystem {
         continue;
       }
 
-      let remaining = speed.speed * mult * dt;
+      // Направление текущего сегмента для ветра.
+      let dirX = 0;
+      let dirY = 0;
+      if (path.index < PATH.length - 1) {
+        const a0 = PATH[path.index];
+        const b0 = PATH[path.index + 1];
+        const l0 = segLen(a0, b0);
+        if (l0 > 0) {
+          dirX = (b0.gx - a0.gx) / l0;
+          dirY = (b0.gy - a0.gy) / l0;
+        }
+      }
+      let remaining =
+        speed.speed * mult * EnvironmentSystem.moveMult(pos.gx, pos.gy, dirX, dirY) * dt;
       while (remaining > 0 && path.index < PATH.length - 1) {
         const a = PATH[path.index];
         const b = PATH[path.index + 1];

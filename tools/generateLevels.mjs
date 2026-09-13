@@ -122,6 +122,61 @@ function genWaves(rnd, biome) {
   return waves;
 }
 
+/** Terrain и ветер по биомам: choco на пути (3), wind по осям (4), bubble-зоны (5). */
+function genTerrainWind(rnd, biomeId, path) {
+  const terrain = [];
+  let wind = null;
+  if (biomeId === 3) {
+    // 4–8 плиток choco на клетках пути.
+    const order = [...path];
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    const count = 4 + Math.floor(rnd() * 5);
+    for (const [x, y] of order.slice(0, Math.min(count, order.length))) {
+      terrain.push({ x, y, kind: 'choco' });
+    }
+  } else if (biomeId === 4) {
+    const dirs = [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ];
+    const [dx, dy] = dirs[Math.floor(rnd() * dirs.length)];
+    wind = { dx, dy };
+  } else if (biomeId === 5) {
+    // 2–3 зоны радиусом 2 с центрами на клетках пути (подальше друг от друга).
+    const zoneCount = 2 + (rnd() < 0.5 ? 0 : 1);
+    const centers = [];
+    const spaced = [...path].filter(
+      (_, idx) => idx % 4 === 0 || idx === path.length - 1,
+    );
+    for (let i = spaced.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [spaced[i], spaced[j]] = [spaced[j], spaced[i]];
+    }
+    for (const [cx, cy] of spaced.slice(0, Math.min(zoneCount, spaced.length))) {
+      centers.push([cx, cy]);
+    }
+    const seen = new Set();
+    for (const [cx, cy] of centers) {
+      for (let y = 0; y < GH; y++) {
+        for (let x = 0; x < GW; x++) {
+          const k = x + ',' + y;
+          if (seen.has(k)) continue;
+          if (Math.hypot(x - cx, y - cy) <= 2) {
+            seen.add(k);
+            terrain.push({ x, y, kind: 'bubble' });
+          }
+        }
+      }
+    }
+  }
+  return { terrain, wind };
+}
+
 export function generateLevel(n) {
   const biomeId = n <= 36 ? 1 : n <= 72 ? 2 : n <= 108 ? 3 : n <= 144 ? 4 : n <= 180 ? 5 : 6;
   const lib = ((n - 1) % 36) + 1;
@@ -130,6 +185,7 @@ export function generateLevel(n) {
   const path = genPath(rnd, lib);
   const buildPoints = genBuildPoints(rnd, path, lib);
   const waves = genWaves(rnd, B);
+  const { terrain, wind } = genTerrainWind(rnd, biomeId, path);
   const isBoss = n === 36 || n === 72 || n === 108 || n === 144 || n === 180 || n === 216;
   if (isBoss) {
     waves[4].spawns.push({ enemy: B.heavy, count: 1, delay: 1.0, elite: true });
@@ -147,6 +203,8 @@ export function generateLevel(n) {
       startingGold: B.goldBase + 5 * (lib - 1),
     },
     environmentEffects: [],
+    terrain,
+    wind,
     boss: isBoss ? { type: 'elite' } : null,
   };
 }

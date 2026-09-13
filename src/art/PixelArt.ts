@@ -110,6 +110,9 @@ export type TileId =
   | 'tower_cannon_t3'
   | 'tower_ice_t2'
   | 'tower_ice_t3'
+  | 'fx_spore_cloud'
+  | 'fx_wind_arrow'
+  | 'fx_bubble'
   | 'proj_arrow'
   | 'proj_cannon'
   | 'proj_ice'
@@ -1369,6 +1372,66 @@ function tieredTower(kind: 'arrow' | 'cannon' | 'ice', tier: 2 | 3): HTMLCanvasE
   return c;
 }
 
+/** Puff-облако спор 48×32 для spore_clouds. */
+function drawSporeCloud(ctx: CanvasRenderingContext2D): void {
+  const blobs: Array<[number, number, number]> = [
+    [14, 18, 9],
+    [24, 14, 10],
+    [34, 18, 8],
+    [24, 22, 9],
+  ];
+  for (let y = 0; y < 32; y++) {
+    for (let x = 0; x < 48; x++) {
+      for (const [bx, by, br] of blobs) {
+        const d = Math.hypot(x - bx, y - by);
+        if (d < br) {
+          ctx.fillStyle = d > br - 2 ? PALETTE.cloud : shade(PALETTE.cloud, 0.92);
+          ctx.fillRect(x, y, 1, 1);
+          break;
+        }
+      }
+    }
+  }
+  // Споры-крап.
+  ctx.fillStyle = PALETTE.earth;
+  ctx.fillRect(14, 16, 2, 2);
+  ctx.fillRect(26, 20, 2, 2);
+  ctx.fillRect(32, 14, 2, 2);
+  ctx.fillRect(20, 24, 2, 1);
+  ctx.fillRect(36, 22, 2, 1);
+}
+
+/** Стрелка ветра 48×24, смотрит вправо (спрайт крутится по ветру). */
+function drawWindArrow(ctx: CanvasRenderingContext2D): void {
+  R(ctx, 4, 10, 28, 4, PALETTE.cloud);
+  R(ctx, 4, 10, 28, 1, shade(PALETTE.cloud, 1.1));
+  for (let i = 0; i < 10; i++) {
+    R(ctx, 32 + i, 8 + Math.floor(i / 2), 2, 8 - (i % 2 === 0 ? 0 : 2), PALETTE.cloud);
+  }
+  R(ctx, 4, 14, 28, 1, PALETTE.stoneDark);
+}
+
+/** Пузырь 64×64: полупрозрачный контур с бликом. */
+function drawBubble(ctx: CanvasRenderingContext2D): void {
+  for (let y = 0; y < 64; y++) {
+    for (let x = 0; x < 64; x++) {
+      const d = Math.hypot(x - 32, y - 32);
+      if (d > 28 || d < 24) continue;
+      ctx.fillStyle = 'rgba(207,232,255,0.85)';
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
+  ctx.fillStyle = 'rgba(207,232,255,0.25)';
+  for (let y = 6; y < 58; y++) {
+    for (let x = 6; x < 58; x++) {
+      if (Math.hypot(x - 32, y - 32) < 24) ctx.fillRect(x, y, 1, 1);
+    }
+  }
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.fillRect(18, 14, 8, 3);
+  ctx.fillRect(14, 18, 3, 8);
+}
+
 function buildTile(id: TileId): Texture {
   let cv: HTMLCanvasElement;
   switch (id) {
@@ -1748,6 +1811,24 @@ function buildTile(id: TileId): Texture {
     }
     case 'tower_ice_t3': {
       cv = tieredTower('ice', 3);
+      break;
+    }
+    case 'fx_spore_cloud': {
+      const [c, ctx] = makeCanvas(48, 32);
+      drawSporeCloud(ctx);
+      cv = c;
+      break;
+    }
+    case 'fx_wind_arrow': {
+      const [c, ctx] = makeCanvas(48, 24);
+      drawWindArrow(ctx);
+      cv = c;
+      break;
+    }
+    case 'fx_bubble': {
+      const [c, ctx] = makeCanvas(64, 64);
+      drawBubble(ctx);
+      cv = c;
       break;
     }
     case 'proj_arrow': {

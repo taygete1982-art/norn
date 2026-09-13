@@ -14,6 +14,10 @@ export interface LevelConfig {
   waves: WaveConfig[];
   /** формулы сложности уровня */
   difficulty: { hpMul: number; rewardMul: number; startingGold: number };
+  /** плитки механик: choco биома 3, зоны bubble биома 5 */
+  terrain: Array<{ x: number; y: number; kind: 'choco' | 'bubble' }>;
+  /** ветер биома 4 (единичный вектор по осям сетки) или null */
+  wind: { dx: number; dy: number } | null;
   /** активные механики биома (пока только структура) */
   environmentEffects: string[];
   /** уровень-босс или null */

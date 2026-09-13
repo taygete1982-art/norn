@@ -210,5 +210,33 @@
     "startingGold": 215
   },
   "environmentEffects": [],
+  "terrain": [
+    {
+      "x": 3,
+      "y": 4,
+      "kind": "choco"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "kind": "choco"
+    },
+    {
+      "x": 3,
+      "y": 9,
+      "kind": "choco"
+    },
+    {
+      "x": 2,
+      "y": 10,
+      "kind": "choco"
+    },
+    {
+      "x": 5,
+      "y": 6,
+      "kind": "choco"
+    }
+  ],
+  "wind": null,
   "boss": null
 }

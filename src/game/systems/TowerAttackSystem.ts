@@ -1,5 +1,6 @@
 import { World } from '../../ecs/world';
 import { tierConfigOf, effectiveStats } from '../Upgrades';
+import { EnvironmentSystem } from './EnvironmentSystem';
 
 /**
  * Мгновенный урон ближайшему врагу в радиусе (дистанция в клетках сетки).
@@ -40,8 +41,15 @@ export class TowerAttackSystem {
       }>(towerId, 'Tower');
       const tpos = world.getComponent<{ gx: number; gy: number }>(towerId, 'GridPos');
       if (!tower || !tpos) continue;
+      // Споры глушат, карнавальный танец не даёт стрелять.
+      if (EnvironmentSystem.isSilenced(world, tpos.gx, tpos.gy)) continue;
+      if (EnvironmentSystem.isDancing(world, towerId)) continue;
       const eff = effectiveStats(tower, tierConfigOf(tower.kind, tower.tier));
-      if (now - tower.lastFireTime < eff.cooldown) continue;
+      const cd =
+        (eff.cooldown *
+          EnvironmentSystem.cooldownMult(tpos.gx, tpos.gy)) /
+        EnvironmentSystem.hasteMult(world, towerId);
+      if (now - tower.lastFireTime < cd) continue;
 
       let bestId: number | null = null;
       let bestDist = Infinity;
@@ -78,7 +86,14 @@ export class TowerAttackSystem {
           const victim = world.getComponent<{ abilities?: string[] }>(id, 'Enemy');
           const blocked =
             tower.damageType === 'physical' && victim?.abilities?.includes('armorPhysical');
-          if (!blocked) health.hp -= eff.damage;
+          if (blocked) continue;
+          // choco: получаемый magic-урон ×1.2.
+          let dmg = eff.damage;
+          if (tower.damageType === 'magic') {
+            const vpos = world.getComponent<{ gx: number; gy: number }>(id, 'GridPos');
+            if (vpos) dmg *= EnvironmentSystem.magicTakenMult(vpos.gx, vpos.gy);
+          }
+          health.hp -= dmg;
           if (tower.slowAmount !== undefined && tower.slowDuration !== undefined) {
             const until = now + tower.slowDuration;
             const cur = world.getComponent<{ amount?: number; factor?: number; until: number }>(

@@ -20,6 +20,7 @@ import { EffectsLayer } from './ui/EffectsLayer';
 import { WaveSpawnerSystem } from './game/systems/WaveSpawnerSystem';
 import { TowerAttackSystem } from './game/systems/TowerAttackSystem';
 import { MoveSystem, PATH, setPath } from './game/systems/MoveSystem';
+import { EnvironmentSystem } from './game/systems/EnvironmentSystem';
 import { LevelConfig } from './game/levels/types';
 import { LevelLoader } from './game/levels/LevelLoader';
 import { RulesSystem } from './game/systems/RulesSystem';
@@ -126,6 +127,11 @@ export class MainScene extends Container {
   private hudSub!: Text;
   private menu: TowerSelectMenu | null = null;
   private upgradeMenu: TowerUpgradeMenu | null = null;
+  private cloudSprite: Sprite | null = null;
+  private buffFlashed = new Set<number>();
+  private windArrows: Array<{ s: Sprite; vx: number; vy: number }> = [];
+  private toastText!: Text;
+  private toastT = 99;
   private fx = new EffectsLayer();
 
   constructor(level: LevelConfig, opts: { onGameEnd?: (r: GameEndResult) => void } = {}) {
@@ -160,6 +166,17 @@ export class MainScene extends Container {
     EnemyFactory.setDifficulty(level.difficulty);
     setPath(level.path.map((p) => ({ gx: p.x, gy: p.y })));
     WaveSpawnerSystem.setWaves(level.waves);
+    EnvironmentSystem.configure({
+      biomeId: level.biomeId,
+      choco: new Set(
+        level.terrain.filter((t) => t.kind === 'choco').map((t) => `${t.x},${t.y}`),
+      ),
+      bubbles: new Set(
+        level.terrain.filter((t) => t.kind === 'bubble').map((t) => `${t.x},${t.y}`),
+      ),
+      wind: level.wind,
+      buildPoints: level.buildPoints.map((p) => ({ gx: p.x, gy: p.y })),
+    });
     WaveSpawnerSystem.startWave(this.world);
   }
 
@@ -188,6 +205,39 @@ export class MainScene extends Container {
       s.alpha = d.alpha;
       this.bgLayer.addChild(s);
       this.clouds.push({ s, v: d.v });
+    }
+    // Стрелки ветра биома 4.
+    if (this.level.wind) {
+      const sdx = (this.level.wind.dx - this.level.wind.dy) * 32;
+      const sdy = (this.level.wind.dx + this.level.wind.dy) * 16;
+      const len = Math.hypot(sdx, sdy) || 1;
+      const angle = Math.atan2(sdy, sdx);
+      const spots: Array<[number, number]> = [
+        [120, 220],
+        [420, 140],
+        [200, 700],
+        [520, 880],
+      ];
+      for (const [ax, ay] of spots) {
+        const s = new Sprite(getTile('fx_wind_arrow'));
+        s.anchor.set(0.5);
+        s.position.set(ax, ay);
+        s.rotation = angle;
+        s.alpha = 0.7;
+        this.bgLayer.addChild(s);
+        this.windArrows.push({ s, vx: (sdx / len) * 60, vy: (sdy / len) * 60 });
+      }
+    }
+  }
+
+  private updateWindArrows(dt: number): void {
+    for (const a of this.windArrows) {
+      a.s.position.x += a.vx * dt;
+      a.s.position.y += a.vy * dt;
+      if (a.s.position.x > W + 80) a.s.position.x = -80;
+      if (a.s.position.x < -80) a.s.position.x = W + 80;
+      if (a.s.position.y > H + 80) a.s.position.y = -80;
+      if (a.s.position.y < -80) a.s.position.y = H + 80;
     }
   }
 
@@ -236,6 +286,29 @@ export class MainScene extends Container {
     crystal.anchor.set(0.5, 0.9);
     crystal.position.set(cp.x, cp.y - 6);
     this.islandLayer.addChild(crystal);
+    // Choco-плитки биома 3: шоколадные капли поверх земли.
+    const chocoG = new Graphics();
+    for (const t of this.level.terrain) {
+      if (t.kind !== 'choco') continue;
+      const p = this.sx(t.x, t.y);
+      chocoG.rect(p.x - 14, p.y - 6, 8, 5);
+      chocoG.fill({ color: PAL.earthDark, alpha: 1 });
+      chocoG.rect(p.x + 2, p.y + 1, 10, 6);
+      chocoG.fill({ color: PAL.earth, alpha: 1 });
+      chocoG.rect(p.x - 6, p.y - 10, 6, 4);
+      chocoG.fill({ color: PAL.earthDark, alpha: 1 });
+    }
+    this.islandLayer.addChild(chocoG);
+    // Пузыри биома 5.
+    for (const t of this.level.terrain) {
+      if (t.kind !== 'bubble') continue;
+      const p = this.sx(t.x, t.y);
+      const b = new Sprite(getTile('fx_bubble'));
+      b.anchor.set(0.5);
+      b.position.set(p.x, p.y);
+      b.alpha = 0.8;
+      this.islandLayer.addChild(b);
+    }
   }
 
   private drawStaticShadows(): void {
@@ -282,7 +355,21 @@ export class MainScene extends Container {
     });
     this.hudSub.anchor.set(0.5);
     this.hudSub.position.set(W / 2, H / 2 + 80);
-    this.uiLayer.addChild(this.hudWave, this.hudGold, this.hudCrystal, this.hudCenter, this.hudSub);
+    this.toastText = new Text({
+      text: '',
+      style: { fontFamily: 'Arial', fontSize: 36, fill: PAL.gold, align: 'center' },
+    });
+    this.toastText.anchor.set(0.5);
+    this.toastText.position.set(W / 2, 190);
+    this.toastText.alpha = 0;
+    this.uiLayer.addChild(
+      this.hudWave,
+      this.hudGold,
+      this.hudCrystal,
+      this.hudCenter,
+      this.hudSub,
+      this.toastText,
+    );
   }
 
   private onTap(x: number, y: number): void {
@@ -403,6 +490,48 @@ export class MainScene extends Container {
     m.close();
   }
 
+  /** Тост события механики: показать на ~2 c. */
+  private showToast(text: string): void {
+    this.toastText.text = text;
+    this.toastText.alpha = 1;
+    this.toastT = 0;
+  }
+
+  private drainToasts(): void {
+    let t: string | null;
+    while ((t = EnvironmentSystem.takeToast()) !== null) this.showToast(t);
+  }
+
+  private tickToast(dt: number): void {
+    this.toastT += dt;
+    if (this.toastT >= 2.2) {
+      this.toastText.alpha = 0;
+      return;
+    }
+    this.toastText.alpha = this.toastT < 1.6 ? 1 : Math.max(0, 1 - (this.toastT - 1.6) / 0.6);
+  }
+
+  /** Puff-облако спор над глушимой точкой (биом 2). */
+  private syncCloudSprite(): void {
+    const cloud = EnvironmentSystem.getCloud(this.world);
+    if (!cloud) {
+      if (this.cloudSprite) {
+        this.fx.removeChild(this.cloudSprite);
+        this.cloudSprite.destroy();
+        this.cloudSprite = null;
+      }
+      return;
+    }
+    const p = this.sx(cloud.gx, cloud.gy);
+    if (!this.cloudSprite) {
+      this.cloudSprite = new Sprite(getTile('fx_spore_cloud'));
+      this.cloudSprite.anchor.set(0.5);
+      this.fx.addChild(this.cloudSprite);
+    }
+    this.cloudSprite.position.set(p.x, p.y - 30);
+    this.cloudSprite.alpha = 0.75 + Math.sin(this.world.getCurrentTime() * 6) * 0.2;
+  }
+
   private closeMenu(): void {
     if (!this.menu) return;
     const m = this.menu;
@@ -414,6 +543,8 @@ export class MainScene extends Container {
     this.closeMenu();
     this.closeUpgrade();
     this.fx.clear();
+    this.cloudSprite = null;
+    this.buffFlashed.clear();
     this.clearUnitSprites();
     this.endNotified = false;
     this.world = new World();
@@ -421,6 +552,7 @@ export class MainScene extends Container {
     WaveSpawnerSystem.reset();
     TowerAttackSystem.reset();
     EnemyFactory.resetDifficulty();
+    EnvironmentSystem.reset();
     GameStateManager.reset(this.level.difficulty.startingGold);
     EnemyFactory.setDifficulty(this.level.difficulty);
     WaveSpawnerSystem.setWaves(this.level.waves);
@@ -432,6 +564,8 @@ export class MainScene extends Container {
   update(dt: number): void {
     if (GameStateManager.getStatus() !== 'playing') {
       this.updateClouds(dt);
+    this.updateWindArrows(dt);
+    this.tickToast(dt);
       this.fx.update(dt);
       this.refreshEndScreen();
       // Уведомить один раз сразу в момент конца игры (main покажет EndScreen).
@@ -449,6 +583,8 @@ export class MainScene extends Container {
       return;
     }
     this.updateClouds(dt);
+    this.updateWindArrows(dt);
+    this.tickToast(dt);
     this.menu?.update(dt);
     this.upgradeMenu?.update(dt);
 
@@ -466,6 +602,9 @@ export class MainScene extends Container {
     }
 
     WaveSpawnerSystem.update(this.world, dt);
+    EnvironmentSystem.update(this.world);
+    this.drainToasts();
+    this.syncCloudSprite();
     TowerAttackSystem.update(this.world, dt);
     MoveSystem.update(this.world, dt);
     RulesSystem.update(this.world, dt);
@@ -538,6 +677,7 @@ export class MainScene extends Container {
       const blocked =
         tower.damageType === 'physical' && victim?.abilities?.includes('armorPhysical');
 
+      const wind = this.level.wind;
       this.fx.spawnProjectile(
         from.x,
         from.y,
@@ -545,6 +685,8 @@ export class MainScene extends Container {
         ty,
         PROJ_TILES[tower.kind] ?? 'proj_arrow',
         gridDist,
+        wind ? wind.dx * 18 : 0,
+        wind ? wind.dy * 10 : 0,
       );
       this.fx.spawnHitFlash(tx, ty, blocked ? 0x8f8f9f : 0xffffff);
       if (tower.kind === 'cannon' && tower.aoeRadius !== undefined) {
@@ -599,6 +741,20 @@ export class MainScene extends Container {
         spr.texture = getTile(wantTile);
       }
       spr.position.set(p.x, p.y + 16);
+      // Карнавал: танец покачивает спрайт, начало баффа — искорки.
+      const nowT = this.world.getCurrentTime();
+      const dance = EnvironmentSystem.getDance(id);
+      if (dance && nowT < dance.danceUntil) {
+        spr.position.x += Math.sin(nowT * 20) * 5;
+      }
+      if (dance && nowT >= dance.danceUntil && nowT < dance.buffUntil) {
+        if (!this.buffFlashed.has(id)) {
+          this.buffFlashed.add(id);
+          this.fx.spawnHitFlash(p.x, p.y - 30, 0xffd75e);
+        }
+      } else if (this.buffFlashed.has(id)) {
+        this.buffFlashed.delete(id);
+      }
     }
     for (const [id, spr] of this.towerSprites) {
       if (!seenTowers.has(id)) {

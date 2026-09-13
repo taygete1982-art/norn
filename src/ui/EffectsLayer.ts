@@ -20,6 +20,9 @@ interface Projectile {
   ty: number;
   t: number;
   dur: number;
+  /** снос ветром: выпуклость траектории в середине полёта */
+  dx: number;
+  dy: number;
 }
 
 interface Flash {
@@ -58,6 +61,8 @@ export class EffectsLayer extends Container {
     toY: number,
     tile: TileId,
     gridDist: number,
+    driftX = 0,
+    driftY = 0,
   ): void {
     const s = new Sprite(getTile(tile));
     s.anchor.set(0.5);
@@ -71,6 +76,8 @@ export class EffectsLayer extends Container {
       ty: toY,
       t: 0,
       dur: Math.max(gridDist / PROJECTILE_SPEED_CELLS, 0.05),
+      dx: driftX,
+      dy: driftY,
     });
   }
 
@@ -114,7 +121,11 @@ export class EffectsLayer extends Container {
       const p = this.projectiles[i];
       p.t += dt;
       const k = Math.min(p.t / p.dur, 1);
-      p.s.position.set(p.fx + (p.tx - p.fx) * k, p.fy + (p.ty - p.fy) * k);
+      const bulge = Math.sin(k * Math.PI);
+      p.s.position.set(
+        p.fx + (p.tx - p.fx) * k + p.dx * bulge,
+        p.fy + (p.ty - p.fy) * k + p.dy * bulge,
+      );
       if (k >= 1) this.finish(this.projectiles, i, p.s);
     }
 

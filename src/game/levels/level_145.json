@@ -190,5 +190,153 @@
     "startingGold": 220
   },
   "environmentEffects": [],
+  "terrain": [
+    {
+      "x": 6,
+      "y": 2,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 7,
+      "y": 3,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 7,
+      "y": 4,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 5,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 5,
+      "kind": "bubble"
+    },
+    {
+      "x": 7,
+      "y": 5,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 6,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 5,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 6,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 6,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 6,
+      "kind": "bubble"
+    },
+    {
+      "x": 7,
+      "y": 6,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 7,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 7,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 7,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 8,
+      "kind": "bubble"
+    },
+    {
+      "x": 7,
+      "y": 8,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 7,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 5,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 7,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 6,
+      "y": 11,
+      "kind": "bubble"
+    },
+    {
+      "x": 7,
+      "y": 11,
+      "kind": "bubble"
+    }
+  ],
+  "wind": null,
   "boss": null
 }

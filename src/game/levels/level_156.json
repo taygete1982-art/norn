@@ -210,5 +210,113 @@
     "startingGold": 275
   },
   "environmentEffects": [],
+  "terrain": [
+    {
+      "x": 1,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 0,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 1,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 0,
+      "y": 11,
+      "kind": "bubble"
+    },
+    {
+      "x": 1,
+      "y": 11,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 11,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 11,
+      "kind": "bubble"
+    },
+    {
+      "x": 1,
+      "y": 6,
+      "kind": "bubble"
+    },
+    {
+      "x": 0,
+      "y": 7,
+      "kind": "bubble"
+    },
+    {
+      "x": 1,
+      "y": 7,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 7,
+      "kind": "bubble"
+    },
+    {
+      "x": 0,
+      "y": 8,
+      "kind": "bubble"
+    },
+    {
+      "x": 1,
+      "y": 8,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 8,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 8,
+      "kind": "bubble"
+    },
+    {
+      "x": 0,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 2,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 9,
+      "kind": "bubble"
+    },
+    {
+      "x": 3,
+      "y": 10,
+      "kind": "bubble"
+    },
+    {
+      "x": 4,
+      "y": 10,
+      "kind": "bubble"
+    }
+  ],
+  "wind": null,
   "boss": null
 }

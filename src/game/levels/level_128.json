@@ -226,5 +226,10 @@
     "startingGold": 275
   },
   "environmentEffects": [],
+  "terrain": [],
+  "wind": {
+    "dx": 0,
+    "dy": -1
+  },
   "boss": null
 }
