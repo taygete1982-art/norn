@@ -64,6 +64,12 @@ export type TileId =
   | 'enemy_troll_f1'
   | 'enemy_imp_f0'
   | 'enemy_imp_f1'
+  | 'enemy_spore_f0'
+  | 'enemy_spore_f1'
+  | 'enemy_puffling_f0'
+  | 'enemy_puffling_f1'
+  | 'enemy_truffle_f0'
+  | 'enemy_truffle_f1'
   | 'proj_arrow'
   | 'proj_cannon'
   | 'proj_ice'
@@ -619,6 +625,101 @@ function drawProjIce(ctx: CanvasRenderingContext2D): void {
   R(ctx, 7, 4, 2, 8, PALETTE.cloud);
 }
 
+/** Spore 32×40: парящая спора с крылышками, бледное тельце, тёмная сердцевина. */
+function drawSpore(ctx: CanvasRenderingContext2D, frame: number): void {
+  const oy = frame === 1 ? -2 : 0;
+  const wingY = (frame === 1 ? 12 : 16) + oy;
+  // Крылышки по бокам.
+  R(ctx, 2, wingY, 8, 2, PALETTE.cloud);
+  R(ctx, 22, wingY, 8, 2, PALETTE.cloud);
+  R(ctx, 4, wingY - 2, 4, 2, PALETTE.cloud);
+  R(ctx, 24, wingY - 2, 4, 2, PALETTE.cloud);
+  // Тельце-пушок.
+  for (let y = 0; y < 20; y++) {
+    const half = 9 * Math.sin((Math.PI * (y + 1)) / 21) + 1;
+    for (let x = Math.ceil(16 - half); x < 16 + half; x++) {
+      ctx.fillStyle = PALETTE.roadLight;
+      ctx.fillRect(x, y + 14 + oy, 1, 1);
+    }
+  }
+  // Крап-споры на тельце.
+  R(ctx, 12, 20 + oy, 2, 2, PALETTE.earth);
+  R(ctx, 19, 24 + oy, 2, 2, PALETTE.earth);
+  R(ctx, 14, 27 + oy, 2, 1, PALETTE.earth);
+  // Сердцевина-глаз.
+  R(ctx, 14, 21 + oy, 4, 4, PALETTE.void);
+  R(ctx, 15, 22 + oy, 2, 2, PALETTE.gold);
+  // Ножки-тычинки снизу.
+  R(ctx, 13, 33 + oy, 2, 4, PALETTE.earthDark);
+  R(ctx, 17, 33 + oy, 2, 4, PALETTE.earthDark);
+}
+
+/** Puffling 44×44: пушистый шар с рваным контуром. Кадр 1 — сплющен. */
+function drawPuffling(ctx: CanvasRenderingContext2D, frame: number): void {
+  const cx = 22;
+  const cy = frame === 1 ? 26 : 24;
+  const rx = frame === 1 ? 19 : 17;
+  const ry = frame === 1 ? 14 : 16;
+  for (let y = 0; y < 44; y++) {
+    for (let x = 0; x < 44; x++) {
+      const dx = (x - cx) / rx;
+      const dy = (y - cy) / ry;
+      const d = dx * dx + dy * dy;
+      if (d > 1) continue;
+      // Рваный пушистый край.
+      if (d > 0.82 && ((x * 7 + y * 13) % 5 === 0)) continue;
+      ctx.fillStyle = d > 0.86 ? PALETTE.stoneDark : PALETTE.roadLight;
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
+  // Мордочка.
+  const my = cy - 2;
+  R(ctx, cx - 7, my, 3, 4, PALETTE.void);
+  R(ctx, cx + 4, my, 3, 4, PALETTE.void);
+  R(ctx, cx - 6, my + 1, 1, 2, PALETTE.gold);
+  R(ctx, cx + 5, my + 1, 1, 2, PALETTE.gold);
+  R(ctx, cx - 2, my + 6, 4, 2, PALETTE.earthDark);
+  // Хохолок.
+  R(ctx, cx - 1, cy - ry - 3, 2, 4, PALETTE.stoneDark);
+}
+
+/** Truffle 52×52: гриб с широкой шляпой в пятнах, толстая ножка. */
+function drawTruffle(ctx: CanvasRenderingContext2D, frame: number): void {
+  const lean = frame === 1 ? 2 : 0;
+  const cx = 26 + lean;
+  // Ножка.
+  R(ctx, cx - 7, 28, 14, 20, PALETTE.road);
+  R(ctx, cx - 7, 28, 3, 20, shade(PALETTE.road, 0.8));
+  R(ctx, cx - 9, 46, 18, 4, shade(PALETTE.road, 0.85));
+  // Пластинки под шляпой.
+  R(ctx, cx - 20, 24, 40, 5, PALETTE.stoneDark);
+  // Шляпа-купол.
+  for (let y = 0; y < 24; y++) {
+    const k = y / 24;
+    const half = 24 * Math.sin((Math.PI * (1 - k)) / 2);
+    for (let x = Math.ceil(cx - half); x < cx + half; x++) {
+      ctx.fillStyle = k > 0.75 ? shade(PALETTE.earth, 1.15) : PALETTE.earth;
+      ctx.fillRect(x, y + 2, 1, 1);
+    }
+  }
+  // Контур шляпы.
+  ctx.fillStyle = PALETTE.earthDark;
+  for (let y = 0; y < 24; y++) {
+    const k = y / 24;
+    const half = 24 * Math.sin((Math.PI * (1 - k)) / 2);
+    ctx.fillRect(Math.ceil(cx - half), y + 2, 1, 1);
+    ctx.fillRect(Math.floor(cx + half) - 1, y + 2, 1, 1);
+  }
+  // Пятна на шляпе.
+  R(ctx, cx - 14, 8, 5, 4, PALETTE.roadLight);
+  R(ctx, cx + 6, 6, 4, 4, PALETTE.roadLight);
+  R(ctx, cx - 2, 13, 6, 3, PALETTE.roadLight);
+  R(ctx, cx - 13, 15, 3, 3, PALETTE.roadLight);
+  // Глаза-щёлки на ножке.
+  R(ctx, cx - 5, 34, 3, 2, PALETTE.void);
+  R(ctx, cx + 2, 34, 3, 2, PALETTE.void);
+}
+
 function buildTile(id: TileId): Texture {
   let cv: HTMLCanvasElement;
   switch (id) {
@@ -733,6 +834,42 @@ function buildTile(id: TileId): Texture {
     case 'enemy_imp_f1': {
       const [c, ctx] = makeCanvas(32, 40);
       drawImp(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_spore_f0': {
+      const [c, ctx] = makeCanvas(32, 40);
+      drawSpore(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_spore_f1': {
+      const [c, ctx] = makeCanvas(32, 40);
+      drawSpore(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_puffling_f0': {
+      const [c, ctx] = makeCanvas(44, 44);
+      drawPuffling(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_puffling_f1': {
+      const [c, ctx] = makeCanvas(44, 44);
+      drawPuffling(ctx, 1);
+      cv = c;
+      break;
+    }
+    case 'enemy_truffle_f0': {
+      const [c, ctx] = makeCanvas(52, 52);
+      drawTruffle(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'enemy_truffle_f1': {
+      const [c, ctx] = makeCanvas(52, 52);
+      drawTruffle(ctx, 1);
       cv = c;
       break;
     }

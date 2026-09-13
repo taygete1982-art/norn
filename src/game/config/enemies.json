@@ -1,7 +1,10 @@
 {
   "enemies": [
-    { "id": "goblin", "hp": 50, "speed": 1.5, "reward": 10, "damage": 1 },
-    { "id": "troll", "hp": 150, "speed": 0.8, "reward": 25, "damage": 3 },
-    { "id": "imp", "hp": 25, "speed": 2.2, "reward": 5, "damage": 1 }
+    { "id": "goblin", "hp": 50, "speed": 1.5, "reward": 10, "damage": 1, "abilities": [] },
+    { "id": "troll", "hp": 150, "speed": 0.8, "reward": 25, "damage": 3, "abilities": [] },
+    { "id": "imp", "hp": 25, "speed": 2.2, "reward": 5, "damage": 1, "abilities": [] },
+    { "id": "spore", "hp": 30, "speed": 2.0, "reward": 8, "damage": 1, "abilities": ["flying"] },
+    { "id": "puffling", "hp": 60, "speed": 1.2, "reward": 12, "damage": 1, "abilities": ["splitOnDeath"], "splitInto": { "type": "spore", "count": 2 } },
+    { "id": "truffle", "hp": 200, "speed": 0.7, "reward": 30, "damage": 2, "abilities": ["armorPhysical"] }
   ]
 }

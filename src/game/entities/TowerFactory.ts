@@ -7,6 +7,7 @@ export type TowerType = 'arrow' | 'cannon' | 'ice';
 export interface TowerData {
   kind: TowerType;
   damage: number;
+  damageType: string;
   fireRate: number;
   range: number;
   lastFireTime: number;
@@ -26,6 +27,7 @@ export class TowerFactory {
     const tower: TowerData = {
       kind: type,
       damage: stats.damage,
+      damageType: stats.damageType,
       fireRate: stats.fireRate,
       range: stats.range,
       lastFireTime: 0,

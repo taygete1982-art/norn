@@ -2,12 +2,14 @@ import { World } from '../../ecs/world';
 import { ConfigLoader } from '../config/ConfigLoader';
 import { IsoMath } from '../../iso/IsoMath';
 
-export type EnemyType = 'goblin' | 'troll' | 'imp';
+export type EnemyType = 'goblin' | 'troll' | 'imp' | 'spore' | 'puffling' | 'truffle';
 
 export interface EnemyData {
   type: string;
   reward: number;
   damage: number;
+  abilities: string[];
+  splitInto?: { type: string; count: number };
 }
 
 const iso = new IsoMath({ x: 32, y: 16 });
@@ -22,7 +24,9 @@ export class EnemyFactory {
       type,
       reward: stats.reward,
       damage: stats.damage,
+      abilities: stats.abilities ?? [],
     };
+    if (stats.splitInto !== undefined) enemy.splitInto = { ...stats.splitInto };
 
     return world.spawnEntity({
       GridPos: { gx, gy },

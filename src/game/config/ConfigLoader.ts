@@ -9,6 +9,8 @@ export interface EnemyConfig {
   speed: number
   reward: number
   damage: number
+  abilities: string[]
+  splitInto?: { type: string; count: number }
 }
 
 export interface TowerConfig {
@@ -17,6 +19,7 @@ export interface TowerConfig {
   fireRate: number
   range: number
   cost: number
+  damageType: string
   aoeRadius?: number
   slowAmount?: number
   slowDuration?: number

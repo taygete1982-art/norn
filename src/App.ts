@@ -44,6 +44,17 @@ const TOWER_TILES: Record<string, TileId> = {
   ice: 'tower_ice',
 };
 
+/** Префикс тайла врага; неизвестные типы падают на гоблина. */
+function enemyTilePrefix(type: string): string {
+  return type === 'troll' ||
+    type === 'imp' ||
+    type === 'spore' ||
+    type === 'puffling' ||
+    type === 'truffle'
+    ? type
+    : 'goblin';
+}
+
 /** ~4 кадра/сек покачивания врагов. */
 const ENEMY_FRAME_DUR = 0.25;
 
@@ -374,6 +385,7 @@ export class MainScene extends Container {
       const tower = this.world.getComponent<{
         kind: string;
         range: number;
+        damageType: string;
         lastFireTime: number;
         aoeRadius?: number;
       }>(id, 'Tower');
@@ -382,6 +394,7 @@ export class MainScene extends Container {
       if ((prevFire.get(id) ?? tower.lastFireTime) >= tower.lastFireTime) continue;
 
       const from = this.sx(tpos.gx, tpos.gy);
+      let bestId: number | null = null;
       let tx: number | null = null;
       let ty: number | null = null;
       let gridDist = 0;
@@ -394,6 +407,7 @@ export class MainScene extends Container {
         const d = Math.hypot(ep.gx - tpos.gx, ep.gy - tpos.gy);
         if (d <= tower.range && d < best) {
           best = d;
+          bestId = eid;
           const s = this.sx(ep.gx, ep.gy);
           tx = s.x;
           ty = s.y;
@@ -416,6 +430,14 @@ export class MainScene extends Container {
       }
       if (tx === null || ty === null) continue;
 
+      // Рикошет: физика по броне — серая вспышка вместо белой.
+      const victim =
+        bestId !== null
+          ? this.world.getComponent<{ abilities?: string[] }>(bestId, 'Enemy')
+          : undefined;
+      const blocked =
+        tower.damageType === 'physical' && victim?.abilities?.includes('armorPhysical');
+
       this.fx.spawnProjectile(
         from.x,
         from.y,
@@ -424,7 +446,7 @@ export class MainScene extends Container {
         PROJ_TILES[tower.kind] ?? 'proj_arrow',
         gridDist,
       );
-      this.fx.spawnHitFlash(tx, ty);
+      this.fx.spawnHitFlash(tx, ty, blocked ? 0x8f8f9f : 0xffffff);
       if (tower.kind === 'cannon' && tower.aoeRadius !== undefined) {
         this.fx.spawnAoERing(tx, ty, tower.aoeRadius * 32);
       }
@@ -439,11 +461,11 @@ export class MainScene extends Container {
   private spawnDeathGhosts(): void {
     for (const id of this.world.query('Health', 'Enemy', 'GridPos')) {
       const health = this.world.getComponent<{ hp: number }>(id, 'Health');
-      const enemy = this.world.getComponent<{ type: string }>(id, 'Enemy');
+      const enemy = this.world.getComponent<{ type: string; abilities?: string[] }>(id, 'Enemy');
       const pos = this.world.getComponent<{ gx: number; gy: number }>(id, 'GridPos');
       if (!health || !enemy || !pos || health.hp > 0) continue;
       const p = this.sx(pos.gx, pos.gy);
-      const prefix = enemy.type === 'troll' || enemy.type === 'imp' ? enemy.type : 'goblin';
+      const prefix = enemyTilePrefix(enemy.type);
       const st = this.enemySprites.get(id);
       const f = st?.f ?? 0;
       this.fx.spawnDeathGhost(p.x, p.y - 12, `enemy_${prefix}_f${f}` as TileId);
@@ -487,14 +509,16 @@ export class MainScene extends Container {
     const seenEnemies = new Set<number>();
     for (const id of this.world.query('Health', 'Enemy', 'GridPos')) {
       const health = this.world.getComponent<{ hp: number; maxHp: number }>(id, 'Health');
-      const enemy = this.world.getComponent<{ type: string }>(id, 'Enemy');
+      const enemy = this.world.getComponent<{ type: string; abilities?: string[] }>(id, 'Enemy');
       const pos = this.world.getComponent<{ gx: number; gy: number }>(id, 'GridPos');
       if (!health || !enemy || !pos || health.hp <= 0) continue;
       const p = this.sx(pos.gx, pos.gy);
-      sh.ellipse(p.x, p.y + 12, 14, 6);
-      sh.fill({ color: 0x000000, alpha: 0.3 });
+      // Летун: парит выше, тень меньше и бледнее.
+      const flying = enemy.abilities?.includes('flying') ?? false;
+      sh.ellipse(p.x, p.y + 12, flying ? 10 : 14, flying ? 5 : 6);
+      sh.fill({ color: 0x000000, alpha: flying ? 0.22 : 0.3 });
       seenEnemies.add(id);
-      const prefix = enemy.type === 'troll' || enemy.type === 'imp' ? enemy.type : 'goblin';
+      const prefix = enemyTilePrefix(enemy.type);
       let st = this.enemySprites.get(id);
       if (!st) {
         const s = new Sprite(getTile(`enemy_${prefix}_f0` as TileId));
@@ -504,7 +528,7 @@ export class MainScene extends Container {
         this.enemySprites.set(id, st);
       }
       const s = st.s;
-      s.position.set(p.x, p.y + 8);
+      s.position.set(p.x, p.y + (flying ? -6 : 8));
       // Flip по знаку dx; стоит — сохраняет последний разворот.
       if (pos.gx > st.lx + 0.02) s.scale.x = 1;
       else if (pos.gx < st.lx - 0.02) s.scale.x = -1;

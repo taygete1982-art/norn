@@ -45,6 +45,25 @@ export class MoveSystem {
       if (slow && world.getCurrentTime() < slow.until) {
         mult = 1 - (slow.amount ?? slow.factor ?? 0);
       }
+
+      // flying: по прямой от спавна к кристаллу, путь игнорируется.
+      const enemyFly = world.getComponent<{ abilities?: string[] }>(id, 'Enemy');
+      if (enemyFly?.abilities?.includes('flying')) {
+        const target = PATH[PATH.length - 1];
+        const dx = target.gx - pos.gx;
+        const dy = target.gy - pos.gy;
+        const d = Math.hypot(dx, dy);
+        const step = speed.speed * mult * dt;
+        if (d <= step || d === 0) {
+          pos.gx = target.gx;
+          pos.gy = target.gy;
+        } else {
+          pos.gx += (dx / d) * step;
+          pos.gy += (dy / d) * step;
+        }
+        continue;
+      }
+
       let remaining = speed.speed * mult * dt;
       while (remaining > 0 && path.index < PATH.length - 1) {
         const a = PATH[path.index];

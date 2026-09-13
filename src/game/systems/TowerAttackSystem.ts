@@ -27,6 +27,7 @@ export class TowerAttackSystem {
     for (const towerId of towers) {
       const tower = world.getComponent<{
         damage: number;
+        damageType: string;
         fireRate: number;
         range: number;
         lastFireTime: number;
@@ -69,7 +70,11 @@ export class TowerAttackSystem {
         for (const id of affected) {
           const health = world.getComponent<{ hp: number }>(id, 'Health');
           if (!health) continue;
-          health.hp -= tower.damage;
+          // armorPhysical: физический урон — 0, остальные типы — полностью.
+          const victim = world.getComponent<{ abilities?: string[] }>(id, 'Enemy');
+          const blocked =
+            tower.damageType === 'physical' && victim?.abilities?.includes('armorPhysical');
+          if (!blocked) health.hp -= tower.damage;
           if (tower.slowAmount !== undefined && tower.slowDuration !== undefined) {
             const until = now + tower.slowDuration;
             const cur = world.getComponent<{ amount?: number; factor?: number; until: number }>(
