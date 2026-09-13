@@ -1,0 +1,9 @@
+{
+  "waves": [
+    { "number": 1, "spawns": [ { "enemy": "goblin", "count": 5, "delay": 1.0 } ] },
+    { "number": 2, "spawns": [ { "enemy": "goblin", "count": 8, "delay": 0.8 }, { "enemy": "imp", "count": 3, "delay": 0.5 } ] },
+    { "number": 3, "spawns": [ { "enemy": "goblin", "count": 5, "delay": 0.7 }, { "enemy": "troll", "count": 2, "delay": 2.0 } ] },
+    { "number": 4, "spawns": [ { "enemy": "imp", "count": 10, "delay": 0.4 }, { "enemy": "goblin", "count": 5, "delay": 0.6 } ] },
+    { "number": 5, "spawns": [ { "enemy": "troll", "count": 3, "delay": 1.5 }, { "enemy": "goblin", "count": 8, "delay": 0.5 }, { "enemy": "imp", "count": 5, "delay": 0.3 } ] }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "towers": [
+    { "id": "arrow", "damage": 15, "fireRate": 1.0, "range": 3.0, "cost": 25 },
+    { "id": "cannon", "damage": 40, "fireRate": 2.5, "range": 2.5, "cost": 75, "aoeRadius": 1.5 },
+    { "id": "ice", "damage": 10, "fireRate": 1.2, "range": 2.8, "cost": 50, "slowAmount": 0.5, "slowDuration": 2.0 }
+  ]
+}

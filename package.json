@@ -1,0 +1,24 @@
+{
+  "name": "norn",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:iso": "vitest run src/test/iso.test.ts"
+  },
+  "dependencies": {
+    "bitecs": "^0.4.0",
+    "pixi-isometric-tilemaps": "github:holywyvern/pixi-isometric-tilemaps",
+    "pixi.js": "^8.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.0",
+    "vitest": "^1.3.0"
+  }
+}
