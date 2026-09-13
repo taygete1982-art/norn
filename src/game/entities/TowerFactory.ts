@@ -6,6 +6,10 @@ export type TowerType = 'arrow' | 'cannon' | 'ice';
 
 export interface TowerData {
   kind: TowerType;
+  /** tier 1..3; базовые статы хранятся без множителей, эффективные считает TowerAttackSystem */
+  tier: number;
+  /** всего вложено: cost + оплаченные апгрейды (база продажи) */
+  spent: number;
   damage: number;
   damageType: string;
   fireRate: number;
@@ -26,6 +30,8 @@ export class TowerFactory {
     const p = iso.gridToScreen(gx, gy);
     const tower: TowerData = {
       kind: type,
+      tier: 1,
+      spent: stats.cost,
       damage: stats.damage,
       damageType: stats.damageType,
       fireRate: stats.fireRate,

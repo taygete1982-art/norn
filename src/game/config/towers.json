@@ -1,7 +1,28 @@
 {
   "towers": [
-    { "id": "arrow", "damage": 15, "fireRate": 1.0, "range": 3.0, "cost": 25, "damageType": "physical" },
-    { "id": "cannon", "damage": 40, "fireRate": 2.5, "range": 2.5, "cost": 75, "aoeRadius": 1.5, "damageType": "explosion" },
-    { "id": "ice", "damage": 10, "fireRate": 1.2, "range": 2.8, "cost": 50, "slowAmount": 0.5, "slowDuration": 2.0, "damageType": "magic" }
+    {
+      "id": "arrow", "damage": 15, "fireRate": 1.0, "range": 3.0, "cost": 25, "damageType": "physical",
+      "tiers": [
+        { "damageMul": 1, "fireRateMul": 1, "rangeMul": 1, "upgradeCost": null },
+        { "damageMul": 1.6, "fireRateMul": 1.15, "rangeMul": 1.1, "upgradeCost": 50 },
+        { "damageMul": 2.4, "fireRateMul": 1.3, "rangeMul": 1.2, "upgradeCost": 75 }
+      ]
+    },
+    {
+      "id": "cannon", "damage": 40, "fireRate": 2.5, "range": 2.5, "cost": 75, "aoeRadius": 1.5, "damageType": "explosion",
+      "tiers": [
+        { "damageMul": 1, "fireRateMul": 1, "rangeMul": 1, "upgradeCost": null },
+        { "damageMul": 1.6, "fireRateMul": 1.15, "rangeMul": 1.1, "aoeMul": 1.15, "upgradeCost": 150 },
+        { "damageMul": 2.4, "fireRateMul": 1.3, "rangeMul": 1.2, "aoeMul": 1.3, "upgradeCost": 225 }
+      ]
+    },
+    {
+      "id": "ice", "damage": 10, "fireRate": 1.2, "range": 2.8, "cost": 50, "slowAmount": 0.5, "slowDuration": 2.0, "damageType": "magic",
+      "tiers": [
+        { "damageMul": 1, "fireRateMul": 1, "rangeMul": 1, "upgradeCost": null },
+        { "damageMul": 1.6, "fireRateMul": 1.15, "rangeMul": 1.1, "upgradeCost": 100 },
+        { "damageMul": 2.4, "fireRateMul": 1.3, "rangeMul": 1.2, "upgradeCost": 150 }
+      ]
+    }
   ]
 }

@@ -104,6 +104,12 @@ export type TileId =
   | 'enemy_magician_f1'
   | 'enemy_elephant_f0'
   | 'enemy_elephant_f1'
+  | 'tower_arrow_t2'
+  | 'tower_arrow_t3'
+  | 'tower_cannon_t2'
+  | 'tower_cannon_t3'
+  | 'tower_ice_t2'
+  | 'tower_ice_t3'
   | 'proj_arrow'
   | 'proj_cannon'
   | 'proj_ice'
@@ -1266,6 +1272,103 @@ function drawElephant(ctx: CanvasRenderingContext2D, frame: number): void {
   R(ctx, 7, 33 + oy, 4, 3, PALETTE.earthDark);
 }
 
+/** Блит базового корпуса 64×88 со сдвигом вниз на off (рост вверх). */
+function blitBase(
+  ctx: CanvasRenderingContext2D,
+  base: (c: CanvasRenderingContext2D) => void,
+  off: number,
+): void {
+  const tmp = document.createElement('canvas');
+  tmp.width = 64;
+  tmp.height = 88;
+  const tctx = tmp.getContext('2d')!;
+  tctx.imageSmoothingEnabled = false;
+  base(tctx);
+  ctx.drawImage(tmp, 0, off);
+}
+
+/**
+ * Дорисовка этажей выше базы (регион [0, off)).
+ * Силуэт каждого tier заметно выше предыдущего.
+ */
+function drawTowerTierExtra(
+  ctx: CanvasRenderingContext2D,
+  kind: 'arrow' | 'cannon' | 'ice',
+  off: number,
+): void {
+  if (kind === 'arrow') {
+    // Площадки со slab через каждые 16px, шест флага сквозь них, флажок сверху.
+    for (let y = off - 4; y >= 16; y -= 16) {
+      ctx.fillStyle = PALETTE.earthDark;
+      ctx.fillRect(18, y, 28, 6);
+      ctx.fillStyle = shade(PALETTE.earth, 1.2);
+      ctx.fillRect(18, y, 28, 1);
+      ctx.fillStyle = PALETTE.earth;
+      ctx.fillRect(18, y - 8, 2, 8);
+      ctx.fillRect(44, y - 8, 2, 8);
+      ctx.fillRect(18, y - 8, 28, 2);
+    }
+    ctx.fillStyle = PALETTE.earthDark;
+    ctx.fillRect(31, 12, 2, off - 4);
+    ctx.fillStyle = PALETTE.gold;
+    for (let x = 0; x < 9; x++) {
+      ctx.fillRect(33 + x, 9, 1, 5 - Math.floor(x / 2));
+    }
+  } else if (kind === 'cannon') {
+    // Верхняя сужающаяся тумба + ободок.
+    for (let y = 16; y < off; y++) {
+      const k = (y - 16) / Math.max(off - 16, 1);
+      const half = 11 - k * 3;
+      for (let x = Math.ceil(32 - half); x < 32 + half; x++) {
+        ctx.fillStyle = PALETTE.stone;
+        ctx.fillRect(x, y, 1, 1);
+      }
+      ctx.fillStyle = PALETTE.stoneDark;
+      ctx.fillRect(Math.ceil(32 - half), y, 1, 1);
+      ctx.fillRect(Math.floor(32 + half) - 1, y, 1, 1);
+    }
+    ctx.fillStyle = shade(PALETTE.stone, 1.2);
+    ctx.fillRect(20, 14, 24, 3);
+    ctx.fillStyle = PALETTE.stoneDark;
+    ctx.fillRect(24, 22, 2, 2);
+    ctx.fillRect(35, 30, 2, 1);
+    ctx.fillStyle = PALETTE.gold;
+    ctx.fillRect(30, 18, 2, 2);
+  } else {
+    // Высокий обелиск поверх базового (сходятся по ширине на шве).
+    const bot = off + 16;
+    for (let y = 8; y < bot; y++) {
+      const k = 1 - (y - 8) / (bot - 8);
+      const half = 1 + 6 * k;
+      for (let x = Math.ceil(32 - half); x < 32 + half; x++) {
+        ctx.fillStyle = PALETTE.crystal;
+        ctx.fillRect(x, y, 1, 1);
+      }
+      ctx.fillStyle = shade(PALETTE.crystal, 0.55);
+      ctx.fillRect(Math.ceil(32 - half), y, 1, 1);
+    }
+    ctx.fillStyle = PALETTE.cloud;
+    ctx.fillRect(27, 14, 2, 18);
+    ctx.fillStyle = PALETTE.crystal;
+    ctx.fillRect(22, off - 2, 4, 12);
+    ctx.fillRect(38, off - 6, 4, 14);
+    ctx.fillStyle = 'rgba(102,224,255,0.30)';
+    ctx.fillRect(22, 14, 2, off - 16);
+    ctx.fillRect(40, 14, 2, off - 16);
+  }
+}
+
+/** Полный спрайт tier'а: база внизу + этажи сверху. */
+function tieredTower(kind: 'arrow' | 'cannon' | 'ice', tier: 2 | 3): HTMLCanvasElement {
+  const H = tier === 2 ? 112 : 136;
+  const off = H - 88;
+  const [c, ctx] = makeCanvas(64, H);
+  const base = kind === 'arrow' ? drawTowerArrow : kind === 'cannon' ? drawTowerCannon : drawTowerIce;
+  blitBase(ctx, base, off);
+  drawTowerTierExtra(ctx, kind, off);
+  return c;
+}
+
 function buildTile(id: TileId): Texture {
   let cv: HTMLCanvasElement;
   switch (id) {
@@ -1621,6 +1724,30 @@ function buildTile(id: TileId): Texture {
       const [c, ctx] = makeCanvas(60, 52);
       drawElephant(ctx, 1);
       cv = c;
+      break;
+    }
+    case 'tower_arrow_t2': {
+      cv = tieredTower('arrow', 2);
+      break;
+    }
+    case 'tower_arrow_t3': {
+      cv = tieredTower('arrow', 3);
+      break;
+    }
+    case 'tower_cannon_t2': {
+      cv = tieredTower('cannon', 2);
+      break;
+    }
+    case 'tower_cannon_t3': {
+      cv = tieredTower('cannon', 3);
+      break;
+    }
+    case 'tower_ice_t2': {
+      cv = tieredTower('ice', 2);
+      break;
+    }
+    case 'tower_ice_t3': {
+      cv = tieredTower('ice', 3);
       break;
     }
     case 'proj_arrow': {

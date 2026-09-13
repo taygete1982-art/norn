@@ -1,8 +1,9 @@
 import { World } from '../../ecs/world';
+import { tierConfigOf, effectiveStats } from '../Upgrades';
 
 /**
  * Мгновенный урон ближайшему врагу в радиусе (дистанция в клетках сетки).
- * Награду НЕ начисляет — это делает RulesSystem.
+ * Статы эффективные: база × множители tier'а. Награду НЕ начисляет.
  */
 export class TowerAttackSystem {
   private static paused = false;
@@ -26,6 +27,8 @@ export class TowerAttackSystem {
 
     for (const towerId of towers) {
       const tower = world.getComponent<{
+        kind: string;
+        tier: number;
         damage: number;
         damageType: string;
         fireRate: number;
@@ -37,7 +40,8 @@ export class TowerAttackSystem {
       }>(towerId, 'Tower');
       const tpos = world.getComponent<{ gx: number; gy: number }>(towerId, 'GridPos');
       if (!tower || !tpos) continue;
-      if (now - tower.lastFireTime < tower.fireRate) continue;
+      const eff = effectiveStats(tower, tierConfigOf(tower.kind, tower.tier));
+      if (now - tower.lastFireTime < eff.cooldown) continue;
 
       let bestId: number | null = null;
       let bestDist = Infinity;
@@ -47,7 +51,7 @@ export class TowerAttackSystem {
         const epos = world.getComponent<{ gx: number; gy: number }>(enemyId, 'GridPos');
         if (!health || !epos || health.hp <= 0) continue;
         const dist = Math.hypot(epos.gx - tpos.gx, epos.gy - tpos.gy);
-        if (dist <= tower.range && dist < bestDist) {
+        if (dist <= eff.range && dist < bestDist) {
           bestDist = dist;
           bestId = enemyId;
         }
@@ -56,13 +60,13 @@ export class TowerAttackSystem {
       if (bestId !== null) {
         const targetPos = world.getComponent<{ gx: number; gy: number }>(bestId, 'GridPos');
         let affected: number[] = [bestId];
-        if (tower.aoeRadius !== undefined && targetPos) {
+        if (eff.aoeRadius !== undefined && targetPos) {
           affected = [];
           for (const enemyId of enemies) {
             const h = world.getComponent<{ hp: number }>(enemyId, 'Health');
             const ep = world.getComponent<{ gx: number; gy: number }>(enemyId, 'GridPos');
             if (!h || !ep || h.hp <= 0) continue;
-            if (Math.hypot(ep.gx - targetPos.gx, ep.gy - targetPos.gy) <= tower.aoeRadius) {
+            if (Math.hypot(ep.gx - targetPos.gx, ep.gy - targetPos.gy) <= eff.aoeRadius) {
               affected.push(enemyId);
             }
           }
@@ -74,7 +78,7 @@ export class TowerAttackSystem {
           const victim = world.getComponent<{ abilities?: string[] }>(id, 'Enemy');
           const blocked =
             tower.damageType === 'physical' && victim?.abilities?.includes('armorPhysical');
-          if (!blocked) health.hp -= tower.damage;
+          if (!blocked) health.hp -= eff.damage;
           if (tower.slowAmount !== undefined && tower.slowDuration !== undefined) {
             const until = now + tower.slowDuration;
             const cur = world.getComponent<{ amount?: number; factor?: number; until: number }>(

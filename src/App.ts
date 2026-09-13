@@ -6,7 +6,16 @@ import { ConfigLoader } from './game/config/ConfigLoader';
 import { getTile, getRoadKeys, PAL, TileId } from './art/PixelArt';
 import { TowerFactory } from './game/entities/TowerFactory';
 import { EnemyFactory } from './game/entities/EnemyFactory';
+import {
+  tierConfigOf,
+  effectiveStats,
+  upgradeCostOf,
+  sellValue,
+  applyUpgrade,
+  sellTower,
+} from './game/Upgrades';
 import { TowerSelectMenu } from './ui/TowerSelectMenu';
+import { TowerUpgradeMenu } from './ui/TowerUpgradeMenu';
 import { EffectsLayer } from './ui/EffectsLayer';
 import { WaveSpawnerSystem } from './game/systems/WaveSpawnerSystem';
 import { TowerAttackSystem } from './game/systems/TowerAttackSystem';
@@ -44,6 +53,14 @@ const TOWER_TILES: Record<string, TileId> = {
   cannon: 'tower_cannon',
   ice: 'tower_ice',
 };
+
+/** Тайл башни по tier'у: t1 базовый, t2/t3 этажные. */
+function towerTileFor(kind: string, tier: number): TileId {
+  if (!(kind in TOWER_TILES)) return 'tower_arrow';
+  if (tier >= 3) return `tower_${kind}_t3` as TileId;
+  if (tier === 2) return `tower_${kind}_t2` as TileId;
+  return TOWER_TILES[kind];
+}
 
 /** Префикс тайла врага; неизвестные типы падают на гоблина. */
 const KNOWN_ENEMY_PREFIXES = new Set([
@@ -108,6 +125,7 @@ export class MainScene extends Container {
   private hudCenter!: Text;
   private hudSub!: Text;
   private menu: TowerSelectMenu | null = null;
+  private upgradeMenu: TowerUpgradeMenu | null = null;
   private fx = new EffectsLayer();
 
   constructor(level: LevelConfig, opts: { onGameEnd?: (r: GameEndResult) => void } = {}) {
@@ -269,7 +287,7 @@ export class MainScene extends Container {
 
   private onTap(x: number, y: number): void {
     // Пока меню открыто — все тапы обрабатывает оно (подложка/кнопки/ESC).
-    if (this.menu) return;
+    if (this.menu || this.upgradeMenu) return;
 
     if (GameStateManager.getStatus() !== 'playing') {
       // С EndScreen выходы — его кнопки; без колбэка — старый тап-рестарт.
@@ -278,10 +296,10 @@ export class MainScene extends Container {
       return;
     }
     for (const bp of this.buildPoints) {
-      if (bp.towerId !== null) continue;
       const p = this.sx(bp.gx, bp.gy);
       if (Math.hypot(p.x - x, p.y - y) < 44) {
-        this.openMenu(bp.gx, bp.gy);
+        if (bp.towerId === null) this.openMenu(bp.gx, bp.gy);
+        else this.openUpgradeMenu(bp);
         return;
       }
     }
@@ -330,6 +348,61 @@ export class MainScene extends Container {
     this.enemySprites.clear();
   }
 
+  private openUpgradeMenu(bp: BuildPoint): void {
+    this.closeUpgrade();
+    const towerId = bp.towerId;
+    if (towerId === null) return;
+    const tower = this.world.getComponent<{
+      kind: string;
+      tier: number;
+      spent: number;
+      damage: number;
+      fireRate: number;
+      range: number;
+      aoeRadius?: number;
+    }>(towerId, 'Tower');
+    if (!tower) return;
+    const eff = effectiveStats(tower, tierConfigOf(tower.kind, tower.tier));
+    const r1 = (v: number): number => Math.round(v * 10) / 10;
+    const lines = [
+      `Урон ${r1(eff.damage)} · ${r1(1 / eff.cooldown)}/сек · радиус ${r1(eff.range)}`,
+      ...(eff.aoeRadius !== undefined ? [`АОЕ ${r1(eff.aoeRadius)}`] : []),
+      `Вложено ${tower.spent}`,
+    ];
+    const names: Record<string, string> = { arrow: 'Arrow', cannon: 'Cannon', ice: 'Ice' };
+    const menu = new TowerUpgradeMenu({
+      title: `${names[tower.kind] ?? tower.kind} · tier ${tower.tier}`,
+      lines,
+      upgradeCost: upgradeCostOf(tower.kind, tower.tier),
+      sellValue: sellValue(tower.spent),
+      onUpgrade: () => {
+        if (!applyUpgrade(this.world, towerId)) {
+          this.closeUpgrade();
+          return;
+        }
+        const p = this.sx(bp.gx, bp.gy);
+        this.fx.spawnHitFlash(p.x, p.y - 20, 0xffd75e);
+        this.closeUpgrade();
+        this.openUpgradeMenu(bp);
+      },
+      onSell: () => {
+        sellTower(this.world, towerId);
+        bp.towerId = null;
+        this.closeUpgrade();
+      },
+      onClose: () => this.closeUpgrade(),
+    });
+    this.upgradeMenu = menu;
+    this.addChild(menu);
+  }
+
+  private closeUpgrade(): void {
+    if (!this.upgradeMenu) return;
+    const m = this.upgradeMenu;
+    this.upgradeMenu = null;
+    m.close();
+  }
+
   private closeMenu(): void {
     if (!this.menu) return;
     const m = this.menu;
@@ -339,6 +412,7 @@ export class MainScene extends Container {
 
   private resetGame(): void {
     this.closeMenu();
+    this.closeUpgrade();
     this.fx.clear();
     this.clearUnitSprites();
     this.endNotified = false;
@@ -376,6 +450,7 @@ export class MainScene extends Container {
     }
     this.updateClouds(dt);
     this.menu?.update(dt);
+    this.upgradeMenu?.update(dt);
 
     // Снапшот до систем: моменты последних выстрелов и позиции врагов
     // (цель, умершая от выстрела, берётся из снапшота).
@@ -506,7 +581,7 @@ export class MainScene extends Container {
     // Башни: пиксельные спрайты на постаментах.
     const seenTowers = new Set<number>();
     for (const id of this.world.query('Tower', 'GridPos')) {
-      const tower = this.world.getComponent<{ kind: string }>(id, 'Tower');
+      const tower = this.world.getComponent<{ kind: string; tier: number }>(id, 'Tower');
       const pos = this.world.getComponent<{ gx: number; gy: number }>(id, 'GridPos');
       if (!tower || !pos) continue;
       const p = this.sx(pos.gx, pos.gy);
@@ -514,11 +589,14 @@ export class MainScene extends Container {
       sh.fill({ color: 0x000000, alpha: 0.3 });
       seenTowers.add(id);
       let spr = this.towerSprites.get(id);
+      const wantTile = towerTileFor(tower.kind, tower.tier);
       if (!spr) {
-        spr = new Sprite(getTile(TOWER_TILES[tower.kind] ?? 'tower_arrow'));
+        spr = new Sprite(getTile(wantTile));
         spr.anchor.set(0.5, 1);
         this.unitLayer.addChild(spr);
         this.towerSprites.set(id, spr);
+      } else if (spr.texture !== getTile(wantTile)) {
+        spr.texture = getTile(wantTile);
       }
       spr.position.set(p.x, p.y + 16);
     }

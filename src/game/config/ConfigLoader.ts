@@ -13,6 +13,14 @@ export interface EnemyConfig {
   splitInto?: { type: string; count: number }
 }
 
+export interface TierConfig {
+  damageMul: number
+  fireRateMul: number
+  rangeMul: number
+  upgradeCost: number | null
+  aoeMul?: number
+}
+
 export interface TowerConfig {
   id: string
   damage: number
@@ -20,6 +28,7 @@ export interface TowerConfig {
   range: number
   cost: number
   damageType: string
+  tiers: TierConfig[]
   aoeRadius?: number
   slowAmount?: number
   slowDuration?: number
