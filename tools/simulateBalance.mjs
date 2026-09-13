@@ -13,7 +13,7 @@
 // - splitOnDeath с капом 200 сущностей на волну, осколки с обычной наградой;
 // - flying по прямой, утечка у кристалла;
 // - slow от ice (×0.5 на slowDuration), aoe от cannon (×aoeMul);
-// - choco: скорость ×1.3, входящий magic ×1.2; wind ×1.15 / ×0.85 по dot;
+// - choco: скорость ×1.3, входящий magic ×1.2; wind ×1.1 / ×0.9 по dot;
 // - hp = round(base*hpMul) (elite ×6), reward = round(base*rewardMul) (elite ×8);
 // - волны/очередь/переход как в WaveSpawnerSystem; победа = волны кончились
 //   и поле пусто, кристалл жив.
@@ -27,8 +27,10 @@
 //
 // Адаптивная политика (adaptive) — верхняя граница разумной игры:
 // - против пула с armorPhysical: cannon, cannon, ice, затем arrow;
-// - против пула с flying (без брони): чередование ice/arrow,
-//   первая точка — из flying-коридора (2 последние точки уровня);
+// - против пула с flying или splitOnDeath: cannon, arrow, ice,
+//   затем чередование arrow/cannon, первая точка — из flying-коридора
+//   (2 последние точки уровня);
+// - иначе как у эталона;
 // - таргетинг: ближайший к кристаллу (first);
 // - апгрейды как у эталона; продажа не используется в обеих политиках.
 
@@ -81,6 +83,7 @@ function planForPolicy(level, policy) {
   const has = (ab) => [...pool].some((t) => (EN[t].abilities ?? []).includes(ab));
   const hasArmor = has('armorPhysical');
   const hasFlying = has('flying');
+  const hasSplit = has('splitOnDeath');
   let pts = order.slice();
   if (hasFlying && level.buildPoints.length >= 2) {
     const last2 = new Set(level.buildPoints.slice(-2).map((p) => `${p.x},${p.y}`));
@@ -92,8 +95,13 @@ function planForPolicy(level, policy) {
   if (hasArmor) {
     const seq = ['cannon', 'cannon', 'ice', 'arrow'];
     typeAt = (slot) => seq[Math.min(slot, seq.length - 1)];
-  } else if (hasFlying) {
-    typeAt = (slot) => (slot % 2 === 0 ? 'ice' : 'arrow');
+  } else if (hasFlying || hasSplit) {
+    typeAt = (slot) => {
+      if (slot === 0) return 'cannon';
+      if (slot === 1) return 'arrow';
+      if (slot === 2) return 'ice';
+      return slot % 2 === 1 ? 'arrow' : 'cannon';
+    };
   } else {
     typeAt = buildTypeBySlot;
   }
@@ -304,7 +312,7 @@ function simulateLevel(level, policy) {
         const dirx = d > 0 ? dx / d : 0;
         const diry = d > 0 ? dy / d : 0;
         if (isChoco(e.x, e.y)) mult *= 1.3;
-        if (wind) mult *= dirx * wind.dx + diry * wind.dy > 0 ? 1.15 : 0.85;
+        if (wind) mult *= dirx * wind.dx + diry * wind.dy > 0 ? 1.1 : 0.9;
         const step = e.speed * mult * DT;
         if (d <= step) {
           e.x = last.x;
@@ -322,7 +330,7 @@ function simulateLevel(level, policy) {
         const dirx = L > 0 ? (b.x - a.x) / L : 0;
         const diry = L > 0 ? (b.y - a.y) / L : 0;
         if (isChoco(e.x, e.y)) mult *= 1.3;
-        if (wind) mult *= dirx * wind.dx + diry * wind.dy > 0 ? 1.15 : 0.85;
+        if (wind) mult *= dirx * wind.dx + diry * wind.dy > 0 ? 1.1 : 0.9;
         let remaining = e.speed * mult * DT;
         while (remaining > 0 && e.seg < segLens.length) {
           const left = segLens[e.seg] - e.segT;

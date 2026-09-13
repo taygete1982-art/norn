@@ -201,21 +201,21 @@
         },
         {
           "enemy": "seahorse",
-          "count": 2,
+          "count": 3,
           "delay": 0.45
         },
         {
           "enemy": "pearlwhale",
-          "count": 3,
+          "count": 2,
           "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 9.41,
-    "rewardMul": 6.86,
-    "startingGold": 398
+    "hpMul": 7.06,
+    "rewardMul": 7.64,
+    "startingGold": 450
   },
   "environmentEffects": [],
   "terrain": [

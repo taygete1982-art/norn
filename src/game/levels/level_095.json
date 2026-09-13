@@ -146,12 +146,12 @@
       "spawns": [
         {
           "enemy": "jelly",
-          "count": 5,
+          "count": 4,
           "delay": 0.86
         },
         {
           "enemy": "caramel",
-          "count": 2,
+          "count": 3,
           "delay": 0.86
         }
       ]
@@ -221,21 +221,21 @@
         },
         {
           "enemy": "chocgolem",
-          "count": 4,
+          "count": 2,
           "delay": 0.45
         },
         {
           "enemy": "candyfairy",
-          "count": 1,
+          "count": 3,
           "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 5.57,
+    "hpMul": 4.87,
     "rewardMul": 4.41,
-    "startingGold": 346
+    "startingGold": 390
   },
   "environmentEffects": [],
   "terrain": [

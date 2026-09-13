@@ -151,7 +151,7 @@
         },
         {
           "enemy": "jellyfish",
-          "count": 2,
+          "count": 3,
           "delay": 0.59
         },
         {
@@ -161,7 +161,7 @@
         },
         {
           "enemy": "pearlwhale",
-          "count": 3,
+          "count": 2,
           "delay": 0.59
         }
       ]
@@ -176,7 +176,7 @@
         },
         {
           "enemy": "jellyfish",
-          "count": 2,
+          "count": 3,
           "delay": 0.45
         },
         {
@@ -186,16 +186,16 @@
         },
         {
           "enemy": "pearlwhale",
-          "count": 3,
+          "count": 2,
           "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 6.24,
-    "rewardMul": 4.55,
-    "startingGold": 310
+    "hpMul": 4.68,
+    "rewardMul": 5.07,
+    "startingGold": 340
   },
   "environmentEffects": [],
   "terrain": [

@@ -182,7 +182,7 @@
       "spawns": [
         {
           "enemy": "clownfish",
-          "count": 2,
+          "count": 3,
           "delay": 0.59
         },
         {
@@ -197,7 +197,7 @@
         },
         {
           "enemy": "pearlwhale",
-          "count": 3,
+          "count": 2,
           "delay": 0.59
         }
       ]
@@ -229,9 +229,9 @@
     }
   ],
   "difficulty": {
-    "hpMul": 11.71,
-    "rewardMul": 8.54,
-    "startingGold": 462
+    "hpMul": 8.78,
+    "rewardMul": 9.52,
+    "startingGold": 530
   },
   "environmentEffects": [],
   "terrain": [

@@ -146,12 +146,12 @@
       "spawns": [
         {
           "enemy": "puffling",
-          "count": 3,
+          "count": 4,
           "delay": 0.86
         },
         {
           "enemy": "truffle",
-          "count": 4,
+          "count": 2,
           "delay": 0.86
         }
       ]
@@ -166,12 +166,12 @@
         },
         {
           "enemy": "puffling",
-          "count": 2,
+          "count": 3,
           "delay": 0.73
         },
         {
           "enemy": "truffle",
-          "count": 3,
+          "count": 2,
           "delay": 0.73
         }
       ]
@@ -181,17 +181,17 @@
       "spawns": [
         {
           "enemy": "spore",
-          "count": 3,
+          "count": 4,
           "delay": 0.59
         },
         {
           "enemy": "puffling",
-          "count": 3,
+          "count": 4,
           "delay": 0.59
         },
         {
           "enemy": "truffle",
-          "count": 4,
+          "count": 2,
           "delay": 0.59
         }
       ]
@@ -201,26 +201,26 @@
       "spawns": [
         {
           "enemy": "spore",
-          "count": 3,
+          "count": 4,
           "delay": 0.45
         },
         {
           "enemy": "puffling",
-          "count": 5,
+          "count": 4,
           "delay": 0.45
         },
         {
           "enemy": "truffle",
-          "count": 4,
+          "count": 2,
           "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 3.81,
+    "hpMul": 3.57,
     "rewardMul": 3.33,
-    "startingGold": 314
+    "startingGold": 360
   },
   "environmentEffects": [],
   "terrain": [],

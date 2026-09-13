@@ -147,12 +147,12 @@
         },
         {
           "enemy": "cloudsheep",
-          "count": 4,
+          "count": 3,
           "delay": 0.59
         },
         {
           "enemy": "stormling",
-          "count": 2,
+          "count": 3,
           "delay": 0.59
         },
         {
@@ -189,9 +189,9 @@
     }
   ],
   "difficulty": {
-    "hpMul": 3.4,
-    "rewardMul": 2.6,
-    "startingGold": 215
+    "hpMul": 2.8,
+    "rewardMul": 2.8,
+    "startingGold": 230
   },
   "environmentEffects": [],
   "terrain": [],

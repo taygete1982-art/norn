@@ -193,7 +193,7 @@
     }
   ],
   "difficulty": {
-    "hpMul": 2.4,
+    "hpMul": 2.1,
     "rewardMul": 1.9,
     "startingGold": 170
   },

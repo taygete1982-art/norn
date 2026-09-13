@@ -162,7 +162,7 @@
       "spawns": [
         {
           "enemy": "clown",
-          "count": 2,
+          "count": 3,
           "delay": 0.59
         },
         {
@@ -177,7 +177,7 @@
         },
         {
           "enemy": "elephant",
-          "count": 3,
+          "count": 2,
           "delay": 0.59
         }
       ]
@@ -187,7 +187,7 @@
       "spawns": [
         {
           "enemy": "clown",
-          "count": 2,
+          "count": 3,
           "delay": 0.45
         },
         {
@@ -202,16 +202,16 @@
         },
         {
           "enemy": "elephant",
-          "count": 3,
+          "count": 2,
           "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 10.01,
-    "rewardMul": 7.08,
-    "startingGold": 402
+    "hpMul": 7.08,
+    "rewardMul": 8.01,
+    "startingGold": 450
   },
   "environmentEffects": [],
   "terrain": [],

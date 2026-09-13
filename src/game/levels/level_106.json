@@ -202,7 +202,7 @@
       "spawns": [
         {
           "enemy": "jelly",
-          "count": 2,
+          "count": 3,
           "delay": 0.59
         },
         {
@@ -212,7 +212,7 @@
         },
         {
           "enemy": "chocgolem",
-          "count": 3,
+          "count": 2,
           "delay": 0.59
         },
         {
@@ -227,7 +227,7 @@
       "spawns": [
         {
           "enemy": "jelly",
-          "count": 3,
+          "count": 4,
           "delay": 0.45
         },
         {
@@ -237,7 +237,7 @@
         },
         {
           "enemy": "chocgolem",
-          "count": 3,
+          "count": 2,
           "delay": 0.45
         },
         {
@@ -249,9 +249,9 @@
     }
   ],
   "difficulty": {
-    "hpMul": 7.15,
+    "hpMul": 6.26,
     "rewardMul": 5.66,
-    "startingGold": 434
+    "startingGold": 500
   },
   "environmentEffects": [],
   "terrain": [

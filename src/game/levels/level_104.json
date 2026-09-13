@@ -203,12 +203,12 @@
         },
         {
           "enemy": "caramel",
-          "count": 2,
+          "count": 3,
           "delay": 0.59
         },
         {
           "enemy": "chocgolem",
-          "count": 3,
+          "count": 2,
           "delay": 0.59
         },
         {
@@ -245,9 +245,9 @@
     }
   ],
   "difficulty": {
-    "hpMul": 6.86,
+    "hpMul": 6.01,
     "rewardMul": 5.43,
-    "startingGold": 418
+    "startingGold": 480
   },
   "environmentEffects": [],
   "terrain": [

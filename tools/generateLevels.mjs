@@ -23,17 +23,20 @@ const GH = 12;
 
 const BIOMES = {
   1: { roster: ['imp', 'goblin', 'troll'], hpBase: 1, rwBase: 1, goldBase: 100, heavy: 'troll' },
-  2: { roster: ['spore', 'puffling', 'truffle'], hpBase: 1.6, rwBase: 1.4, goldBase: 130, heavy: 'truffle' },
+  2: { roster: ['spore', 'puffling', 'truffle'], hpBase: 1.5, rwBase: 1.4, goldBase: 130, heavy: 'truffle' },
   // Биомы 3–6: пулы волн и базы сложности.
   // Базы предполагают tier3-апгрейды к концу биома,
   // финальный тюнинг — после шага баланс-симулятора.
-  3: { roster: ['jelly', 'caramel', 'chocgolem', 'candyfairy'], hpBase: 2.4, rwBase: 1.9, goldBase: 170, heavy: 'chocgolem' },
-  4: { roster: ['balloon', 'cloudsheep', 'stormling', 'fluffdragon'], hpBase: 3.4, rwBase: 2.6, goldBase: 215, heavy: 'fluffdragon' },
-  5: { roster: ['clownfish', 'jellyfish', 'seahorse', 'pearlwhale'], hpBase: 4.8, rwBase: 3.5, goldBase: 270, heavy: 'pearlwhale' },
-  6: { roster: ['clown', 'juggler', 'magician', 'elephant'], hpBase: 6.5, rwBase: 4.6, goldBase: 330, heavy: 'elephant' },
+  3: { roster: ['jelly', 'caramel', 'chocgolem', 'candyfairy'], hpBase: 2.1, rwBase: 1.9, goldBase: 170, heavy: 'chocgolem' },
+  4: { roster: ['balloon', 'cloudsheep', 'stormling', 'fluffdragon'], hpBase: 2.8, rwBase: 2.8, goldBase: 230, heavy: 'fluffdragon' },
+  5: { roster: ['clownfish', 'jellyfish', 'seahorse', 'pearlwhale'], hpBase: 3.6, rwBase: 3.9, goldBase: 290, heavy: 'pearlwhale' },
+  6: { roster: ['clown', 'juggler', 'magician', 'elephant'], hpBase: 4.6, rwBase: 5.2, goldBase: 360, heavy: 'elephant' },
 };
 
 const FLYING_TYPES = new Set(['spore', 'candyfairy', 'balloon', 'fluffdragon', 'magician']);
+// Танки: базовый hp >= 200. Сплиттеры: способность splitOnDeath.
+const TANK_TYPES = new Set(['truffle', 'chocgolem', 'fluffdragon', 'pearlwhale', 'elephant']);
+const SPLITTER_TYPES = new Set(['puffling', 'jelly', 'stormling', 'jellyfish', 'juggler']);
 
 const r2 = (v) => Math.round(v * 100) / 100;
 
@@ -119,32 +122,73 @@ function genWaves(rnd, biome) {
       }
     });
     if (i >= 2) capFlying(spawns, 4);
+    capWave(spawns, i);
     waves.push({ number: i + 1, spawns });
   }
   return waves;
 }
 
+/** Капы состава волны: танки ≤ 2, сплиттеры ≤ 4, летуны ≤ 4 (с волны 3).
+ *  Перекладывает излишки в чужие записи; если суммарный кап меньше总数
+ *  волны (биом 2: puffling+truffle = макс 4+2 при总数 до 12) — урезает. */
+function capWave(spawns, waveIdx) {
+  for (let p = 0; p < 10; p++) {
+    capKind(spawns, (t) => TANK_TYPES.has(t), 2);
+    capKind(spawns, (t) => SPLITTER_TYPES.has(t), 4);
+    if (waveIdx >= 2) capKind(spawns, (t) => FLYING_TYPES.has(t), 4);
+    if (kindOver(spawns, (t) => TANK_TYPES.has(t)) <= 0
+      && kindOver(spawns, (t) => SPLITTER_TYPES.has(t)) <= 0
+      && (waveIdx < 2 || kindOver(spawns, (t) => FLYING_TYPES.has(t)) <= 0)) break;
+  }
+  trimKind(spawns, (t) => TANK_TYPES.has(t), 2);
+  trimKind(spawns, (t) => SPLITTER_TYPES.has(t), 4);
+  if (waveIdx >= 2) trimKind(spawns, (t) => FLYING_TYPES.has(t), 4);
+}
+
+/** Жёсткая урезка вида до капа без перекладывания (элиту не трогает). */
+function trimKind(spawns, isKind, cap) {
+  let guard = 100;
+  while (guard-- > 0) {
+    if (kindOver(spawns, isKind) <= cap) return;
+    const kind = spawns.map((s, i) => (isKind(s.enemy) && !s.elite ? i : -1)).filter((i) => i >= 0);
+    let bi = kind[0];
+    for (const idx of kind) if (spawns[idx].count > spawns[bi].count) bi = idx;
+    if (bi === undefined || spawns[bi].count <= 0) return;
+    spawns[bi].count -= 1;
+  }
+}
+
+function kindOver(spawns, isKind) {
+  return spawns
+    .filter((s) => isKind(s.enemy) && !s.elite)
+    .reduce((s, x) => s + x.count, 0);
+}
+
+/** Срезать вид сверх капа: переложить в наименьшую чужую запись,
+ *  некуда — урезать. Элитные записи не трогает. */
+function capKind(spawns, isKind, cap) {
+  let guard = 100;
+  while (guard-- > 0) {
+    const over = kindOver(spawns, isKind) - cap;
+    if (over <= 0) return;
+    const kind = spawns.map((s, i) => (isKind(s.enemy) && !s.elite ? i : -1)).filter((i) => i >= 0);
+    const rest = spawns.map((s, i) => (!isKind(s.enemy) && !s.elite ? i : -1)).filter((i) => i >= 0);
+    let bi = kind[0];
+    for (const idx of kind) if (spawns[idx].count > spawns[bi].count) bi = idx;
+    if (bi === undefined || spawns[bi].count <= 0) return;
+    spawns[bi].count -= 1;
+    if (rest.length > 0) {
+      let ri = rest[0];
+      for (const idx of rest) if (spawns[idx].count < spawns[ri].count) ri = idx;
+      spawns[ri].count += 1;
+    }
+  }
+}
+
 /** Срезать летунов сверх капа, переложив единицы в нелетающие записи.
  *  Элитные записи не трогает (ни убавить, ни добавить). */
 function capFlying(spawns, cap) {
-  const flyIdx = spawns
-    .map((s, i) => (FLYING_TYPES.has(s.enemy) && !s.elite ? i : -1))
-    .filter((i) => i >= 0);
-  const nonFly = spawns
-    .map((s, i) => (!FLYING_TYPES.has(s.enemy) && !s.elite ? i : -1))
-    .filter((i) => i >= 0);
-  if (flyIdx.length === 0 || nonFly.length === 0) return;
-  let over = flyIdx.reduce((s, i) => s + spawns[i].count, 0) - cap;
-  let ni = 0;
-  while (over > 0) {
-    let bi = flyIdx[0];
-    for (const idx of flyIdx) if (spawns[idx].count > spawns[bi].count) bi = idx;
-    if (spawns[bi].count <= 0) break;
-    spawns[bi].count -= 1;
-    spawns[nonFly[ni % nonFly.length]].count += 1;
-    ni += 1;
-    over -= 1;
-  }
+  capKind(spawns, (t) => FLYING_TYPES.has(t), cap);
 }
 
 /** Terrain и ветер по биомам: choco на пути (3), wind по осям (4), bubble-зоны (5). */
@@ -234,6 +278,9 @@ export function generateLevel(n) {
     waves[4].spawns.push({ enemy: B.heavy, count: 1, delay: 1.0, elite: true });
     // Летящий босс занимает слот капа: срезать обычных летунов до 3.
     if (FLYING_TYPES.has(B.heavy)) capFlying(waves[4].spawns, 3);
+    // Перекладывание могло раздуть другие виды — жёстко подтянуть.
+    trimKind(waves[4].spawns, (t) => TANK_TYPES.has(t), 2);
+    trimKind(waves[4].spawns, (t) => SPLITTER_TYPES.has(t), 4);
   }
   return {
     biomeId,
@@ -245,7 +292,7 @@ export function generateLevel(n) {
     difficulty: {
       hpMul: r2(B.hpBase * (1 + 0.06 * (lib - 1))),
       rewardMul: r2(B.rwBase * (1 + 0.06 * (lib - 1))),
-      startingGold: B.goldBase + 8 * (lib - 1),
+      startingGold: B.goldBase + 10 * (lib - 1),
     },
     environmentEffects: [],
     terrain,

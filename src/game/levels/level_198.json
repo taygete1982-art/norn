@@ -179,7 +179,7 @@
         },
         {
           "enemy": "juggler",
-          "count": 2,
+          "count": 3,
           "delay": 0.59
         },
         {
@@ -189,7 +189,7 @@
         },
         {
           "enemy": "elephant",
-          "count": 3,
+          "count": 2,
           "delay": 0.59
         }
       ]
@@ -221,9 +221,9 @@
     }
   ],
   "difficulty": {
-    "hpMul": 13.13,
-    "rewardMul": 9.29,
-    "startingGold": 466
+    "hpMul": 9.29,
+    "rewardMul": 10.5,
+    "startingGold": 530
   },
   "environmentEffects": [],
   "terrain": [],

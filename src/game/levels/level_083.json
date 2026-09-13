@@ -118,12 +118,12 @@
       "spawns": [
         {
           "enemy": "jelly",
-          "count": 5,
+          "count": 4,
           "delay": 0.86
         },
         {
           "enemy": "caramel",
-          "count": 2,
+          "count": 3,
           "delay": 0.86
         }
       ]
@@ -205,9 +205,9 @@
     }
   ],
   "difficulty": {
-    "hpMul": 3.84,
+    "hpMul": 3.36,
     "rewardMul": 3.04,
-    "startingGold": 250
+    "startingGold": 270
   },
   "environmentEffects": [],
   "terrain": [

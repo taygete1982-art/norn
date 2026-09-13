@@ -225,9 +225,9 @@
     }
   ],
   "difficulty": {
-    "hpMul": 7.07,
-    "rewardMul": 5.41,
-    "startingGold": 359
+    "hpMul": 5.82,
+    "rewardMul": 5.82,
+    "startingGold": 410
   },
   "environmentEffects": [],
   "terrain": [],

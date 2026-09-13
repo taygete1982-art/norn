@@ -185,21 +185,21 @@
         },
         {
           "enemy": "magician",
-          "count": 2,
+          "count": 3,
           "delay": 0.45
         },
         {
           "enemy": "elephant",
-          "count": 3,
+          "count": 2,
           "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 7.67,
-    "rewardMul": 5.43,
-    "startingGold": 354
+    "hpMul": 5.43,
+    "rewardMul": 6.14,
+    "startingGold": 390
   },
   "environmentEffects": [],
   "terrain": [],

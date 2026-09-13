@@ -209,21 +209,21 @@
         },
         {
           "enemy": "chocgolem",
-          "count": 3,
+          "count": 2,
           "delay": 0.45
         },
         {
           "enemy": "candyfairy",
-          "count": 2,
+          "count": 3,
           "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 5.28,
+    "hpMul": 4.62,
     "rewardMul": 4.18,
-    "startingGold": 330
+    "startingGold": 370
   },
   "environmentEffects": [],
   "terrain": [

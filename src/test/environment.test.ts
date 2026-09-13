@@ -77,13 +77,13 @@ describe('Environment mechanics', () => {
     EnvironmentSystem.configure({ ...NEUTRAL, biomeId: 4, wind: { dx: 1, dy: 0 } });
     const a = EnemyFactory.create(world, 'goblin', 0, 0);
     MoveSystem.update(world, 1.0);
-    expect(world.getComponent<{ gx: number }>(a, 'GridPos')!.gx).toBeCloseTo(1.5 * 1.15, 5);
+    expect(world.getComponent<{ gx: number }>(a, 'GridPos')!.gx).toBeCloseTo(1.5 * 1.1, 5);
 
     const w2 = new World();
     EnvironmentSystem.configure({ ...NEUTRAL, biomeId: 4, wind: { dx: -1, dy: 0 } });
     const b = EnemyFactory.create(w2, 'goblin', 0, 0);
     MoveSystem.update(w2, 1.0);
-    expect(w2.getComponent<{ gx: number }>(b, 'GridPos')!.gx).toBeCloseTo(1.5 * 0.85, 5);
+    expect(w2.getComponent<{ gx: number }>(b, 'GridPos')!.gx).toBeCloseTo(1.5 * 0.9, 5);
   });
 
   it('bubble: кулдаун башни ×1.25 в зоне', () => {

@@ -123,10 +123,27 @@ describe('level generation (files on disk)', () => {
       }
     }
     const byNum = new Map(levels.map((l) => [l.levelNumber, l]));
-    expect(byNum.get(2).difficulty).toEqual({ hpMul: 1.06, rewardMul: 1.06, startingGold: 108 });
-    expect(byNum.get(36).difficulty).toEqual({ hpMul: 3.1, rewardMul: 3.1, startingGold: 380 });
-    expect(byNum.get(37).difficulty).toEqual({ hpMul: 1.6, rewardMul: 1.4, startingGold: 130 });
-    expect(byNum.get(72).difficulty).toEqual({ hpMul: 4.96, rewardMul: 4.34, startingGold: 410 });
+    expect(byNum.get(2).difficulty).toEqual({ hpMul: 1.06, rewardMul: 1.06, startingGold: 110 });
+    expect(byNum.get(36).difficulty).toEqual({ hpMul: 3.1, rewardMul: 3.1, startingGold: 450 });
+    expect(byNum.get(37).difficulty).toEqual({ hpMul: 1.5, rewardMul: 1.4, startingGold: 130 });
+    expect(byNum.get(72).difficulty).toEqual({ hpMul: 4.65, rewardMul: 4.34, startingGold: 480 });
+  });
+
+  it('капы состава: танки ≤ 2, сплиттеры ≤ 4 в каждой волне', () => {
+    const TANKS = new Set(['truffle', 'chocgolem', 'fluffdragon', 'pearlwhale', 'elephant']);
+    const SPLIT = new Set(['puffling', 'jelly', 'stormling', 'jellyfish', 'juggler']);
+    const sum = (spawns: any[], set: Set<string>) =>
+      spawns
+        .filter((s: any) => set.has(s.enemy) && !s.elite)
+        .reduce((n: number, s: any) => n + s.count, 0);
+    for (const f of files()) {
+      if (f === 'level_001.json') continue;
+      const L = read(f);
+      L.waves.forEach((w: any, i: number) => {
+        expect(sum(w.spawns, TANKS), `${f} wave ${i + 1} tanks`).toBeLessThanOrEqual(2);
+        expect(sum(w.spawns, SPLIT), `${f} wave ${i + 1} split`).toBeLessThanOrEqual(4);
+      });
+    }
   });
 
   it('flying: в волнах 1-2 нет, в 3-5 не более 4 за волну; коридор в точках', () => {

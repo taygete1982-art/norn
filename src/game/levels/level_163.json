@@ -170,12 +170,12 @@
       "spawns": [
         {
           "enemy": "clownfish",
-          "count": 2,
+          "count": 3,
           "delay": 0.59
         },
         {
           "enemy": "jellyfish",
-          "count": 2,
+          "count": 3,
           "delay": 0.59
         },
         {
@@ -185,7 +185,7 @@
         },
         {
           "enemy": "pearlwhale",
-          "count": 4,
+          "count": 2,
           "delay": 0.59
         }
       ]
@@ -205,21 +205,21 @@
         },
         {
           "enemy": "seahorse",
-          "count": 2,
+          "count": 3,
           "delay": 0.45
         },
         {
           "enemy": "pearlwhale",
-          "count": 3,
+          "count": 2,
           "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 9.98,
-    "rewardMul": 7.28,
-    "startingGold": 414
+    "hpMul": 7.49,
+    "rewardMul": 8.11,
+    "startingGold": 470
   },
   "environmentEffects": [],
   "terrain": [
