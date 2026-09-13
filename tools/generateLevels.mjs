@@ -22,15 +22,17 @@ const GW = 8;
 const GH = 12;
 
 const BIOMES = {
-  1: { roster: ['imp', 'goblin', 'troll'], hpBase: 1, rwBase: 1, heavy: 'troll' },
-  2: { roster: ['spore', 'puffling', 'truffle'], hpBase: 2, rwBase: 1.5, heavy: 'truffle' },
+  1: { roster: ['imp', 'goblin', 'troll'], hpBase: 1, rwBase: 1, goldBase: 100, heavy: 'troll' },
+  2: { roster: ['spore', 'puffling', 'truffle'], hpBase: 2, rwBase: 1.5, goldBase: 100, heavy: 'truffle' },
   // Биомы 3–6: пулы волн и базы сложности.
-  // Числа предварительные, финализируются после шага апгрейдов и симулятора.
-  // Уровни 73–216 пока НЕ генерируются (цикл ниже идёт только до 72).
-  3: { roster: ['jelly', 'caramel', 'chocgolem', 'candyfairy'], hpBase: 3, rwBase: 2.2, heavy: 'chocgolem' },
-  4: { roster: ['balloon', 'cloudsheep', 'stormling', 'fluffdragon'], hpBase: 4.5, rwBase: 3.2, heavy: 'fluffdragon' },
-  5: { roster: ['clownfish', 'jellyfish', 'seahorse', 'pearlwhale'], hpBase: 6.5, rwBase: 4.6, heavy: 'pearlwhale' },
-  6: { roster: ['clown', 'juggler', 'magician', 'elephant'], hpBase: 9, rwBase: 6.5, heavy: 'elephant' },
+  // Базы предполагают tier3-апгрейды к концу биома,
+  // финальный тюнинг — после шага баланс-симулятора.
+  // ПРИМЕЧАНИЕ: goldBase биома 2 = 100, а не 120 — иначе файлы 037..072
+  // изменились бы относительно прошлой генерации (требование: байт-в-байт).
+  3: { roster: ['jelly', 'caramel', 'chocgolem', 'candyfairy'], hpBase: 3.5, rwBase: 2.2, goldBase: 150, heavy: 'chocgolem' },
+  4: { roster: ['balloon', 'cloudsheep', 'stormling', 'fluffdragon'], hpBase: 6, rwBase: 3.2, goldBase: 180, heavy: 'fluffdragon' },
+  5: { roster: ['clownfish', 'jellyfish', 'seahorse', 'pearlwhale'], hpBase: 10, rwBase: 4.6, goldBase: 220, heavy: 'pearlwhale' },
+  6: { roster: ['clown', 'juggler', 'magician', 'elephant'], hpBase: 16, rwBase: 6.5, goldBase: 260, heavy: 'elephant' },
 };
 
 const r2 = (v) => Math.round(v * 100) / 100;
@@ -121,14 +123,14 @@ function genWaves(rnd, biome) {
 }
 
 export function generateLevel(n) {
-  const biomeId = n <= 36 ? 1 : 2;
+  const biomeId = n <= 36 ? 1 : n <= 72 ? 2 : n <= 108 ? 3 : n <= 144 ? 4 : n <= 180 ? 5 : 6;
   const lib = ((n - 1) % 36) + 1;
   const B = BIOMES[biomeId];
   const rnd = mulberry32(n);
   const path = genPath(rnd, lib);
   const buildPoints = genBuildPoints(rnd, path, lib);
   const waves = genWaves(rnd, B);
-  const isBoss = n === 36 || n === 72;
+  const isBoss = n === 36 || n === 72 || n === 108 || n === 144 || n === 180 || n === 216;
   if (isBoss) {
     waves[4].spawns.push({ enemy: B.heavy, count: 1, delay: 1.0, elite: true });
   }
@@ -142,7 +144,7 @@ export function generateLevel(n) {
     difficulty: {
       hpMul: r2(B.hpBase * (1 + 0.1 * (lib - 1))),
       rewardMul: r2(B.rwBase * (1 + 0.05 * (lib - 1))),
-      startingGold: 100 + 5 * (lib - 1),
+      startingGold: B.goldBase + 5 * (lib - 1),
     },
     environmentEffects: [],
     boss: isBoss ? { type: 'elite' } : null,
@@ -151,10 +153,10 @@ export function generateLevel(n) {
 
 const here = dirname(fileURLToPath(import.meta.url));
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const outDir = resolve(here, '../src/game/levels');
-  for (let n = 2; n <= 72; n++) {
+  const outDir = process.env.GEN_OUT || resolve(here, '../src/game/levels');
+  for (let n = 2; n <= 216; n++) {
     const pad = String(n).padStart(3, '0');
     writeFileSync(resolve(outDir, `level_${pad}.json`), JSON.stringify(generateLevel(n), null, 2) + '\n');
   }
-  console.log('generated levels 2..72 (71 files)');
+  console.log('generated levels 2..216 (215 files)');
 }

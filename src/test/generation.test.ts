@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readdirSync, readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { resolve, join } from 'node:path';
 import { ConfigLoader } from '../game/config/ConfigLoader';
 
 const dir = resolve(process.cwd(), 'src/game/levels');
@@ -11,27 +12,49 @@ const files = () =>
     .filter((f) => /^level_\d+\.json$/.test(f))
     .sort();
 const read = (f: string): any => JSON.parse(readFileSync(resolve(dir, f), 'utf8'));
-const hashAll = (): string => {
-  const h = createHash('sha256');
-  for (const f of files()) h.update(readFileSync(resolve(dir, f)));
-  return h.digest('hex');
-};
 
 const KNOWN_ENEMIES = new Set(ConfigLoader.getEnemies().map((e) => e.id));
 
 describe('level generation (files on disk)', () => {
-  it('71 сгенерированный файл level_002..level_072 + ручной 001', () => {
+  it('215 сгенерированных файлов level_002..level_216 + ручной 001', () => {
     const names = files();
     expect(names).toContain('level_001.json');
-    for (let n = 2; n <= 72; n++) {
+    for (let n = 2; n <= 216; n++) {
       expect(names).toContain(`level_${String(n).padStart(3, '0')}.json`);
     }
+    expect(names.filter((f) => f !== 'level_001.json').length).toBe(215);
   });
 
-  it('детерминизм: повторный запуск не меняет файлы', () => {
-    const before = hashAll();
-    execFileSync('node', ['tools/generateLevels.mjs'], { cwd: process.cwd() });
-    expect(hashAll()).toBe(before);
+  it('детерминизм: два запуска идентичны и совпадают с файлами в репо', () => {
+    // Генерация идёт во временные папки: репозиторий не трогаем,
+    // параллельные тесты продолжают читать стабильные файлы.
+    const hashDir = (d: string): string => {
+      const h = createHash('sha256');
+      for (const f of readdirSync(d).sort()) h.update(readFileSync(resolve(d, f)));
+      return h.digest('hex');
+    };
+    const run = (d: string): void => {
+      execFileSync('node', ['tools/generateLevels.mjs'], {
+        cwd: process.cwd(),
+        env: { ...process.env, GEN_OUT: d },
+      });
+    };
+    const a = mkdtempSync(join(tmpdir(), 'norn-gen-a-'));
+    const b = mkdtempSync(join(tmpdir(), 'norn-gen-b-'));
+    try {
+      run(a);
+      run(b);
+      expect(hashDir(a)).toBe(hashDir(b));
+      const repo = createHash('sha256');
+      for (const f of files()) {
+        if (f === 'level_001.json') continue; // ручной, генератором не покрывается
+        repo.update(readFileSync(resolve(dir, f)));
+      }
+      expect(hashDir(a)).toBe(repo.digest('hex'));
+    } finally {
+      rmSync(a, { recursive: true, force: true });
+      rmSync(b, { recursive: true, force: true });
+    }
   });
 
   it('path: в границах, связный, без дубликатов, старт y=0, финиш y=11', () => {
@@ -104,14 +127,30 @@ describe('level generation (files on disk)', () => {
     expect(byNum.get(72).difficulty).toEqual({ hpMul: 9, rewardMul: 4.13, startingGold: 275 });
   });
 
-  it('боссы 36 и 72: флаг + элитный спавн тяжёлого врага в последней волне', () => {
-    const l36 = read('level_036.json');
-    const l72 = read('level_072.json');
-    expect(l36.boss).toEqual({ type: 'elite' });
-    expect(l72.boss).toEqual({ type: 'elite' });
-    const last36 = l36.waves[4].spawns;
-    const last72 = l72.waves[4].spawns;
-    expect(last36[last36.length - 1]).toMatchObject({ enemy: 'troll', count: 1, elite: true });
-    expect(last72[last72.length - 1]).toMatchObject({ enemy: 'truffle', count: 1, elite: true });
+  it('боссы ровно на 36/72/108/144/180/216: флаг + элитный спавн тяжёлого', () => {
+    const expected: Array<[number, string]> = [
+      [36, 'troll'],
+      [72, 'truffle'],
+      [108, 'chocgolem'],
+      [144, 'fluffdragon'],
+      [180, 'pearlwhale'],
+      [216, 'elephant'],
+    ];
+    for (const [n, heavy] of expected) {
+      const L = read(`level_${String(n).padStart(3, '0')}.json`);
+      expect(L.boss, `level ${n}`).toEqual({ type: 'elite' });
+      const last = L.waves[4].spawns;
+      expect(last[last.length - 1], `level ${n}`).toMatchObject({
+        enemy: heavy,
+        count: 1,
+        elite: true,
+      });
+    }
+    // больше нигде боссов нет
+    for (const f of files()) {
+      const L = read(f);
+      const isBoss = [36, 72, 108, 144, 180, 216].includes(L.levelNumber);
+      expect(!!L.boss, f).toBe(isBoss);
+    }
   });
 });

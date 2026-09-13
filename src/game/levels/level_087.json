@@ -1,0 +1,222 @@
+{
+  "biomeId": 3,
+  "levelNumber": 87,
+  "gridSize": {
+    "width": 8,
+    "height": 12
+  },
+  "path": [
+    {
+      "x": 0,
+      "y": 0
+    },
+    {
+      "x": 0,
+      "y": 1
+    },
+    {
+      "x": 0,
+      "y": 2
+    },
+    {
+      "x": 0,
+      "y": 3
+    },
+    {
+      "x": 0,
+      "y": 4
+    },
+    {
+      "x": 1,
+      "y": 4
+    },
+    {
+      "x": 2,
+      "y": 4
+    },
+    {
+      "x": 1,
+      "y": 5
+    },
+    {
+      "x": 2,
+      "y": 5
+    },
+    {
+      "x": 3,
+      "y": 5
+    },
+    {
+      "x": 3,
+      "y": 6
+    },
+    {
+      "x": 4,
+      "y": 6
+    },
+    {
+      "x": 5,
+      "y": 7
+    },
+    {
+      "x": 4,
+      "y": 7
+    },
+    {
+      "x": 3,
+      "y": 7
+    },
+    {
+      "x": 4,
+      "y": 8
+    },
+    {
+      "x": 3,
+      "y": 9
+    },
+    {
+      "x": 3,
+      "y": 10
+    },
+    {
+      "x": 3,
+      "y": 11
+    }
+  ],
+  "buildPoints": [
+    {
+      "x": 2,
+      "y": 7
+    },
+    {
+      "x": 2,
+      "y": 3
+    },
+    {
+      "x": 4,
+      "y": 5
+    },
+    {
+      "x": 1,
+      "y": 2
+    },
+    {
+      "x": 3,
+      "y": 3
+    }
+  ],
+  "waves": [
+    {
+      "number": 1,
+      "spawns": [
+        {
+          "enemy": "jelly",
+          "count": 2,
+          "delay": 1
+        },
+        {
+          "enemy": "caramel",
+          "count": 3,
+          "delay": 1
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "spawns": [
+        {
+          "enemy": "jelly",
+          "count": 2,
+          "delay": 0.85
+        },
+        {
+          "enemy": "caramel",
+          "count": 5,
+          "delay": 0.85
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "spawns": [
+        {
+          "enemy": "jelly",
+          "count": 3,
+          "delay": 0.7
+        },
+        {
+          "enemy": "caramel",
+          "count": 2,
+          "delay": 0.7
+        },
+        {
+          "enemy": "chocgolem",
+          "count": 2,
+          "delay": 0.7
+        },
+        {
+          "enemy": "candyfairy",
+          "count": 3,
+          "delay": 0.7
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "spawns": [
+        {
+          "enemy": "jelly",
+          "count": 4,
+          "delay": 0.55
+        },
+        {
+          "enemy": "caramel",
+          "count": 3,
+          "delay": 0.55
+        },
+        {
+          "enemy": "chocgolem",
+          "count": 4,
+          "delay": 0.55
+        },
+        {
+          "enemy": "candyfairy",
+          "count": 1,
+          "delay": 0.55
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "spawns": [
+        {
+          "enemy": "jelly",
+          "count": 3,
+          "delay": 0.4
+        },
+        {
+          "enemy": "caramel",
+          "count": 3,
+          "delay": 0.4
+        },
+        {
+          "enemy": "chocgolem",
+          "count": 4,
+          "delay": 0.4
+        },
+        {
+          "enemy": "candyfairy",
+          "count": 4,
+          "delay": 0.4
+        }
+      ]
+    }
+  ],
+  "difficulty": {
+    "hpMul": 8.4,
+    "rewardMul": 3.74,
+    "startingGold": 220
+  },
+  "environmentEffects": [],
+  "boss": null
+}

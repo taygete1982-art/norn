@@ -1,0 +1,270 @@
+{
+  "biomeId": 6,
+  "levelNumber": 216,
+  "gridSize": {
+    "width": 8,
+    "height": 12
+  },
+  "path": [
+    {
+      "x": 1,
+      "y": 0
+    },
+    {
+      "x": 2,
+      "y": 1
+    },
+    {
+      "x": 1,
+      "y": 2
+    },
+    {
+      "x": 0,
+      "y": 3
+    },
+    {
+      "x": 1,
+      "y": 3
+    },
+    {
+      "x": 2,
+      "y": 3
+    },
+    {
+      "x": 3,
+      "y": 4
+    },
+    {
+      "x": 4,
+      "y": 4
+    },
+    {
+      "x": 5,
+      "y": 5
+    },
+    {
+      "x": 4,
+      "y": 5
+    },
+    {
+      "x": 4,
+      "y": 6
+    },
+    {
+      "x": 3,
+      "y": 6
+    },
+    {
+      "x": 2,
+      "y": 6
+    },
+    {
+      "x": 1,
+      "y": 6
+    },
+    {
+      "x": 1,
+      "y": 7
+    },
+    {
+      "x": 2,
+      "y": 7
+    },
+    {
+      "x": 2,
+      "y": 8
+    },
+    {
+      "x": 3,
+      "y": 8
+    },
+    {
+      "x": 4,
+      "y": 8
+    },
+    {
+      "x": 5,
+      "y": 8
+    },
+    {
+      "x": 5,
+      "y": 9
+    },
+    {
+      "x": 4,
+      "y": 9
+    },
+    {
+      "x": 3,
+      "y": 9
+    },
+    {
+      "x": 2,
+      "y": 9
+    },
+    {
+      "x": 2,
+      "y": 10
+    },
+    {
+      "x": 3,
+      "y": 11
+    }
+  ],
+  "buildPoints": [
+    {
+      "x": 4,
+      "y": 7
+    },
+    {
+      "x": 6,
+      "y": 6
+    },
+    {
+      "x": 5,
+      "y": 7
+    },
+    {
+      "x": 5,
+      "y": 6
+    },
+    {
+      "x": 0,
+      "y": 7
+    },
+    {
+      "x": 6,
+      "y": 10
+    },
+    {
+      "x": 6,
+      "y": 8
+    },
+    {
+      "x": 2,
+      "y": 2
+    }
+  ],
+  "waves": [
+    {
+      "number": 1,
+      "spawns": [
+        {
+          "enemy": "clown",
+          "count": 3,
+          "delay": 1
+        },
+        {
+          "enemy": "juggler",
+          "count": 2,
+          "delay": 1
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "spawns": [
+        {
+          "enemy": "clown",
+          "count": 4,
+          "delay": 0.85
+        },
+        {
+          "enemy": "juggler",
+          "count": 3,
+          "delay": 0.85
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "spawns": [
+        {
+          "enemy": "clown",
+          "count": 2,
+          "delay": 0.7
+        },
+        {
+          "enemy": "juggler",
+          "count": 2,
+          "delay": 0.7
+        },
+        {
+          "enemy": "magician",
+          "count": 3,
+          "delay": 0.7
+        },
+        {
+          "enemy": "elephant",
+          "count": 3,
+          "delay": 0.7
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "spawns": [
+        {
+          "enemy": "clown",
+          "count": 4,
+          "delay": 0.55
+        },
+        {
+          "enemy": "juggler",
+          "count": 2,
+          "delay": 0.55
+        },
+        {
+          "enemy": "magician",
+          "count": 4,
+          "delay": 0.55
+        },
+        {
+          "enemy": "elephant",
+          "count": 2,
+          "delay": 0.55
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "spawns": [
+        {
+          "enemy": "clown",
+          "count": 3,
+          "delay": 0.4
+        },
+        {
+          "enemy": "juggler",
+          "count": 4,
+          "delay": 0.4
+        },
+        {
+          "enemy": "magician",
+          "count": 4,
+          "delay": 0.4
+        },
+        {
+          "enemy": "elephant",
+          "count": 3,
+          "delay": 0.4
+        },
+        {
+          "enemy": "elephant",
+          "count": 1,
+          "delay": 1,
+          "elite": true
+        }
+      ]
+    }
+  ],
+  "difficulty": {
+    "hpMul": 72,
+    "rewardMul": 17.88,
+    "startingGold": 435
+  },
+  "environmentEffects": [],
+  "boss": {
+    "type": "elite"
+  }
+}
