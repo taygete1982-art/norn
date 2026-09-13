@@ -123,6 +123,10 @@
     {
       "x": 7,
       "y": 10
+    },
+    {
+      "x": 5,
+      "y": 4
     }
   ],
   "waves": [
@@ -147,12 +151,12 @@
         {
           "enemy": "jelly",
           "count": 4,
-          "delay": 0.85
+          "delay": 0.86
         },
         {
           "enemy": "caramel",
           "count": 3,
-          "delay": 0.85
+          "delay": 0.86
         }
       ]
     },
@@ -162,22 +166,22 @@
         {
           "enemy": "jelly",
           "count": 2,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "caramel",
           "count": 3,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "chocgolem",
           "count": 3,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "candyfairy",
-          "count": 2,
-          "delay": 0.7
+          "count": 1,
+          "delay": 0.73
         }
       ]
     },
@@ -187,22 +191,22 @@
         {
           "enemy": "jelly",
           "count": 3,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "caramel",
-          "count": 4,
-          "delay": 0.55
+          "count": 3,
+          "delay": 0.59
         },
         {
           "enemy": "chocgolem",
-          "count": 3,
-          "delay": 0.55
+          "count": 2,
+          "delay": 0.59
         },
         {
           "enemy": "candyfairy",
           "count": 2,
-          "delay": 0.55
+          "delay": 0.59
         }
       ]
     },
@@ -212,30 +216,30 @@
         {
           "enemy": "jelly",
           "count": 3,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "caramel",
           "count": 3,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "chocgolem",
-          "count": 4,
-          "delay": 0.4
+          "count": 3,
+          "delay": 0.45
         },
         {
           "enemy": "candyfairy",
-          "count": 4,
-          "delay": 0.4
+          "count": 3,
+          "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 12.25,
-    "rewardMul": 4.95,
-    "startingGold": 275
+    "hpMul": 6,
+    "rewardMul": 4.75,
+    "startingGold": 370
   },
   "environmentEffects": [],
   "terrain": [

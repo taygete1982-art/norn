@@ -3,7 +3,7 @@
 //
 // Запуск: npm run sim:balance
 //   → таблица по биомам в консоль + tools/simReport.json (поуровневые данные).
-// Точечно: node tools/simulateBalance.mjs --level N --policy reference|none
+// Точечно: node tools/simulateBalance.mjs --level N --policy reference|none|adaptive
 //   → один JSON результата в stdout (для санити-тестов).
 //
 // Правила (зеркало игры):
@@ -14,15 +14,23 @@
 // - flying по прямой, утечка у кристалла;
 // - slow от ice (×0.5 на slowDuration), aoe от cannon (×aoeMul);
 // - choco: скорость ×1.3, входящий magic ×1.2; wind ×1.15 / ×0.85 по dot;
-// - hp = round(base*hpMul) (elite ×8), reward = round(base*rewardMul) (elite ×10);
+// - hp = round(base*hpMul) (elite ×6), reward = round(base*rewardMul) (elite ×8);
 // - волны/очередь/переход как в WaveSpawnerSystem; победа = волны кончились
 //   и поле пусто, кристалл жив.
 //
-// Эталонная политика игрока:
+// Эталонная политика игрока (dumb):
 // - точки строятся по покрытию пути (сумма 1/dist до плиток пути);
 // - порядок: 1-я и 2-я точки — arrow, 3-я — ice, 4-я и дальше — cannon;
+// - таргетинг: ближайший к башне;
 // - апгрейды в приоритете: как только хватает золота — старейшая башня
 //   до t2, затем до t3, затем следующая постройка; продажа не используется.
+//
+// Адаптивная политика (adaptive) — верхняя граница разумной игры:
+// - против пула с armorPhysical: cannon, cannon, ice, затем arrow;
+// - против пула с flying (без брони): чередование ice/arrow,
+//   первая точка — из flying-коридора (2 последние точки уровня);
+// - таргетинг: ближайший к кристаллу (first);
+// - апгрейды как у эталона; продажа не используется в обеих политиках.
 
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -63,6 +71,33 @@ function buildTypeBySlot(slot) {
   if (slot === 2) return 'ice';
   if (slot >= 3) return 'cannon';
   return 'arrow';
+}
+
+/** План политики: порядок точек + тип по слоту. Коридор = 2 последние точки. */
+function planForPolicy(level, policy) {
+  const order = coverageOrder(level);
+  if (policy !== 'adaptive') return { order, typeAt: buildTypeBySlot };
+  const pool = new Set(level.waves.flatMap((w) => w.spawns.map((s) => s.enemy)));
+  const has = (ab) => [...pool].some((t) => (EN[t].abilities ?? []).includes(ab));
+  const hasArmor = has('armorPhysical');
+  const hasFlying = has('flying');
+  let pts = order.slice();
+  if (hasFlying && level.buildPoints.length >= 2) {
+    const last2 = new Set(level.buildPoints.slice(-2).map((p) => `${p.x},${p.y}`));
+    const corr = pts.filter((p) => last2.has(`${p.x},${p.y}`));
+    const rest = pts.filter((p) => !last2.has(`${p.x},${p.y}`));
+    if (corr.length > 0) pts = [corr[0], ...rest, ...corr.slice(1)];
+  }
+  let typeAt;
+  if (hasArmor) {
+    const seq = ['cannon', 'cannon', 'ice', 'arrow'];
+    typeAt = (slot) => seq[Math.min(slot, seq.length - 1)];
+  } else if (hasFlying) {
+    typeAt = (slot) => (slot % 2 === 0 ? 'ice' : 'arrow');
+  } else {
+    typeAt = buildTypeBySlot;
+  }
+  return { order: pts, typeAt };
 }
 
 function effStats(tw, tier) {
@@ -109,7 +144,8 @@ function simulateLevel(level, policy) {
   let status = 'spawning';
   const towers = []; // {type, gx, gy, tier, lastFire}
   const enemies = [];
-  const order = coverageOrder(level);
+  const plan = planForPolicy(level, policy);
+  const order = plan.order;
   let buildIdx = 0;
   let spawnedThisWave = 0;
   // env-таймеры
@@ -132,13 +168,13 @@ function simulateLevel(level, policy) {
 
   const spawnEnemy = (type, gx, gy, elite) => {
     const st = EN[type];
-    const hp = Math.round(st.hp * level.difficulty.hpMul) * (elite ? 8 : 1);
+    const hp = Math.round(st.hp * level.difficulty.hpMul) * (elite ? 6 : 1);
     enemies.push({
       type,
       hp,
       maxHp: hp,
       speed: st.speed,
-      reward: Math.round(st.reward * level.difficulty.rewardMul) * (elite ? 10 : 1),
+      reward: Math.round(st.reward * level.difficulty.rewardMul) * (elite ? 8 : 1),
       damage: st.damage,
       abilities: st.abilities ?? [],
       splitInto: st.splitInto,
@@ -152,7 +188,7 @@ function simulateLevel(level, policy) {
   };
 
   const economy = () => {
-    if (policy !== 'reference') return;
+    if (policy === 'none') return;
     for (;;) {
       let acted = false;
       const oldest = towers.find((tw) => tw.tier < 3);
@@ -166,7 +202,7 @@ function simulateLevel(level, policy) {
         }
       }
       if (buildIdx < order.length) {
-        const type = buildTypeBySlot(buildIdx);
+        const type = plan.typeAt(buildIdx);
         const cost = TW[type].cost;
         if (gold >= cost) {
           gold -= cost;
@@ -224,10 +260,20 @@ function simulateLevel(level, policy) {
       if (t - tw.lastFire < cd) continue;
       let best = null;
       let bestD = Infinity;
+      let bestC = Infinity;
       for (const e of enemies) {
         if (e.hp <= 0) continue;
         const d = Math.hypot(e.x - tw.gx, e.y - tw.gy);
-        if (d <= eff.range && d < bestD) {
+        if (d > eff.range) continue;
+        if (policy === 'adaptive') {
+          // first: ближайший к кристаллу, ничья — ближайший к башне.
+          const dc = Math.hypot(e.x - last.x, e.y - last.y);
+          if (dc < bestC || (dc === bestC && d < bestD)) {
+            bestC = dc;
+            bestD = d;
+            best = e;
+          }
+        } else if (d < bestD) {
           bestD = d;
           best = e;
         }
@@ -372,29 +418,45 @@ function main() {
     return;
   }
   const levels = loadLevels();
-  const rows = levels.map((l) => simulateLevel(l, 'reference'));
-  const byBiome = {};
-  for (const r of rows) {
-    const b = (byBiome[r.biomeId] ??= { levels: 0, wins: 0, stars: 0 });
-    b.levels += 1;
-    if (r.win) b.wins += 1;
-    b.stars += r.stars;
-  }
-  const summary = {};
-  console.log('biome | levels | wins | winrate | avgStars');
-  for (const b of Object.keys(byBiome).sort((a, z) => Number(a) - Number(z))) {
-    const s = byBiome[b];
-    summary[b] = {
-      levels: s.levels,
-      wins: s.wins,
-      winrate: Math.round((s.wins / s.levels) * 1000) / 10,
-      avgStars: Math.round((s.stars / s.levels) * 100) / 100,
+  const slim = (r) => ({ win: r.win, crystalLeft: r.crystalLeft, stars: r.stars, duration: r.duration });
+  const rows = levels.map((l) => {
+    const sim = simulateLevel(l, 'reference');
+    const ad = simulateLevel(l, 'adaptive');
+    return {
+      levelNumber: l.levelNumber,
+      biomeId: l.biomeId,
+      dumb: slim(sim),
+      adaptive: slim(ad),
     };
-    console.log(
-      `${b} | ${s.levels} | ${s.wins} | ${summary[b].winrate}% | ${summary[b].avgStars}`,
-    );
-  }
-  writeFileSync(resolve(here, 'simReport.json'), JSON.stringify({ levels: rows, summary }, null, 2) + '\n');
+  });
+  const summarize = (key) => {
+    const byBiome = {};
+    for (const r of rows) {
+      const s = (byBiome[r.biomeId] ??= { levels: 0, wins: 0, stars: 0, crystal: 0 });
+      s.levels += 1;
+      if (r[key].win) s.wins += 1;
+      s.stars += r[key].stars;
+      s.crystal += r[key].crystalLeft;
+    }
+    const summary = {};
+    console.log(`policy ${key} | biome | levels | wins | winrate | avgStars | avgCrystal`);
+    for (const b of Object.keys(byBiome).sort((a, z) => Number(a) - Number(z))) {
+      const s = byBiome[b];
+      summary[b] = {
+        levels: s.levels,
+        wins: s.wins,
+        winrate: Math.round((s.wins / s.levels) * 1000) / 10,
+        avgStars: Math.round((s.stars / s.levels) * 100) / 100,
+        avgCrystal: Math.round((s.crystal / s.levels) * 100) / 100,
+      };
+      console.log(
+        `${key} | ${b} | ${s.levels} | ${s.wins} | ${summary[b].winrate}% | ${summary[b].avgStars} | ${summary[b].avgCrystal}`,
+      );
+    }
+    return summary;
+  };
+  const report = { levels: rows, summary: { dumb: summarize('dumb'), adaptive: summarize('adaptive') } };
+  writeFileSync(resolve(here, 'simReport.json'), JSON.stringify(report, null, 2) + '\n');
   console.log('wrote tools/simReport.json');
 }
 

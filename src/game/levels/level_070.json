@@ -142,12 +142,12 @@
       "number": 1,
       "spawns": [
         {
-          "enemy": "spore",
+          "enemy": "puffling",
           "count": 3,
           "delay": 1
         },
         {
-          "enemy": "puffling",
+          "enemy": "truffle",
           "count": 2,
           "delay": 1
         }
@@ -157,14 +157,14 @@
       "number": 2,
       "spawns": [
         {
-          "enemy": "spore",
+          "enemy": "puffling",
           "count": 4,
-          "delay": 0.85
+          "delay": 0.86
         },
         {
-          "enemy": "puffling",
+          "enemy": "truffle",
           "count": 3,
-          "delay": 0.85
+          "delay": 0.86
         }
       ]
     },
@@ -174,17 +174,17 @@
         {
           "enemy": "spore",
           "count": 4,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "puffling",
           "count": 3,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "truffle",
-          "count": 3,
-          "delay": 0.7
+          "count": 2,
+          "delay": 0.73
         }
       ]
     },
@@ -194,17 +194,17 @@
         {
           "enemy": "spore",
           "count": 3,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "puffling",
-          "count": 5,
-          "delay": 0.55
+          "count": 4,
+          "delay": 0.59
         },
         {
           "enemy": "truffle",
-          "count": 4,
-          "delay": 0.55
+          "count": 3,
+          "delay": 0.59
         }
       ]
     },
@@ -214,25 +214,25 @@
         {
           "enemy": "spore",
           "count": 3,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "puffling",
-          "count": 5,
-          "delay": 0.4
+          "count": 4,
+          "delay": 0.45
         },
         {
           "enemy": "truffle",
-          "count": 6,
-          "delay": 0.4
+          "count": 5,
+          "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 8.6,
-    "rewardMul": 3.98,
-    "startingGold": 265
+    "hpMul": 4.77,
+    "rewardMul": 4.17,
+    "startingGold": 394
   },
   "environmentEffects": [],
   "terrain": [],

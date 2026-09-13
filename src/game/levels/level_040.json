@@ -79,6 +79,10 @@
     {
       "x": 4,
       "y": 11
+    },
+    {
+      "x": 4,
+      "y": 4
     }
   ],
   "waves": [
@@ -86,12 +90,12 @@
       "number": 1,
       "spawns": [
         {
-          "enemy": "spore",
+          "enemy": "puffling",
           "count": 2,
           "delay": 1
         },
         {
-          "enemy": "puffling",
+          "enemy": "truffle",
           "count": 3,
           "delay": 1
         }
@@ -101,14 +105,14 @@
       "number": 2,
       "spawns": [
         {
-          "enemy": "spore",
+          "enemy": "puffling",
           "count": 3,
-          "delay": 0.85
+          "delay": 0.86
         },
         {
-          "enemy": "puffling",
+          "enemy": "truffle",
           "count": 4,
-          "delay": 0.85
+          "delay": 0.86
         }
       ]
     },
@@ -118,17 +122,17 @@
         {
           "enemy": "spore",
           "count": 2,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "puffling",
           "count": 2,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "truffle",
-          "count": 6,
-          "delay": 0.7
+          "count": 5,
+          "delay": 0.73
         }
       ]
     },
@@ -138,17 +142,17 @@
         {
           "enemy": "spore",
           "count": 3,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "puffling",
           "count": 4,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "truffle",
-          "count": 5,
-          "delay": 0.55
+          "count": 3,
+          "delay": 0.59
         }
       ]
     },
@@ -157,26 +161,26 @@
       "spawns": [
         {
           "enemy": "spore",
-          "count": 4,
-          "delay": 0.4
+          "count": 3,
+          "delay": 0.45
         },
         {
           "enemy": "puffling",
           "count": 4,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "truffle",
-          "count": 6,
-          "delay": 0.4
+          "count": 5,
+          "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 2.6,
-    "rewardMul": 1.73,
-    "startingGold": 115
+    "hpMul": 1.89,
+    "rewardMul": 1.65,
+    "startingGold": 154
   },
   "environmentEffects": [],
   "terrain": [],

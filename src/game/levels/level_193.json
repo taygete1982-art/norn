@@ -95,6 +95,14 @@
     {
       "x": 0,
       "y": 1
+    },
+    {
+      "x": 3,
+      "y": 4
+    },
+    {
+      "x": 3,
+      "y": 8
     }
   ],
   "waves": [
@@ -119,12 +127,12 @@
         {
           "enemy": "clown",
           "count": 4,
-          "delay": 0.85
+          "delay": 0.86
         },
         {
           "enemy": "juggler",
           "count": 3,
-          "delay": 0.85
+          "delay": 0.86
         }
       ]
     },
@@ -134,22 +142,22 @@
         {
           "enemy": "clown",
           "count": 2,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "juggler",
-          "count": 3,
-          "delay": 0.7
+          "count": 2,
+          "delay": 0.73
         },
         {
           "enemy": "magician",
           "count": 2,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "elephant",
           "count": 3,
-          "delay": 0.7
+          "delay": 0.73
         }
       ]
     },
@@ -159,22 +167,22 @@
         {
           "enemy": "clown",
           "count": 3,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "juggler",
-          "count": 3,
-          "delay": 0.55
+          "count": 2,
+          "delay": 0.59
         },
         {
           "enemy": "magician",
-          "count": 3,
-          "delay": 0.55
+          "count": 2,
+          "delay": 0.59
         },
         {
           "enemy": "elephant",
           "count": 3,
-          "delay": 0.55
+          "delay": 0.59
         }
       ]
     },
@@ -183,31 +191,31 @@
       "spawns": [
         {
           "enemy": "clown",
-          "count": 3,
-          "delay": 0.4
+          "count": 2,
+          "delay": 0.45
         },
         {
           "enemy": "juggler",
           "count": 3,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "magician",
-          "count": 4,
-          "delay": 0.4
+          "count": 3,
+          "delay": 0.45
         },
         {
           "enemy": "elephant",
           "count": 4,
-          "delay": 0.4
+          "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 35.2,
-    "rewardMul": 10.4,
-    "startingGold": 320
+    "hpMul": 11.18,
+    "rewardMul": 7.91,
+    "startingGold": 426
   },
   "environmentEffects": [],
   "terrain": [],

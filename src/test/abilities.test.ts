@@ -120,16 +120,16 @@ describe('Enemy abilities (data-driven)', () => {
     expect(w.getComponent<{ hp: number }>(e, 'Health')!.hp).toBe(35);
   });
 
-  it('elite: hp ×8, награда ×10, спавн из волны и убивается', () => {
+  it('elite: hp ×6, награда ×8, спавн из волны и убивается', () => {
     // makeElite напрямую
     const w = new World();
     const e = EnemyFactory.create(w, 'goblin', 0, 0);
     EnemyFactory.makeElite(w, e);
     expect(w.getComponent<{ hp: number; maxHp: number }>(e, 'Health')).toEqual({
-      hp: 400,
-      maxHp: 400,
+      hp: 300,
+      maxHp: 300,
     });
-    expect(w.getComponent<{ reward: number }>(e, 'Enemy')!.reward).toBe(100);
+    expect(w.getComponent<{ reward: number }>(e, 'Enemy')!.reward).toBe(80);
     expect(w.hasComponent(e, 'Elite')).toBe(true);
 
     // спавн элиты из волны
@@ -143,9 +143,9 @@ describe('Enemy abilities (data-driven)', () => {
     WaveSpawnerSystem.update(w2, 0.5);
     const elites = w2.query('Health', 'Enemy', 'Elite');
     expect(elites.length).toBe(1);
-    expect(w2.getComponent<{ hp: number }>(elites[0], 'Health')!.hp).toBe(400);
+    expect(w2.getComponent<{ hp: number }>(elites[0], 'Health')!.hp).toBe(300);
 
-    // элита убивается обычным уроном, награда ×10
+    // элита убивается обычным уроном, награда ×8
     TowerAttackSystem.reset();
     TowerFactory.create(w2, 'cannon', 1, 1);
     const startGold = GameStateManager.getGold();
@@ -157,6 +157,6 @@ describe('Enemy abilities (data-driven)', () => {
       if (w2.query('Health', 'Enemy').length === 0) break;
     }
     expect(w2.query('Health', 'Enemy').length).toBe(0);
-    expect(GameStateManager.getGold()).toBe(startGold + 100);
+    expect(GameStateManager.getGold()).toBe(startGold + 80);
   });
 });

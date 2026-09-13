@@ -23,17 +23,17 @@ const GH = 12;
 
 const BIOMES = {
   1: { roster: ['imp', 'goblin', 'troll'], hpBase: 1, rwBase: 1, goldBase: 100, heavy: 'troll' },
-  2: { roster: ['spore', 'puffling', 'truffle'], hpBase: 2, rwBase: 1.5, goldBase: 100, heavy: 'truffle' },
+  2: { roster: ['spore', 'puffling', 'truffle'], hpBase: 1.6, rwBase: 1.4, goldBase: 130, heavy: 'truffle' },
   // Биомы 3–6: пулы волн и базы сложности.
   // Базы предполагают tier3-апгрейды к концу биома,
   // финальный тюнинг — после шага баланс-симулятора.
-  // ПРИМЕЧАНИЕ: goldBase биома 2 = 100, а не 120 — иначе файлы 037..072
-  // изменились бы относительно прошлой генерации (требование: байт-в-байт).
-  3: { roster: ['jelly', 'caramel', 'chocgolem', 'candyfairy'], hpBase: 3.5, rwBase: 2.2, goldBase: 150, heavy: 'chocgolem' },
-  4: { roster: ['balloon', 'cloudsheep', 'stormling', 'fluffdragon'], hpBase: 6, rwBase: 3.2, goldBase: 180, heavy: 'fluffdragon' },
-  5: { roster: ['clownfish', 'jellyfish', 'seahorse', 'pearlwhale'], hpBase: 10, rwBase: 4.6, goldBase: 220, heavy: 'pearlwhale' },
-  6: { roster: ['clown', 'juggler', 'magician', 'elephant'], hpBase: 16, rwBase: 6.5, goldBase: 260, heavy: 'elephant' },
+  3: { roster: ['jelly', 'caramel', 'chocgolem', 'candyfairy'], hpBase: 2.4, rwBase: 1.9, goldBase: 170, heavy: 'chocgolem' },
+  4: { roster: ['balloon', 'cloudsheep', 'stormling', 'fluffdragon'], hpBase: 3.4, rwBase: 2.6, goldBase: 215, heavy: 'fluffdragon' },
+  5: { roster: ['clownfish', 'jellyfish', 'seahorse', 'pearlwhale'], hpBase: 4.8, rwBase: 3.5, goldBase: 270, heavy: 'pearlwhale' },
+  6: { roster: ['clown', 'juggler', 'magician', 'elephant'], hpBase: 6.5, rwBase: 4.6, goldBase: 330, heavy: 'elephant' },
 };
+
+const FLYING_TYPES = new Set(['spore', 'candyfairy', 'balloon', 'fluffdragon', 'magician']);
 
 const r2 = (v) => Math.round(v * 100) / 100;
 
@@ -98,13 +98,14 @@ function genBuildPoints(rnd, path, lib) {
   return cand.slice(0, Math.min(target, cand.length));
 }
 
-/** 5 волн: ранние — 2 типа, поздние — все 3; count 5→14, delay 1.0→0.4. */
+/** 5 волн: ранние — 2 НЕлетающих типа, поздние — весь пул, flying ≤ 4 за волну. */
 function genWaves(rnd, biome) {
   const waves = [];
+  const nonFly = biome.roster.filter((t) => !FLYING_TYPES.has(t));
   for (let i = 0; i < 5; i++) {
-    const count = Math.round(5 + i * 2.25);
-    const delay = r2(1.0 - i * 0.15);
-    const types = i < 2 ? [biome.roster[0], biome.roster[1]] : [...biome.roster];
+    const count = Math.round(5 + i * (7 / 4)); // 5 → 12
+    const delay = r2(1.0 - i * 0.1375); // 1.0 → 0.45
+    const types = i < 2 ? nonFly.slice(0, 2) : [...biome.roster];
     const spawns = [];
     let rest = count;
     types.forEach((t, ti) => {
@@ -117,9 +118,33 @@ function genWaves(rnd, biome) {
         rest -= take;
       }
     });
+    if (i >= 2) capFlying(spawns, 4);
     waves.push({ number: i + 1, spawns });
   }
   return waves;
+}
+
+/** Срезать летунов сверх капа, переложив единицы в нелетающие записи.
+ *  Элитные записи не трогает (ни убавить, ни добавить). */
+function capFlying(spawns, cap) {
+  const flyIdx = spawns
+    .map((s, i) => (FLYING_TYPES.has(s.enemy) && !s.elite ? i : -1))
+    .filter((i) => i >= 0);
+  const nonFly = spawns
+    .map((s, i) => (!FLYING_TYPES.has(s.enemy) && !s.elite ? i : -1))
+    .filter((i) => i >= 0);
+  if (flyIdx.length === 0 || nonFly.length === 0) return;
+  let over = flyIdx.reduce((s, i) => s + spawns[i].count, 0) - cap;
+  let ni = 0;
+  while (over > 0) {
+    let bi = flyIdx[0];
+    for (const idx of flyIdx) if (spawns[idx].count > spawns[bi].count) bi = idx;
+    if (spawns[bi].count <= 0) break;
+    spawns[bi].count -= 1;
+    spawns[nonFly[ni % nonFly.length]].count += 1;
+    ni += 1;
+    over -= 1;
+  }
 }
 
 /** Terrain и ветер по биомам: choco на пути (3), wind по осям (4), bubble-зоны (5). */
@@ -184,11 +209,31 @@ export function generateLevel(n) {
   const rnd = mulberry32(n);
   const path = genPath(rnd, lib);
   const buildPoints = genBuildPoints(rnd, path, lib);
+  // Flying-коридор (биомы 2, 3, 4, 6): 2 точки вдоль прямой спавн→кристалл
+  // (средняя колонка, y около 4 и 8), в конец списка. Сим берёт первую оттуда.
+  if ([2, 3, 4, 6].includes(biomeId)) {
+    const [x0] = path[0];
+    const [x1] = path[path.length - 1];
+    const mx = Math.max(0, Math.min(GW - 1, Math.round((x0 + x1) / 2)));
+    const taken = new Set([
+      ...path.map(([x, y]) => x + ',' + y),
+      ...buildPoints.map(([x, y]) => x + ',' + y),
+    ]);
+    for (const cy of [4, 8]) {
+      const k = mx + ',' + cy;
+      if (!taken.has(k)) {
+        taken.add(k);
+        buildPoints.push([mx, cy]);
+      }
+    }
+  }
   const waves = genWaves(rnd, B);
   const { terrain, wind } = genTerrainWind(rnd, biomeId, path);
   const isBoss = n === 36 || n === 72 || n === 108 || n === 144 || n === 180 || n === 216;
   if (isBoss) {
     waves[4].spawns.push({ enemy: B.heavy, count: 1, delay: 1.0, elite: true });
+    // Летящий босс занимает слот капа: срезать обычных летунов до 3.
+    if (FLYING_TYPES.has(B.heavy)) capFlying(waves[4].spawns, 3);
   }
   return {
     biomeId,
@@ -198,9 +243,9 @@ export function generateLevel(n) {
     buildPoints: buildPoints.map(([x, y]) => ({ x, y })),
     waves,
     difficulty: {
-      hpMul: r2(B.hpBase * (1 + 0.1 * (lib - 1))),
-      rewardMul: r2(B.rwBase * (1 + 0.05 * (lib - 1))),
-      startingGold: B.goldBase + 5 * (lib - 1),
+      hpMul: r2(B.hpBase * (1 + 0.06 * (lib - 1))),
+      rewardMul: r2(B.rwBase * (1 + 0.06 * (lib - 1))),
+      startingGold: B.goldBase + 8 * (lib - 1),
     },
     environmentEffects: [],
     terrain,

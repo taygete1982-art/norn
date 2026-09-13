@@ -83,6 +83,14 @@
     {
       "x": 7,
       "y": 8
+    },
+    {
+      "x": 6,
+      "y": 4
+    },
+    {
+      "x": 6,
+      "y": 8
     }
   ],
   "waves": [
@@ -107,12 +115,12 @@
         {
           "enemy": "jelly",
           "count": 4,
-          "delay": 0.85
+          "delay": 0.86
         },
         {
           "enemy": "caramel",
           "count": 3,
-          "delay": 0.85
+          "delay": 0.86
         }
       ]
     },
@@ -122,22 +130,22 @@
         {
           "enemy": "jelly",
           "count": 3,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "caramel",
           "count": 2,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "chocgolem",
-          "count": 3,
-          "delay": 0.7
+          "count": 2,
+          "delay": 0.73
         },
         {
           "enemy": "candyfairy",
           "count": 2,
-          "delay": 0.7
+          "delay": 0.73
         }
       ]
     },
@@ -147,22 +155,22 @@
         {
           "enemy": "jelly",
           "count": 2,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "caramel",
-          "count": 4,
-          "delay": 0.55
+          "count": 3,
+          "delay": 0.59
         },
         {
           "enemy": "chocgolem",
           "count": 3,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "candyfairy",
-          "count": 3,
-          "delay": 0.55
+          "count": 2,
+          "delay": 0.59
         }
       ]
     },
@@ -171,31 +179,31 @@
       "spawns": [
         {
           "enemy": "jelly",
-          "count": 4,
-          "delay": 0.4
+          "count": 3,
+          "delay": 0.45
         },
         {
           "enemy": "caramel",
           "count": 4,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "chocgolem",
           "count": 3,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "candyfairy",
-          "count": 3,
-          "delay": 0.4
+          "count": 2,
+          "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 5.25,
-    "rewardMul": 2.75,
-    "startingGold": 175
+    "hpMul": 3.12,
+    "rewardMul": 2.47,
+    "startingGold": 210
   },
   "environmentEffects": [],
   "terrain": [

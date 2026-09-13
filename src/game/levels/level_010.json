@@ -115,12 +115,12 @@
         {
           "enemy": "imp",
           "count": 4,
-          "delay": 0.85
+          "delay": 0.86
         },
         {
           "enemy": "goblin",
           "count": 3,
-          "delay": 0.85
+          "delay": 0.86
         }
       ]
     },
@@ -129,18 +129,18 @@
       "spawns": [
         {
           "enemy": "imp",
-          "count": 4,
-          "delay": 0.7
+          "count": 3,
+          "delay": 0.73
         },
         {
           "enemy": "goblin",
-          "count": 4,
-          "delay": 0.7
+          "count": 3,
+          "delay": 0.73
         },
         {
           "enemy": "troll",
-          "count": 2,
-          "delay": 0.7
+          "count": 3,
+          "delay": 0.73
         }
       ]
     },
@@ -149,18 +149,18 @@
       "spawns": [
         {
           "enemy": "imp",
-          "count": 5,
-          "delay": 0.55
+          "count": 4,
+          "delay": 0.59
         },
         {
           "enemy": "goblin",
-          "count": 4,
-          "delay": 0.55
+          "count": 3,
+          "delay": 0.59
         },
         {
           "enemy": "troll",
           "count": 3,
-          "delay": 0.55
+          "delay": 0.59
         }
       ]
     },
@@ -170,25 +170,25 @@
         {
           "enemy": "imp",
           "count": 4,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "goblin",
           "count": 4,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "troll",
-          "count": 6,
-          "delay": 0.4
+          "count": 4,
+          "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 1.9,
-    "rewardMul": 1.45,
-    "startingGold": 145
+    "hpMul": 1.54,
+    "rewardMul": 1.54,
+    "startingGold": 172
   },
   "environmentEffects": [],
   "terrain": [],

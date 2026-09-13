@@ -127,12 +127,12 @@
         {
           "enemy": "clownfish",
           "count": 4,
-          "delay": 0.85
+          "delay": 0.86
         },
         {
           "enemy": "jellyfish",
           "count": 3,
-          "delay": 0.85
+          "delay": 0.86
         }
       ]
     },
@@ -142,22 +142,22 @@
         {
           "enemy": "clownfish",
           "count": 3,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "jellyfish",
           "count": 2,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "seahorse",
           "count": 2,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "pearlwhale",
-          "count": 3,
-          "delay": 0.7
+          "count": 2,
+          "delay": 0.73
         }
       ]
     },
@@ -167,22 +167,22 @@
         {
           "enemy": "clownfish",
           "count": 2,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "jellyfish",
           "count": 3,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "seahorse",
           "count": 3,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "pearlwhale",
-          "count": 4,
-          "delay": 0.55
+          "count": 2,
+          "delay": 0.59
         }
       ]
     },
@@ -192,30 +192,30 @@
         {
           "enemy": "clownfish",
           "count": 4,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "jellyfish",
-          "count": 4,
-          "delay": 0.4
+          "count": 3,
+          "delay": 0.45
         },
         {
           "enemy": "seahorse",
-          "count": 3,
-          "delay": 0.4
+          "count": 2,
+          "delay": 0.45
         },
         {
           "enemy": "pearlwhale",
           "count": 3,
-          "delay": 0.4
+          "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 26,
-    "rewardMul": 8.28,
-    "startingGold": 300
+    "hpMul": 9.41,
+    "rewardMul": 6.86,
+    "startingGold": 398
   },
   "environmentEffects": [],
   "terrain": [

@@ -86,12 +86,12 @@
       "number": 1,
       "spawns": [
         {
-          "enemy": "balloon",
+          "enemy": "cloudsheep",
           "count": 2,
           "delay": 1
         },
         {
-          "enemy": "cloudsheep",
+          "enemy": "stormling",
           "count": 3,
           "delay": 1
         }
@@ -101,14 +101,14 @@
       "number": 2,
       "spawns": [
         {
-          "enemy": "balloon",
+          "enemy": "cloudsheep",
           "count": 4,
-          "delay": 0.85
+          "delay": 0.86
         },
         {
-          "enemy": "cloudsheep",
+          "enemy": "stormling",
           "count": 3,
-          "delay": 0.85
+          "delay": 0.86
         }
       ]
     },
@@ -118,22 +118,22 @@
         {
           "enemy": "balloon",
           "count": 3,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "cloudsheep",
           "count": 3,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "stormling",
           "count": 2,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "fluffdragon",
-          "count": 2,
-          "delay": 0.7
+          "count": 1,
+          "delay": 0.73
         }
       ]
     },
@@ -142,23 +142,23 @@
       "spawns": [
         {
           "enemy": "balloon",
-          "count": 3,
-          "delay": 0.55
+          "count": 2,
+          "delay": 0.59
         },
         {
           "enemy": "cloudsheep",
           "count": 3,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "stormling",
           "count": 3,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "fluffdragon",
-          "count": 3,
-          "delay": 0.55
+          "count": 2,
+          "delay": 0.59
         }
       ]
     },
@@ -167,31 +167,31 @@
       "spawns": [
         {
           "enemy": "balloon",
-          "count": 4,
-          "delay": 0.4
+          "count": 2,
+          "delay": 0.45
         },
         {
           "enemy": "cloudsheep",
           "count": 3,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "stormling",
-          "count": 4,
-          "delay": 0.4
+          "count": 5,
+          "delay": 0.45
         },
         {
           "enemy": "fluffdragon",
-          "count": 3,
-          "delay": 0.4
+          "count": 2,
+          "delay": 0.45
         }
       ]
     }
   ],
   "difficulty": {
-    "hpMul": 8.4,
-    "rewardMul": 3.84,
-    "startingGold": 200
+    "hpMul": 4.22,
+    "rewardMul": 3.22,
+    "startingGold": 247
   },
   "environmentEffects": [],
   "terrain": [],

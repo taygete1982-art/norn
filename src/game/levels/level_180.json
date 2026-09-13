@@ -167,12 +167,12 @@
         {
           "enemy": "clownfish",
           "count": 4,
-          "delay": 0.85
+          "delay": 0.86
         },
         {
           "enemy": "jellyfish",
           "count": 3,
-          "delay": 0.85
+          "delay": 0.86
         }
       ]
     },
@@ -181,23 +181,23 @@
       "spawns": [
         {
           "enemy": "clownfish",
-          "count": 3,
-          "delay": 0.7
+          "count": 2,
+          "delay": 0.73
         },
         {
           "enemy": "jellyfish",
           "count": 3,
-          "delay": 0.7
+          "delay": 0.73
         },
         {
           "enemy": "seahorse",
-          "count": 3,
-          "delay": 0.7
+          "count": 2,
+          "delay": 0.73
         },
         {
           "enemy": "pearlwhale",
-          "count": 1,
-          "delay": 0.7
+          "count": 2,
+          "delay": 0.73
         }
       ]
     },
@@ -206,23 +206,23 @@
       "spawns": [
         {
           "enemy": "clownfish",
-          "count": 4,
-          "delay": 0.55
+          "count": 3,
+          "delay": 0.59
         },
         {
           "enemy": "jellyfish",
-          "count": 3,
-          "delay": 0.55
+          "count": 2,
+          "delay": 0.59
         },
         {
           "enemy": "seahorse",
           "count": 3,
-          "delay": 0.55
+          "delay": 0.59
         },
         {
           "enemy": "pearlwhale",
           "count": 2,
-          "delay": 0.55
+          "delay": 0.59
         }
       ]
     },
@@ -231,23 +231,23 @@
       "spawns": [
         {
           "enemy": "clownfish",
-          "count": 4,
-          "delay": 0.4
+          "count": 3,
+          "delay": 0.45
         },
         {
           "enemy": "jellyfish",
           "count": 4,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "seahorse",
-          "count": 5,
-          "delay": 0.4
+          "count": 4,
+          "delay": 0.45
         },
         {
           "enemy": "pearlwhale",
           "count": 1,
-          "delay": 0.4
+          "delay": 0.45
         },
         {
           "enemy": "pearlwhale",
@@ -259,9 +259,9 @@
     }
   ],
   "difficulty": {
-    "hpMul": 45,
-    "rewardMul": 12.65,
-    "startingGold": 395
+    "hpMul": 14.88,
+    "rewardMul": 10.85,
+    "startingGold": 550
   },
   "environmentEffects": [],
   "terrain": [

@@ -75,15 +75,15 @@ export class EnemyFactory {
     });
   }
 
-  /** Элита босс-волны: hp ×8, награда ×10, маркер масштаба 1.5. */
+  /** Элита босс-волны: hp ×6, награда ×8, маркер масштаба 1.5. */
   public static makeElite(world: World, id: number): void {
     const health = world.getComponent<{ hp: number; maxHp: number }>(id, 'Health');
     const enemy = world.getComponent<{ reward: number }>(id, 'Enemy');
     if (health) {
-      health.hp = health.hp * 8;
-      health.maxHp = health.maxHp * 8;
+      health.hp = health.hp * 6;
+      health.maxHp = health.maxHp * 6;
     }
-    if (enemy) enemy.reward = enemy.reward * 10;
+    if (enemy) enemy.reward = enemy.reward * 8;
     world.addComponent(id, 'Elite', { scale: 1.5 });
   }
 }

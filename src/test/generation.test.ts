@@ -80,13 +80,15 @@ describe('level generation (files on disk)', () => {
     }
   });
 
-  it('buildPoints: в границах, не на пути, 3..8 штук', () => {
+  it('buildPoints: в границах, не на пути, 3..8 (3..10 с flying-коридором)', () => {
     for (const f of files()) {
       if (f === 'level_001.json') continue;
       const L = read(f);
       const road = new Set(L.path.map((p: any) => `${p.x},${p.y}`));
+      // Биомы 2,3,4,6 получают +2 точки коридора сверх базовых 3..8.
+      const maxBp = [2, 3, 4, 6].includes(L.biomeId) ? 10 : 8;
       expect(L.buildPoints.length, f).toBeGreaterThanOrEqual(3);
-      expect(L.buildPoints.length, f).toBeLessThanOrEqual(8);
+      expect(L.buildPoints.length, f).toBeLessThanOrEqual(maxBp);
       for (const b of L.buildPoints) {
         expect(road.has(`${b.x},${b.y}`), `${f} bp`).toBe(false);
         expect(b.x >= 0 && b.x < 8 && b.y >= 0 && b.y < 12, `${f} bp`).toBe(true);
@@ -121,10 +123,37 @@ describe('level generation (files on disk)', () => {
       }
     }
     const byNum = new Map(levels.map((l) => [l.levelNumber, l]));
-    expect(byNum.get(2).difficulty).toEqual({ hpMul: 1.1, rewardMul: 1.05, startingGold: 105 });
-    expect(byNum.get(36).difficulty).toEqual({ hpMul: 4.5, rewardMul: 2.75, startingGold: 275 });
-    expect(byNum.get(37).difficulty).toEqual({ hpMul: 2, rewardMul: 1.5, startingGold: 100 });
-    expect(byNum.get(72).difficulty).toEqual({ hpMul: 9, rewardMul: 4.13, startingGold: 275 });
+    expect(byNum.get(2).difficulty).toEqual({ hpMul: 1.06, rewardMul: 1.06, startingGold: 108 });
+    expect(byNum.get(36).difficulty).toEqual({ hpMul: 3.1, rewardMul: 3.1, startingGold: 380 });
+    expect(byNum.get(37).difficulty).toEqual({ hpMul: 1.6, rewardMul: 1.4, startingGold: 130 });
+    expect(byNum.get(72).difficulty).toEqual({ hpMul: 4.96, rewardMul: 4.34, startingGold: 410 });
+  });
+
+  it('flying: в волнах 1-2 нет, в 3-5 не более 4 за волну; коридор в точках', () => {
+    const FLY = new Set(['spore', 'candyfairy', 'balloon', 'fluffdragon', 'magician']);
+    for (const f of files()) {
+      if (f === 'level_001.json') continue;
+      const L = read(f);
+      L.waves.forEach((w: any, i: number) => {
+        const flyCount = w.spawns
+          .filter((s: any) => FLY.has(s.enemy))
+          .reduce((s: number, x: any) => s + x.count, 0);
+        if (i < 2) expect(flyCount, `${f} wave ${i + 1}`).toBe(0);
+        else expect(flyCount, `${f} wave ${i + 1}`).toBeLessThanOrEqual(4);
+      });
+      // Коридор: средняя колонка y=4,8 — в точках, если не на пути.
+      if ([2, 3, 4, 6].includes(L.biomeId)) {
+        const road = new Set(L.path.map((p: any) => `${p.x},${p.y}`));
+        const bp = new Set(L.buildPoints.map((p: any) => `${p.x},${p.y}`));
+        const mx = Math.max(
+          0,
+          Math.min(7, Math.round((L.path[0].x + L.path[L.path.length - 1].x) / 2)),
+        );
+        for (const cy of [4, 8]) {
+          if (!road.has(`${mx},${cy}`)) expect(bp.has(`${mx},${cy}`), `${f}`).toBe(true);
+        }
+      }
+    }
   });
 
   it('боссы ровно на 36/72/108/144/180/216: флаг + элитный спавн тяжёлого', () => {
