@@ -1,5 +1,5 @@
-import { Container, Graphics, Text } from 'pixi.js';
-import { PAL } from '../art/PixelArt';
+import { Container, Graphics } from 'pixi.js';
+import { STONE, glyph, stonePanel } from './StoneTheme';
 
 export interface TowerUpgradeMenuOptions {
   title: string;
@@ -49,14 +49,13 @@ export class TowerUpgradeMenu extends Container {
   private wideButton(y: number, label: string, primary: boolean, cb: () => void): void {
     const btn = new Container();
     btn.position.set(STAGE_W / 2, y);
-    const bg = new Graphics();
-    bg.rect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H);
-    bg.fill({ color: 0x444444, alpha: 1 });
-    bg.stroke({ width: 3, color: primary ? PAL.gold : PAL.stone, alpha: 0.9 });
-    const text = new Text({
-      text: label,
-      style: { fontFamily: 'Arial', fontSize: 26, fill: PAL.uiText, align: 'center' },
+    // Каменная плашка с руной: primary горит цианом.
+    const bg = stonePanel(BTN_W, BTN_H, {
+      border: primary ? STONE.border : STONE.borderDim,
+      seed: primary ? 51 : 52,
     });
+    bg.position.set(-BTN_W / 2, -BTN_H / 2);
+    const text = glyph(label, 26, STONE.glyph, 'center');
     text.anchor.set(0.5);
     btn.addChild(bg, text);
     btn.eventMode = 'static';
@@ -82,28 +81,19 @@ export class TowerUpgradeMenu extends Container {
     });
     this.addChild(backdrop);
 
-    const panel = new Graphics();
-    panel.rect(0, STAGE_H - SHEET_H, STAGE_W, SHEET_H);
-    panel.fill({ color: PAL.uiPanel, alpha: 0.98 });
-    panel.rect(0, STAGE_H - SHEET_H, STAGE_W, 4);
-    panel.fill({ color: PAL.gold, alpha: 1 });
+    const panel = stonePanel(STAGE_W, SHEET_H, { seed: 34 });
+    panel.position.set(0, STAGE_H - SHEET_H);
     panel.eventMode = 'static';
     panel.on('pointertap', (e: any) => e?.stopPropagation?.());
     this.sheet.addChild(panel);
 
-    const titleText = new Text({
-      text: title,
-      style: { fontFamily: 'Arial', fontSize: 26, fill: PAL.uiText },
-    });
+    const titleText = glyph(title, 26);
     titleText.anchor.set(0, 0.5);
     titleText.position.set(20, STAGE_H - SHEET_H + 34);
     this.sheet.addChild(titleText);
 
     lines.slice(0, 3).forEach((line, i) => {
-      const t = new Text({
-        text: line,
-        style: { fontFamily: 'Arial', fontSize: 22, fill: PAL.gold },
-      });
+      const t = glyph(line, 22);
       t.anchor.set(0, 0.5);
       t.position.set(20, STAGE_H - SHEET_H + 68 + i * 28);
       this.sheet.addChild(t);
@@ -113,12 +103,9 @@ export class TowerUpgradeMenu extends Container {
     cancel.position.set(STAGE_W - 40, STAGE_H - SHEET_H + 40);
     const cancelBg = new Graphics();
     cancelBg.rect(-20, -20, 40, 40);
-    cancelBg.fill({ color: 0x444444, alpha: 1 });
-    cancelBg.stroke({ width: 2, color: 0xffffff, alpha: 0.8 });
-    const cross = new Text({
-      text: 'X',
-      style: { fontFamily: 'Arial', fontSize: 22, fill: 0xffffff, align: 'center' },
-    });
+    cancelBg.fill({ color: STONE.bg, alpha: 1 });
+    cancelBg.stroke({ width: 2, color: STONE.border, alpha: 0.8 });
+    const cross = glyph('X', 22, STONE.glyph, 'center');
     cross.anchor.set(0.5);
     cancel.addChild(cancelBg, cross);
     cancel.eventMode = 'static';
@@ -132,10 +119,7 @@ export class TowerUpgradeMenu extends Container {
     if (upgradeCost !== null) {
       this.wideButton(STAGE_H - 180, `Улучшить за ${upgradeCost}`, true, onUpgrade);
     } else {
-      const max = new Text({
-        text: 'MAX tier',
-        style: { fontFamily: 'Arial', fontSize: 24, fill: PAL.gold, align: 'center' },
-      });
+      const max = glyph('MAX tier', 24, STONE.glyph, 'center');
       max.anchor.set(0.5);
       max.position.set(STAGE_W / 2, STAGE_H - 180);
       this.sheet.addChild(max);

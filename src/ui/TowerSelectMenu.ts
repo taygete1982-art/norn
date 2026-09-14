@@ -1,7 +1,7 @@
-import { Container, Graphics, Text } from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 import { ConfigLoader } from '../game/config/ConfigLoader';
 import { TowerType } from '../game/entities/TowerFactory';
-import { PAL } from '../art/PixelArt';
+import { STONE, glyph, stonePanel } from './StoneTheme';
 
 export interface TowerSelectMenuOptions {
   gridX: number;
@@ -23,10 +23,11 @@ const BTN_Y = STAGE_H - 260;
 const GAP = 20;
 const PAD = 20;
 
-const COLORS: Record<string, number> = {
-  arrow: 0x2ecc71,
-  cannon: 0xe74c3c,
-  ice: 0x3498db,
+/** Рунические глифы типов башен. */
+const RUNES: Record<string, string> = {
+  arrow: '↑',
+  cannon: '●',
+  ice: '◆',
 };
 
 const NAMES: Record<string, string> = {
@@ -78,44 +79,32 @@ export class TowerSelectMenu extends Container {
     });
     this.addChild(backdrop);
 
-    // Панель bottom-sheet.
-    const panel = new Graphics();
-    panel.rect(0, STAGE_H - SHEET_H, STAGE_W, SHEET_H);
-    panel.fill({ color: PAL.uiPanel, alpha: 0.98 });
-    panel.rect(0, STAGE_H - SHEET_H, STAGE_W, 4);
-    panel.fill({ color: PAL.gold, alpha: 1 });
+    // Панель bottom-sheet: тёмный камень с циановой кромкой.
+    const panel = stonePanel(STAGE_W, SHEET_H, { seed: 33 });
+    panel.position.set(0, STAGE_H - SHEET_H);
     panel.eventMode = 'static';
     // Тап по панели мимо кнопок — ничего не делает, не закрывает.
     panel.on('pointertap', (e: any) => e?.stopPropagation?.());
     this.sheet.addChild(panel);
 
-    const title = new Text({
-      text: `Башня? (${gridX}, ${gridY})`,
-      style: { fontFamily: 'Arial', fontSize: 26, fill: PAL.uiText },
-    });
+    const title = glyph(`Башня? (${gridX}, ${gridY})`, 26);
     title.anchor.set(0, 0.5);
     title.position.set(PAD, STAGE_H - SHEET_H + 34);
     this.sheet.addChild(title);
 
-    const hint = new Text({
-      text: `Gold: ${gold}`,
-      style: { fontFamily: 'Arial', fontSize: 22, fill: PAL.gold },
-    });
+    const hint = glyph(`Gold: ${gold}`, 22);
     hint.anchor.set(0, 0.5);
     hint.position.set(PAD, STAGE_H - SHEET_H + 68);
     this.sheet.addChild(hint);
 
-    // Крестик отмены.
+    // Крестик отмены в каменной плашке.
     const cancel = new Container();
     cancel.position.set(STAGE_W - PAD - 20, STAGE_H - SHEET_H + 40);
     const cancelBg = new Graphics();
     cancelBg.rect(-20, -20, 40, 40);
-    cancelBg.fill({ color: 0x444444, alpha: 1 });
-    cancelBg.stroke({ width: 2, color: 0xffffff, alpha: 0.8 });
-    const cross = new Text({
-      text: 'X',
-      style: { fontFamily: 'Arial', fontSize: 22, fill: 0xffffff, align: 'center' },
-    });
+    cancelBg.fill({ color: STONE.bg, alpha: 1 });
+    cancelBg.stroke({ width: 2, color: STONE.border, alpha: 0.8 });
+    const cross = glyph('X', 22, STONE.glyph, 'center');
     cross.anchor.set(0.5);
     cancel.addChild(cancelBg, cross);
     cancel.eventMode = 'static';
@@ -131,18 +120,20 @@ export class TowerSelectMenu extends Container {
       const bx = PAD + i * (BTN_W + GAP);
       const btn = new Container();
       btn.position.set(bx + BTN_W / 2, BTN_Y + BTN_H / 2);
-      const bg = new Graphics();
-      bg.rect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H);
-      bg.fill({ color: COLORS[t.id] ?? 0x888888, alpha: 1 });
-      bg.stroke({ width: 3, color: 0xffffff, alpha: 0.85 });
-      bg.rect(-BTN_W / 2 + 6, -BTN_H / 2 + 6, BTN_W - 12, BTN_H - 12);
-      bg.stroke({ width: 2, color: 0x000000, alpha: 0.5 });
-      btn.addChild(bg);
-      const label = new Text({
-        text: `${NAMES[t.id] ?? t.id}\n${t.cost}g`,
-        style: { fontFamily: 'Arial', fontSize: 26, fill: 0xffffff, align: 'center' },
+      // Каменная плашка: рамка горит при доступности, гаснет при нехватке.
+      const bg = stonePanel(BTN_W, BTN_H, {
+        border: affordable ? STONE.border : STONE.borderDim,
+        seed: 100 + i,
       });
+      bg.position.set(-BTN_W / 2, -BTN_H / 2);
+      btn.addChild(bg);
+      const rune = glyph(RUNES[t.id] ?? '◆', 30, affordable ? STONE.border : STONE.borderDim, 'center');
+      rune.anchor.set(0.5);
+      rune.position.set(0, -42);
+      btn.addChild(rune);
+      const label = glyph(`${NAMES[t.id] ?? t.id}\n${t.cost}g`, 24, STONE.glyph, 'center');
       label.anchor.set(0.5);
+      label.position.set(0, 18);
       btn.addChild(label);
       btn.alpha = affordable ? 1 : 0.4;
       if (affordable) {
@@ -159,17 +150,14 @@ export class TowerSelectMenu extends Container {
       this.sheet.addChild(btn);
     });
 
-    // Широкая кнопка отмены.
+    // Широкая кнопка отмены: каменная плашка.
     const cancelWide = new Container();
     cancelWide.position.set(STAGE_W / 2, STAGE_H - 48);
     const cancelWideBg = new Graphics();
     cancelWideBg.rect(-(STAGE_W / 2 - PAD), -24, STAGE_W - PAD * 2, 48);
-    cancelWideBg.fill({ color: 0x444444, alpha: 1 });
-    cancelWideBg.stroke({ width: 2, color: 0xffffff, alpha: 0.6 });
-    const cancelWideLabel = new Text({
-      text: 'Отмена',
-      style: { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff, align: 'center' },
-    });
+    cancelWideBg.fill({ color: STONE.bg, alpha: 1 });
+    cancelWideBg.stroke({ width: 2, color: STONE.borderDim, alpha: 0.8 });
+    const cancelWideLabel = glyph('Отмена', 24, STONE.glyph, 'center');
     cancelWideLabel.anchor.set(0.5);
     cancelWide.addChild(cancelWideBg, cancelWideLabel);
     cancelWide.eventMode = 'static';

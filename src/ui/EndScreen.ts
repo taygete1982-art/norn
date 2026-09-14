@@ -1,5 +1,5 @@
-import { Container, Graphics, Text } from 'pixi.js';
-import { PAL } from '../art/PixelArt';
+import { Container, Graphics } from 'pixi.js';
+import { STONE, glyph, stonePanel } from './StoneTheme';
 
 export interface EndScreenOptions {
   won: boolean;
@@ -27,14 +27,13 @@ export class EndScreen extends Container {
   private button(y: number, label: string, primary: boolean, cb: () => void): void {
     const btn = new Container();
     btn.position.set(STAGE_W / 2, y);
-    const bg = new Graphics();
-    bg.rect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H);
-    bg.fill({ color: PAL.uiPanel, alpha: 1 });
-    bg.stroke({ width: 3, color: primary ? PAL.gold : PAL.stone, alpha: 1 });
-    const text = new Text({
-      text: label,
-      style: { fontFamily: 'Arial', fontSize: 30, fill: PAL.uiText, align: 'center' },
+    // Каменная плашка с руной: primary горит цианом.
+    const bg = stonePanel(BTN_W, BTN_H, {
+      border: primary ? STONE.border : STONE.borderDim,
+      seed: primary ? 61 : 62,
     });
+    bg.position.set(-BTN_W / 2, -BTN_H / 2);
+    const text = glyph(label, 30, STONE.glyph, 'center');
     text.anchor.set(0.5);
     btn.addChild(bg, text);
     btn.eventMode = 'static';
@@ -59,34 +58,22 @@ export class EndScreen extends Container {
 
     const px = (STAGE_W - PANEL_W) / 2;
     const py = (STAGE_H - PANEL_H) / 2;
-    const panel = new Graphics();
-    panel.rect(px, py, PANEL_W, PANEL_H);
-    panel.fill({ color: PAL.uiPanel, alpha: 0.98 });
-    panel.stroke({ width: 4, color: won ? PAL.gold : PAL.stoneDark, alpha: 1 });
+    // Тёмный камень с циановой рамкой.
+    const panel = stonePanel(PANEL_W, PANEL_H, { seed: 63 });
+    panel.position.set(px, py);
     this.addChild(panel);
 
-    const title = new Text({
-      text: won ? 'Победа!' : 'Поражение',
-      style: {
-        fontFamily: 'Arial',
-        fontSize: 54,
-        fill: won ? PAL.gold : PAL.uiText,
-        align: 'center',
-      },
-    });
+    const title = glyph(won ? 'Победа!' : 'Поражение', 54, STONE.glyph, 'center');
     title.anchor.set(0.5, 0);
     title.position.set(STAGE_W / 2, py + 36);
     this.addChild(title);
 
     let y = py + 130;
     if (won) {
-      // Три слота звёзд: заработанные горят.
+      // Три циановые руны звёзд: заработанные горят.
       for (let i = 0; i < 3; i++) {
         const lit = i < stars;
-        const star = new Text({
-          text: lit ? '★' : '☆',
-          style: { fontFamily: 'Arial', fontSize: 72, fill: lit ? PAL.gold : 0x555566 },
-        });
+        const star = glyph('★', 72, lit ? STONE.runeLit : STONE.runeDim, 'center');
         star.anchor.set(0.5, 0);
         star.position.set(STAGE_W / 2 + (i - 1) * 96, y);
         this.addChild(star);

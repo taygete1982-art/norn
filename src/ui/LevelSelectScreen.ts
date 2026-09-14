@@ -1,6 +1,6 @@
-import { Container, Graphics, Text } from 'pixi.js';
-import { PAL } from '../art/PixelArt';
+import { Container, Graphics } from 'pixi.js';
 import { LevelMeta } from '../game/levels/types';
+import { ROMAN, STONE, glyph, stoneGradient, stonePanel } from './StoneTheme';
 
 export interface LevelProgressView {
   levelNumber: number;
@@ -29,15 +29,6 @@ const TAB_X = (STAGE_W - (6 * TAB_W + 5 * TAB_GAP)) / 2;
 const TAB_Y = 258;
 const LEVELS_PER_BIOME = 36;
 
-const BIOME_COLORS: Record<number, number> = {
-  1: PAL.grass,
-  2: PAL.earth,
-  3: PAL.gold,
-  4: PAL.cloud,
-  5: PAL.crystal,
-  6: PAL.roadLight,
-};
-
 function biomeOf(levelNumber: number): number {
   return Math.floor((levelNumber - 1) / LEVELS_PER_BIOME) + 1;
 }
@@ -53,77 +44,64 @@ export class LevelSelectScreen extends Container {
   }
 
   private lockIcon(parent: Container, x: number, y: number, s = 1): void {
+    // Каменная руна замка.
     const lock = new Graphics();
     lock.rect(x - 9 * s, y - 12 * s, 18 * s, 12 * s);
-    lock.stroke({ width: 4, color: PAL.stone, alpha: 1 });
+    lock.stroke({ width: 4, color: STONE.lock, alpha: 1 });
     lock.rect(x - 13 * s, y, 26 * s, 22 * s);
-    lock.fill({ color: PAL.stoneDark, alpha: 1 });
-    lock.stroke({ width: 2, color: PAL.stone, alpha: 1 });
+    lock.fill({ color: STONE.bgDark, alpha: 1 });
+    lock.stroke({ width: 2, color: STONE.lock, alpha: 1 });
     lock.rect(x - 2 * s, y + 6 * s, 4 * s, 10 * s);
-    lock.fill({ color: 0x1a1a2e, alpha: 1 });
+    lock.fill({ color: STONE.bgDeep, alpha: 1 });
     parent.addChild(lock);
   }
 
   private build(): void {
     const { totalStars } = this.opts;
 
-    const bg = new Graphics();
-    bg.rect(0, 0, STAGE_W, 1280);
-    bg.fill({ color: PAL.void, alpha: 1 });
-    this.addChild(bg);
+    // Фон: градиент камня во тьму.
+    this.addChild(stoneGradient(STAGE_W, 1280, STONE.bgDeep, STONE.black));
 
-    const bar = new Graphics();
-    bar.rect(0, 0, STAGE_W, 64);
-    bar.fill({ color: PAL.uiPanel, alpha: 0.95 });
-    bar.rect(0, 60, STAGE_W, 4);
-    bar.fill({ color: PAL.gold, alpha: 1 });
+    const bar = stonePanel(STAGE_W, 64, { seed: 41 });
     this.addChild(bar);
-    const total = new Text({
-      text: `★ ${totalStars}`,
-      style: { fontFamily: 'Arial', fontSize: 32, fill: PAL.gold },
-    });
+    // Плашка суммарных звёзд: камень с руной и числом.
+    const slab = stonePanel(150, 48, { seed: 42 });
+    slab.position.set(16, 8);
+    this.addChild(slab);
+    const total = glyph(`★ ${totalStars}`, 30, STONE.border, 'left');
     total.anchor.set(0, 0.5);
-    total.position.set(24, 32);
+    total.position.set(30, 32);
     this.addChild(total);
 
-    const title = new Text({
-      text: 'NORN',
-      style: { fontFamily: 'Arial', fontSize: 64, fill: PAL.gold, align: 'center' },
-    });
+    const title = glyph('NORN', 64, STONE.glyph, 'center');
     title.anchor.set(0.5, 0);
     title.position.set(STAGE_W / 2, 84);
     this.addChild(title);
 
-    const sub = new Text({
-      text: 'Выбери уровень',
-      style: { fontFamily: 'Arial', fontSize: 26, fill: PAL.uiText, align: 'center' },
-    });
+    const sub = glyph('Выбери уровень', 26, STONE.glyph, 'center');
     sub.anchor.set(0.5, 0);
     sub.position.set(STAGE_W / 2, 168);
     this.addChild(sub);
 
-    // Вкладки биомов; без сгенерированных уровней вкладка залочена.
+    // Вкладки биомов — каменные таблички с римским номером; без уровней залочена.
     for (let b = 1; b <= 6; b++) {
       const has = this.opts.levels.some((m) => biomeOf(m.levelNumber) === b);
       const tab = new Container();
       tab.position.set(TAB_X + (b - 1) * (TAB_W + TAB_GAP), TAB_Y);
       const bgTab = new Graphics();
       bgTab.rect(0, 0, TAB_W, TAB_H);
-      bgTab.fill({ color: PAL.uiPanel, alpha: has ? 1 : 0.4 });
+      bgTab.fill({ color: STONE.bg, alpha: has ? 1 : 0.4 });
       bgTab.stroke({
         width: 3,
-        color: b === this.selectedBiome ? PAL.gold : PAL.stoneDark,
+        color: b === this.selectedBiome ? STONE.border : STONE.borderDim,
         alpha: 1,
       });
       tab.addChild(bgTab);
-      const dot = new Graphics();
-      dot.rect(10, TAB_H / 2 - 11, 22, 22);
-      dot.fill({ color: has ? (BIOME_COLORS[b] ?? PAL.stone) : 0x333333, alpha: 1 });
-      tab.addChild(dot);
-      const label = new Text({
-        text: has ? String(b) : '×',
-        style: { fontFamily: 'Arial', fontSize: 28, fill: has ? PAL.uiText : 0x666666 },
-      });
+      const rune = new Graphics();
+      rune.rect(10, TAB_H / 2 - 11, 22, 22);
+      rune.fill({ color: has ? STONE.border : 0x333333, alpha: has ? 0.85 : 1 });
+      tab.addChild(rune);
+      const label = glyph(has ? ROMAN[b - 1] : '×', 28, has ? STONE.glyph : 0x666666, 'center');
       label.anchor.set(0.5);
       label.position.set(TAB_W / 2 + 10, TAB_H / 2);
       tab.addChild(label);
@@ -155,10 +133,10 @@ export class LevelSelectScreen extends Container {
       const bgTab = tab.children[0] as Graphics;
       bgTab.clear();
       bgTab.rect(0, 0, TAB_W, TAB_H);
-      bgTab.fill({ color: PAL.uiPanel, alpha: 1 });
+      bgTab.fill({ color: STONE.bg, alpha: 1 });
       bgTab.stroke({
         width: 3,
-        color: i + 1 === this.selectedBiome ? PAL.gold : PAL.stoneDark,
+        color: i + 1 === this.selectedBiome ? STONE.border : STONE.borderDim,
         alpha: 1,
       });
       // Иконка и подпись — дети 1 и 2, их не трогаем.
@@ -188,33 +166,27 @@ export class LevelSelectScreen extends Container {
       btn.position.set(cx, cy);
       const bgBtn = new Graphics();
       bgBtn.rect(0, 0, BTN, BTN);
-      bgBtn.fill({ color: PAL.uiPanel, alpha: unlocked ? 1 : 0.4 });
-      bgBtn.stroke({ width: 2, color: PAL.gold, alpha: unlocked ? 0.9 : 0.25 });
+      bgBtn.fill({ color: STONE.bg, alpha: unlocked ? 1 : 0.4 });
+      bgBtn.stroke({ width: 2, color: unlocked ? STONE.border : STONE.borderDim, alpha: unlocked ? 0.9 : 0.25 });
       btn.addChild(bgBtn);
 
       const icon = new Graphics();
       icon.rect(8, 8, 26, 26);
       icon.fill({
-        color: meta ? (BIOME_COLORS[meta.biomeId] ?? PAL.stone) : 0x333333,
+        color: STONE.bgDark,
         alpha: 1,
       });
       btn.addChild(icon);
 
       if (unlocked) {
-        const num = new Text({
-          text: String(levelNumber),
-          style: { fontFamily: 'Arial', fontSize: 34, fill: PAL.uiText, align: 'center' },
-        });
+        const num = glyph(String(levelNumber), 34, STONE.glyph, 'center');
         num.anchor.set(0.5);
         num.position.set(BTN / 2, BTN / 2 - 6);
         btn.addChild(num);
 
         for (let s = 0; s < 3; s++) {
           const lit = s < stars;
-          const star = new Text({
-            text: lit ? '★' : '☆',
-            style: { fontFamily: 'Arial', fontSize: 18, fill: lit ? PAL.gold : 0x555566 },
-          });
+          const star = glyph('★', 18, lit ? STONE.runeLit : STONE.runeDim, 'center');
           star.anchor.set(0.5);
           star.position.set(BTN / 2 + (s - 1) * 22, BTN - 14);
           btn.addChild(star);

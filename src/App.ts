@@ -4,6 +4,7 @@ import { World } from './ecs/world';
 import { GameStateManager } from './game/GameState';
 import { ConfigLoader } from './game/config/ConfigLoader';
 import { getTile, getRoadKeys, PAL, TileId, torchGlow } from './art/PixelArt';
+import { STONE, glyph, stonePanel } from './ui/StoneTheme';
 import {
   buildLightMap,
   buildFogVignette,
@@ -416,40 +417,27 @@ export class MainScene extends Container {
   }
 
   private buildHud(): void {
-    // Плоская UI-плашка сверху.
-    const panel = new Graphics();
-    panel.rect(0, 0, W, 150);
-    panel.fill({ color: PAL.uiPanel, alpha: 0.95 });
-    panel.rect(0, 146, W, 4);
-    panel.fill({ color: PAL.gold, alpha: 1 });
+    // Каменная UI-плашка сверху с циановой рунической кромкой.
+    const panel = stonePanel(W, 150, { seed: 21 });
     this.uiLayer.addChild(panel);
+    const edge = new Graphics();
+    edge.rect(0, 146, W, 4);
+    edge.fill({ color: STONE.border, alpha: 1 });
+    this.uiLayer.addChild(edge);
 
-    const style = { fontFamily: 'Arial', fontSize: 28, fill: PAL.uiText };
-    this.hudWave = new Text({ text: 'Wave 1/5', style });
+    this.hudWave = glyph('Wave 1/5', 28);
     this.hudWave.position.set(30, 30);
-    this.hudGold = new Text({
-      text: 'Gold: 0',
-      style: { fontFamily: 'Arial', fontSize: 28, fill: PAL.gold },
-    });
+    this.hudGold = glyph('Gold: 0', 28);
     this.hudGold.position.set(30, 70);
-    this.hudCrystal = new Text({ text: 'Crystal: 0', style });
+    this.hudCrystal = glyph('Crystal: 0', 28);
     this.hudCrystal.position.set(30, 110);
-    this.hudCenter = new Text({
-      text: '',
-      style: { fontFamily: 'Arial', fontSize: 64, fill: 0xffe066, align: 'center' },
-    });
+    this.hudCenter = glyph('', 64, STONE.glyph, 'center');
     this.hudCenter.anchor.set(0.5);
     this.hudCenter.position.set(W / 2, H / 2);
-    this.hudSub = new Text({
-      text: '',
-      style: { fontFamily: 'Arial', fontSize: 28, fill: 0xffffff, align: 'center' },
-    });
+    this.hudSub = glyph('', 28, STONE.glyph, 'center');
     this.hudSub.anchor.set(0.5);
     this.hudSub.position.set(W / 2, H / 2 + 80);
-    this.toastText = new Text({
-      text: '',
-      style: { fontFamily: 'Arial', fontSize: 36, fill: PAL.gold, align: 'center' },
-    });
+    this.toastText = glyph('', 36, STONE.glyph, 'center');
     this.toastText.anchor.set(0.5);
     this.toastText.position.set(W / 2, 190);
     this.toastText.alpha = 0;
