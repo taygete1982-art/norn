@@ -2,3 +2,5 @@ node_modules/
 dist/
 *.local
 tools/simReport.json
+OUTPUT.json
+nul
