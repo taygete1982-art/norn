@@ -103,12 +103,12 @@ export class BossSystem {
   private static abilityName(boss: BossState): string {
     const t = this.effectiveType(boss);
     return t === 'summon'
-      ? 'Призыв!'
+      ? 'Призывает слуг...'
       : t === 'sleepPulse'
-        ? 'Сонный пульс!'
+        ? 'Усыпляет башни...'
         : t === 'frostWave'
-          ? 'Морозная волна!'
-          : 'Щит!';
+          ? 'Морозная волна...'
+          : 'Щит неуязвимости...';
   }
 
   private static effectiveType(boss: BossState): string {

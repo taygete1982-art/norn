@@ -14,6 +14,8 @@ export interface BossAbilityConfig {
 
 export interface EnemyConfig {
   id: string
+  /** Имя для HUD/тостов (канон #07, на баланс не влияет) */
+  displayName: string
   hp: number
   speed: number
   reward: number

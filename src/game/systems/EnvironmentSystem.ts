@@ -158,13 +158,13 @@ export class EnvironmentSystem {
         const bp = this.buildPoints[idx];
         this.cloud = { gx: bp.gx, gy: bp.gy, until: now + SPORE_DUR };
         this.nextCloudAt = now + SPORE_PERIOD;
-        this.toasts.push('Споры!');
+        this.toasts.push('Споры пробуждаются...');
       }
     }
     // Ветер: тост один раз за забег.
     if (this.biomeId === 4 && this.wind && !this.windAnnounced) {
       this.windAnnounced = true;
-      this.toasts.push('Ветер!');
+      this.toasts.push('Ветер меняет направление...');
     }
     // Пузыри: тост при первой пострадавшей башне.
     if (this.biomeId === 5 && !this.bubbleAnnounced) {
@@ -172,7 +172,7 @@ export class EnvironmentSystem {
         const p = world.getComponent<{ gx: number; gy: number }>(id, 'GridPos');
         if (p && this.inBubble(p.gx, p.gy)) {
           this.bubbleAnnounced = true;
-          this.toasts.push('Пузыри!');
+          this.toasts.push('Пузыри замедляют стрельбу...');
           break;
         }
       }
@@ -190,7 +190,7 @@ export class EnvironmentSystem {
             buffUntil: now + DANCE_DUR + BUFF_DUR,
           };
           this.nextDanceAt = now + DANCE_PERIOD;
-          this.toasts.push('Карнавал!');
+          this.toasts.push('Карнавал начинается...');
         } else {
           this.nextDanceAt = now + DANCE_PERIOD;
         }

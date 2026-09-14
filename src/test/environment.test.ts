@@ -116,7 +116,7 @@ describe('Environment mechanics', () => {
     EnvironmentSystem.update(world); // танец до 43
     TowerAttackSystem.update(world, 1.0);
     expect(hp()).toBe(50);
-    expect(EnvironmentSystem.takeToast()).toBe('Карнавал!');
+    expect(EnvironmentSystem.takeToast()).toBe('Карнавал начинается...');
 
     world.updateTime(3.5);
     EnvironmentSystem.update(world); // бафф до 48
@@ -139,7 +139,7 @@ describe('Environment mechanics', () => {
     expect(EnvironmentSystem.getCloud(world)).not.toBeNull();
     TowerAttackSystem.update(world, 1.0);
     expect(hp()).toBe(50);
-    expect(EnvironmentSystem.takeToast()).toBe('Споры!');
+    expect(EnvironmentSystem.takeToast()).toBe('Споры пробуждаются...');
 
     world.updateTime(6);
     EnvironmentSystem.update(world);
