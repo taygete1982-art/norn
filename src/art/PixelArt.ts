@@ -26,6 +26,27 @@ export const PALETTE = {
   gold: '#ffd75e',
 } as const;
 
+/**
+ * Тёмная палитра земли (канон #05, dark-engine-lite).
+ * Базальт + циановые швы + рунические постаменты.
+ * Палитра сущностей (PALETTE) не тронута — спрайты перепишут следующим каноном.
+ */
+export const DARK_PALETTE = {
+  ground: '#17181d',
+  ground_light: '#23252c',
+  road: '#3a3c44',
+  road_seam: '#35e0ff',
+  pedestal: '#2e3038',
+  skirt_top: '#1e2028',
+  skirt_mid: '#141620',
+  skirt_bottom: '#0c0e14',
+  moss: '#4a5b3a',
+  moss_light: '#6a7a4a',
+  cloud: '#1a1c24',
+  bgTop: '#0c0e14',
+  bgBottom: '#000000',
+} as const;
+
 /** Те же цвета числом — для параметров Pixi (fill/stroke/tint). */
 export const PAL = {
   grass: 0x6abe30,
@@ -123,6 +144,31 @@ export const TILE_H = 32;
 
 const cache = new Map<string, Texture>();
 
+/**
+ * Тёмный режим земли (канон #05). По умолчанию true: getTile для тайлов
+ * земли/дороги/постаментов/юбки/фона/облаков рисует из DARK_PALETTE.
+ * Спрайты сущностей не затронуты. Переключение сбрасывает кэш текстур.
+ */
+export let darkMode = true;
+
+export function setDarkMode(v: boolean): void {
+  if (darkMode === v) return;
+  darkMode = v;
+  cache.clear();
+}
+
+/** Линейная интерполяция двух hex-цветов: k=0 → a, k=1 → b. */
+function lerpHex(a: string, b: string, k: number): string {
+  const [r0, g0, b0] = hexToRgb(a);
+  const [r1, g1, b1] = hexToRgb(b);
+  const t = Math.max(0, Math.min(1, k));
+  return css([
+    Math.round(r0 + (r1 - r0) * t),
+    Math.round(g0 + (g1 - g0) * t),
+    Math.round(b0 + (b1 - b0) * t),
+  ]);
+}
+
 /** Детерминированный RNG, чтобы тайлы выглядели одинаково каждый запуск. */
 function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
@@ -205,11 +251,46 @@ function fillDiamond(
   }
 }
 
-function drawGrass(ctx: CanvasRenderingContext2D, seed: number): void {
+function drawGrass(ctx: CanvasRenderingContext2D, seed: number, dark = false): void {
+  if (dark) {
+    // Базальтовая земля: тёмная база + светлый крап.
+    fillDiamond(ctx, DARK_PALETTE.ground, seed, DARK_PALETTE.ground_light, 8);
+    return;
+  }
   fillDiamond(ctx, PALETTE.grass, seed, PALETTE.grassDark, 8);
 }
 
-function drawRoad(ctx: CanvasRenderingContext2D, seed: number): void {
+function drawRoad(ctx: CanvasRenderingContext2D, seed: number, dark = false): void {
+  if (dark) {
+    // Тёмная брусчатка с тонкими циановыми швами между камнями.
+    fillDiamond(ctx, DARK_PALETTE.road, seed, DARK_PALETTE.ground, 5);
+    const rnd = mulberry32(seed + 999);
+    // Швы: 3 ломаные горизонтальные линии поперёк ромба.
+    ctx.fillStyle = DARK_PALETTE.road_seam;
+    for (let row = 0; row < 3; row++) {
+      const y = 9 + row * 7 + Math.floor(rnd() * 3);
+      const half = 32 - Math.abs(y - 15.5) * 2;
+      for (let x = Math.ceil(32 - half) + 3; x < 32 + half - 3; x += 4) {
+        ctx.fillRect(x, y, 2, 1);
+      }
+    }
+    // Вертикальные короткие швы-стыки.
+    for (let i = 0; i < 6; i++) {
+      const x = 16 + Math.floor(rnd() * 32);
+      const y = 8 + Math.floor(rnd() * 16);
+      const half = 32 - Math.abs(y - 15.5) * 2;
+      if (Math.abs(x - 32) < half - 4) ctx.fillRect(x, y, 1, 3);
+    }
+    // Светлые камешки брусчатки.
+    ctx.fillStyle = DARK_PALETTE.ground_light;
+    for (let i = 0; i < 6; i++) {
+      const x = 16 + Math.floor(rnd() * 32);
+      const y = 10 + Math.floor(rnd() * 12);
+      const half = 32 - Math.abs(y - 15.5) * 2;
+      if (Math.abs(x - 32) < half - 3) ctx.fillRect(x, y, 2, 1);
+    }
+    return;
+  }
   fillDiamond(ctx, PALETTE.road, seed, PALETTE.earth, 5);
   // Светлая середина + точки-камешки.
   const rnd = mulberry32(seed + 999);
@@ -235,25 +316,27 @@ function drawRoad(ctx: CanvasRenderingContext2D, seed: number): void {
 }
 
 /** Каменный постамент точки строительства 64×44. */
-function drawPedestal(ctx: CanvasRenderingContext2D): void {
+function drawPedestal(ctx: CanvasRenderingContext2D, dark = false): void {
+  const face = dark ? shade(DARK_PALETTE.pedestal, 0.7) : PALETTE.stoneDark;
+  const top = dark ? DARK_PALETTE.pedestal : PALETTE.stone;
   // Лобовая грань (толщина плиты).
-  ctx.fillStyle = PALETTE.stoneDark;
+  ctx.fillStyle = face;
   for (let y = 24; y < 38; y++) {
     const half = 28 - (y - 24) * 1.6;
     for (let x = Math.ceil(32 - half); x < 32 + half; x++) ctx.fillRect(x, y, 1, 1);
   }
-  ctx.fillStyle = shade(PALETTE.stoneDark, 0.7);
+  ctx.fillStyle = shade(face, 0.7);
   ctx.fillRect(8, 37, 48, 2);
   // Верхняя плита.
   for (let y = 0; y < 28; y++) {
     const half = 30 - Math.abs(y - 14) * 2.1;
     for (let x = Math.ceil(32 - half); x < 32 + half; x++) {
-      ctx.fillStyle = PALETTE.stone;
+      ctx.fillStyle = top;
       ctx.fillRect(x, y, 1, 1);
     }
   }
   // Тёмный контур плиты.
-  ctx.fillStyle = PALETTE.stoneDark;
+  ctx.fillStyle = dark ? shade(DARK_PALETTE.pedestal, 0.6) : PALETTE.stoneDark;
   for (let y = 0; y < 13; y++) {
     const half = 30 - Math.abs(y - 14) * 2.1;
     ctx.fillRect(Math.ceil(32 - half), y, 1, 1);
@@ -265,15 +348,70 @@ function drawPedestal(ctx: CanvasRenderingContext2D): void {
     ctx.fillRect(Math.floor(32 + half) - 1, y, 1, 1);
   }
   // Внутренний ромб-подложка под башню.
-  ctx.fillStyle = shade(PALETTE.stone, 0.82);
+  ctx.fillStyle = dark ? shade(DARK_PALETTE.pedestal, 1.3) : shade(PALETTE.stone, 0.82);
   for (let y = 7; y < 21; y++) {
     const half = 13 - Math.abs(y - 14) * 0.95;
     for (let x = Math.ceil(32 - half); x < 32 + half; x++) ctx.fillRect(x, y, 1, 1);
   }
+  if (dark) {
+    // Циановый рунический круг: серия точек по окружности (каждая 6-я — руна пошире).
+    ctx.fillStyle = DARK_PALETTE.road_seam;
+    const cx = 32;
+    const cy = 14;
+    const r = 10;
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * Math.PI * 2;
+      const x = Math.round(cx + Math.cos(a) * r * 1.9);
+      const y = Math.round(cy + Math.sin(a) * r * 0.55);
+      ctx.fillRect(x, y, i % 6 === 0 ? 2 : 1, 1);
+    }
+  }
 }
 
 /** Юбка острова: сверху ромб травы, ниже столб земли с камнями и рваный низ. */
-function drawSkirt(ctx: CanvasRenderingContext2D, h: number, seed: number): void {
+function drawSkirt(ctx: CanvasRenderingContext2D, h: number, seed: number, dark = false): void {
+  if (dark) {
+    // Тёмная юбка: базальтовый верх, градиент к почти-чёрному низу.
+    // Мох — только на верхней кромке, нижние ряды без мха.
+    const tmp = document.createElement('canvas');
+    tmp.width = TILE_W;
+    tmp.height = TILE_H;
+    const tctx = tmp.getContext('2d')!;
+    tctx.imageSmoothingEnabled = false;
+    fillDiamond(tctx, DARK_PALETTE.ground, seed, DARK_PALETTE.ground_light, 6);
+    ctx.drawImage(tmp, 0, 0);
+    const rnd = mulberry32(seed + 7);
+    // Мох на верхней кромке столба.
+    ctx.fillStyle = DARK_PALETTE.moss;
+    for (let i = 0; i < 10; i++) {
+      const x = 12 + Math.floor(rnd() * 40);
+      const y = 24 + Math.floor(rnd() * 5);
+      ctx.fillRect(x, y, 2, 1);
+    }
+    ctx.fillStyle = DARK_PALETTE.moss_light;
+    for (let i = 0; i < 5; i++) {
+      const x = 14 + Math.floor(rnd() * 36);
+      const y = 24 + Math.floor(rnd() * 3);
+      ctx.fillRect(x, y, 1, 1);
+    }
+    // Столб: градиент skirt_top -> skirt_bottom.
+    for (let y = 24; y < h - 6; y++) {
+      const taper = Math.max(10, 26 - (y - 24) * 0.12);
+      const k = (y - 24) / Math.max(1, h - 30);
+      ctx.fillStyle = lerpHex(DARK_PALETTE.skirt_top, DARK_PALETTE.skirt_bottom, k);
+      for (let x = Math.ceil(32 - taper); x < 32 + taper; x++) ctx.fillRect(x, y, 1, 1);
+      ctx.fillStyle = shade(DARK_PALETTE.skirt_top, 0.6);
+      ctx.fillRect(Math.ceil(32 - taper), y, 2, 1);
+      ctx.fillRect(Math.floor(32 + taper) - 2, y, 2, 1);
+    }
+    // Рваный нижний край.
+    ctx.fillStyle = DARK_PALETTE.skirt_bottom;
+    for (let x = 6; x < 58; x += 2) {
+      const teeth = 3 + Math.floor(rnd() * 5);
+      for (let y = h - 6; y < h - 6 + teeth && y < h; y++) ctx.fillRect(x, y, 1, 1);
+    }
+    return;
+  }
   // Верхний ромб травы (центр ромба на y=16).
   ctx.save();
   ctx.translate(0, 0);
@@ -319,7 +457,13 @@ function drawSkirt(ctx: CanvasRenderingContext2D, h: number, seed: number): void
 }
 
 /** Пиксельное облако: бело-голубой сгусток с плоским низом. */
-function drawCloud(ctx: CanvasRenderingContext2D, w: number, h: number, seed: number): void {
+function drawCloud(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  seed: number,
+  base: string = PALETTE.cloud,
+): void {
   const rnd = mulberry32(seed);
   const blobs: Array<[number, number, number]> = [];
   const n = 5 + Math.floor(rnd() * 3);
@@ -344,7 +488,7 @@ function drawCloud(ctx: CanvasRenderingContext2D, w: number, h: number, seed: nu
       }
       if (!inside) continue;
       if (y > h * 0.78) continue; // плоский низ
-      ctx.fillStyle = top ? shade(PALETTE.cloud, 1.12) : PALETTE.cloud;
+      ctx.fillStyle = top ? shade(base, 1.12) : base;
       ctx.fillRect(x, y, 1, 1);
     }
   }
@@ -378,6 +522,20 @@ function drawCrystal(ctx: CanvasRenderingContext2D): void {
   ctx.fillRect(8, 60, 32, 3);
 }
 
+/** Тёмный фон: градиент от #0c0e14 (верх) до #000000 (низ). */
+function drawVoidDark(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+  const [r0, g0, b0] = hexToRgb(DARK_PALETTE.bgTop);
+  const [r1, g1, b1] = hexToRgb(DARK_PALETTE.bgBottom);
+  for (let y = 0; y < h; y++) {
+    const k = y / Math.max(1, h - 1);
+    ctx.fillStyle = css([
+      Math.round(r0 + (r1 - r0) * k),
+      Math.round(g0 + (g1 - g0) * k),
+      Math.round(b0 + (b1 - b0) * k),
+    ]);
+    ctx.fillRect(0, y, w, 1);
+  }
+}
 /** Фон пустоты: вертикальный градиент из палитры (бендинг = пиксельная эстетика). */
 function drawVoid(ctx: CanvasRenderingContext2D, w: number, h: number): void {
   const [r0, g0, b0] = hexToRgb(PALETTE.void);
@@ -1437,55 +1595,55 @@ function buildTile(id: TileId): Texture {
   switch (id) {
     case 'grass-a': {
       const [c, ctx] = makeCanvas(TILE_W, TILE_H);
-      drawGrass(ctx, 11);
+      drawGrass(ctx, 11, darkMode);
       cv = c;
       break;
     }
     case 'grass-b': {
       const [c, ctx] = makeCanvas(TILE_W, TILE_H);
-      drawGrass(ctx, 77);
+      drawGrass(ctx, 77, darkMode);
       cv = c;
       break;
     }
     case 'road-a': {
       const [c, ctx] = makeCanvas(TILE_W, TILE_H);
-      drawRoad(ctx, 31);
+      drawRoad(ctx, 31, darkMode);
       cv = c;
       break;
     }
     case 'road-b': {
       const [c, ctx] = makeCanvas(TILE_W, TILE_H);
-      drawRoad(ctx, 57);
+      drawRoad(ctx, 57, darkMode);
       cv = c;
       break;
     }
     case 'pedestal': {
       const [c, ctx] = makeCanvas(64, 44);
-      drawPedestal(ctx);
+      drawPedestal(ctx, darkMode);
       cv = c;
       break;
     }
     case 'skirt-tall': {
       const [c, ctx] = makeCanvas(64, 96);
-      drawSkirt(ctx, 96, 5);
+      drawSkirt(ctx, 96, 5, darkMode);
       cv = c;
       break;
     }
     case 'skirt-short': {
       const [c, ctx] = makeCanvas(64, 72);
-      drawSkirt(ctx, 72, 21);
+      drawSkirt(ctx, 72, 21, darkMode);
       cv = c;
       break;
     }
     case 'cloud-1': {
       const [c, ctx] = makeCanvas(96, 32);
-      drawCloud(ctx, 96, 32, 3);
+      drawCloud(ctx, 96, 32, 3, darkMode ? DARK_PALETTE.cloud : PALETTE.cloud);
       cv = c;
       break;
     }
     case 'cloud-2': {
       const [c, ctx] = makeCanvas(128, 40);
-      drawCloud(ctx, 128, 40, 9);
+      drawCloud(ctx, 128, 40, 9, darkMode ? DARK_PALETTE.cloud : PALETTE.cloud);
       cv = c;
       break;
     }
@@ -1851,7 +2009,8 @@ function buildTile(id: TileId): Texture {
     }
     case 'void-bg': {
       const [c, ctx] = makeCanvas(144, 256);
-      drawVoid(ctx, 144, 256);
+      if (darkMode) drawVoidDark(ctx, 144, 256);
+      else drawVoid(ctx, 144, 256);
       cv = c;
       break;
     }

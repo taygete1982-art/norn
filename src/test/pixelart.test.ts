@@ -1,6 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import { getRoadKeys } from '../art/PixelArt';
+import { getRoadKeys, darkMode, setDarkMode, DARK_PALETTE } from '../art/PixelArt';
 import { PATH } from '../game/systems/MoveSystem';
+
+describe('darkMode flag (pure, no DOM)', () => {
+  it('defaults to true with basalt ground palette', () => {
+    expect(darkMode).toBe(true);
+    expect(DARK_PALETTE.ground).toBe('#17181d');
+    expect(DARK_PALETTE.road_seam).toBe('#35e0ff');
+  });
+
+  it('toggles and restores without DOM', () => {
+    setDarkMode(false);
+    expect(darkMode).toBe(false);
+    setDarkMode(true);
+    expect(darkMode).toBe(true);
+  });
+});
 
 describe('getRoadKeys (pure, no DOM)', () => {
   it('covers straight segment cells', () => {
