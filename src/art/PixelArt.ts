@@ -1,4 +1,4 @@
-import { CanvasSource, Texture } from 'pixi.js';
+import { CanvasSource, Sprite, Texture } from 'pixi.js';
 
 /**
  * Код-генерируемые пиксельные текстуры.
@@ -76,6 +76,8 @@ export type TileId =
   | 'cloud-1'
   | 'cloud-2'
   | 'crystal'
+  | 'crystal_f0'
+  | 'crystal_f1'
   | 'tower_arrow'
   | 'tower_cannon'
   | 'tower_ice'
@@ -494,32 +496,41 @@ function drawCloud(
   }
 }
 
-/** Кристалл: три осколка, контур + блик. */
-function drawCrystal(ctx: CanvasRenderingContext2D): void {
+/**
+ * Кристалл 48×64: ромб с внутренней гранью и слабым glow.
+ * frame: 1 — яркое ядро пульсации (#7ff4ff), 0 — спокойное (#35e0ff).
+ */
+function drawCrystal(ctx: CanvasRenderingContext2D, frame: number): void {
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  const core = frame === 1 ? '#7ff4ff' : C;
   const shard = (x0: number, w0: number, h0: number, lean: number): void => {
-    const yBase = 60;
+    const yBase = 58;
     for (let y = 0; y < h0; y++) {
       const k = y / h0;
       const half = (w0 / 2) * k;
       const cx = x0 + lean * (1 - k);
       for (let x = Math.ceil(cx - half); x < cx + half; x++) {
-        ctx.fillStyle = PALETTE.crystal;
+        ctx.fillStyle = core;
         ctx.fillRect(x, yBase - y, 1, 1);
       }
-      ctx.fillStyle = shade(PALETTE.crystal, 0.55);
+      ctx.fillStyle = shade(core, 0.55);
       ctx.fillRect(Math.ceil(cx - half), yBase - y, 1, 1);
       if (k > 0.4) {
-        ctx.fillStyle = PALETTE.cloud;
+        ctx.fillStyle = W;
         ctx.fillRect(Math.ceil(cx - half) + 1, yBase - y, 1, 1);
       }
     }
   };
-  shard(24, 16, 52, 0);
-  shard(12, 10, 32, -3);
-  shard(36, 10, 38, 3);
-  // Основание-земля под осколками.
-  ctx.fillStyle = PALETTE.earthDark;
-  ctx.fillRect(8, 60, 32, 3);
+  shard(24, 16, 50, 0);
+  shard(12, 10, 30, -3);
+  shard(36, 10, 36, 3);
+  // Тёмный постамент и слабый glow вокруг основания.
+  R(ctx, 8, 58, 32, 4, K);
+  R(ctx, 8, 58, 32, 1, W);
+  R(ctx, 4, 56, 4, 1, C);
+  R(ctx, 40, 56, 4, 1, C);
 }
 
 /** Тёмный фон: градиент от #0c0e14 (верх) до #000000 (низ). */
@@ -551,132 +562,151 @@ function drawVoid(ctx: CanvasRenderingContext2D, w: number, h: number): void {
   }
 }
 
-/** Общее основание башни 64×88: каменная платформа, низ — y 64..88. */
+/** Общее основание башни 64×88: тёмная каменная платформа, низ — y 64..88. */
 function drawTowerBase(ctx: CanvasRenderingContext2D): void {
+  const F = DARK_PALETTE.pedestal;
+  const C = DARK_PALETTE.road_seam;
   for (let y = 64; y < 82; y++) {
     const half = 27 - (y - 64) * 0.7;
     for (let x = Math.ceil(32 - half); x < 32 + half; x++) {
-      ctx.fillStyle = PALETTE.stone;
+      ctx.fillStyle = F;
       ctx.fillRect(x, y, 1, 1);
     }
-    ctx.fillStyle = PALETTE.stoneDark;
+    ctx.fillStyle = shade(F, 0.6);
     ctx.fillRect(Math.ceil(32 - half), y, 1, 1);
     ctx.fillRect(Math.floor(32 + half) - 1, y, 1, 1);
   }
-  ctx.fillStyle = shade(PALETTE.stoneDark, 0.75);
+  ctx.fillStyle = shade(F, 0.5);
   ctx.fillRect(8, 82, 48, 3);
-  ctx.fillStyle = shade(PALETTE.stone, 1.18);
-  ctx.fillRect(12, 64, 40, 2);
+  // Рунический шов фундамента.
+  ctx.fillStyle = C;
+  ctx.fillRect(14, 65, 36, 1);
 }
 
-/** Arrow: деревянная вышка с флажком. Верхние 16px пустые — место под этажи. */
+/**
+ * Arrow: каменный пилон с руническим поясом t1.
+ * Рост по тайрам — в drawTowerTierExtra.
+ */
 function drawTowerArrow(ctx: CanvasRenderingContext2D): void {
   drawTowerBase(ctx);
-  // Ноги вышки.
-  ctx.fillStyle = PALETTE.earth;
-  ctx.fillRect(24, 38, 4, 26);
-  ctx.fillRect(36, 38, 4, 26);
-  ctx.fillStyle = PALETTE.earthDark;
-  ctx.fillRect(24, 38, 1, 26);
-  ctx.fillRect(36, 38, 1, 26);
-  // Раскосы.
-  ctx.fillRect(27, 46, 9, 2);
-  ctx.fillRect(27, 54, 9, 2);
-  // Площадка.
-  ctx.fillStyle = PALETTE.earthDark;
-  ctx.fillRect(18, 32, 28, 6);
-  ctx.fillStyle = shade(PALETTE.earth, 1.2);
-  ctx.fillRect(18, 32, 28, 1);
-  // Перила.
-  ctx.fillStyle = PALETTE.earth;
-  ctx.fillRect(18, 24, 2, 8);
-  ctx.fillRect(44, 24, 2, 8);
-  ctx.fillRect(18, 24, 28, 2);
-  // Флагшток + золотой флажок.
-  ctx.fillStyle = PALETTE.earthDark;
-  ctx.fillRect(31, 8, 2, 18);
-  ctx.fillStyle = PALETTE.gold;
-  for (let x = 0; x < 9; x++) {
-    ctx.fillRect(33 + x, 9, 1, 5 - Math.floor(x / 2));
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Каменный пилон.
+  for (let y = 30; y < 64; y++) {
+    const half = 9 - (y - 30) * 0.1;
+    for (let x = Math.ceil(32 - half); x < 32 + half; x++) {
+      ctx.fillStyle = S;
+      ctx.fillRect(x, y, 1, 1);
+    }
+    ctx.fillStyle = K;
+    ctx.fillRect(Math.ceil(32 - half), y, 1, 1);
   }
+  // Рим-лайт слева.
+  R(ctx, 26, 32, 1, 28, W);
+  // Крап камня.
+  R(ctx, 28, 36, 2, 2, L);
+  R(ctx, 33, 52, 2, 1, K);
+  // Рунический пояс t1: тонкая линия + две руны.
+  R(ctx, 25, 44, 13, 1, C);
+  R(ctx, 28, 42, 2, 2, C);
+  R(ctx, 34, 46, 2, 2, C);
+  // Площадка.
+  R(ctx, 20, 28, 24, 4, S);
+  R(ctx, 20, 28, 24, 1, W);
+  // Мачта-пика с руной-наконечником.
+  R(ctx, 31, 10, 2, 18, K);
+  R(ctx, 30, 8, 4, 3, C);
 }
 
-/** Cannon: каменная тумба с тёмным (void) стволом. */
+/**
+ * Cannon: каменная тумба со стволом и циановым прицелом t1.
+ * Рост по тайрам — в drawTowerTierExtra.
+ */
 function drawTowerCannon(ctx: CanvasRenderingContext2D): void {
   drawTowerBase(ctx);
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
   // Тумба-трапеция.
   for (let y = 34; y < 64; y++) {
     const half = 13 - (y - 34) * 0.15;
     for (let x = Math.ceil(32 - half); x < 32 + half; x++) {
-      ctx.fillStyle = PALETTE.stone;
+      ctx.fillStyle = S;
       ctx.fillRect(x, y, 1, 1);
     }
-    ctx.fillStyle = PALETTE.stoneDark;
+    ctx.fillStyle = K;
     ctx.fillRect(Math.ceil(32 - half), y, 1, 1);
-    ctx.fillRect(Math.floor(32 + half) - 1, y, 1, 1);
   }
+  // Рим-лайт слева.
+  R(ctx, 21, 36, 1, 8, W);
+  // Крап камня.
+  R(ctx, 25, 44, 2, 2, L);
+  R(ctx, 34, 54, 2, 1, K);
   // Верхний ободок.
-  ctx.fillStyle = shade(PALETTE.stone, 1.2);
-  ctx.fillRect(19, 32, 26, 3);
-  ctx.fillStyle = PALETTE.stoneDark;
-  ctx.fillRect(19, 35, 26, 1);
-  // Каменная крошка.
-  ctx.fillStyle = PALETTE.stoneDark;
-  ctx.fillRect(26, 44, 2, 2);
-  ctx.fillRect(35, 52, 2, 1);
-  ctx.fillRect(29, 56, 3, 1);
+  R(ctx, 20, 31, 24, 3, S);
+  R(ctx, 20, 31, 24, 1, W);
+  // Циановый прицел t1.
+  R(ctx, 28, 40, 4, 4, C);
+  R(ctx, 29, 41, 2, 2, W);
   // Ствол вверх-вправо.
-  ctx.fillStyle = PALETTE.void;
   for (let i = 0; i < 16; i++) {
     const x = 32 + Math.floor(i * 0.8);
-    const y = 38 - Math.floor(i * 0.9);
-    ctx.fillRect(x - 2, y - 2, 5, 5);
+    const y = 36 - Math.floor(i * 0.9);
+    R(ctx, x - 2, y - 2, 5, 5, K);
   }
-  // Дуло и запал.
-  ctx.fillStyle = PALETTE.stoneDark;
-  ctx.fillRect(42, 20, 6, 6);
-  ctx.fillStyle = PALETTE.void;
-  ctx.fillRect(43, 21, 4, 4);
-  ctx.fillStyle = PALETTE.gold;
-  ctx.fillRect(30, 30, 2, 2);
+  // Дуло с циановым кольцом.
+  R(ctx, 42, 18, 6, 6, K);
+  R(ctx, 41, 17, 8, 1, C);
+  R(ctx, 41, 24, 8, 1, C);
+  R(ctx, 41, 17, 1, 8, C);
+  R(ctx, 48, 17, 1, 8, C);
 }
 
-/** Ice: кристальный обелиск с голубым свечением. */
+/**
+ * Ice: кристаллический обелиск t1 — циановое тело в каменном ложе.
+ * Рост по тайрам — в drawTowerTierExtra.
+ */
 function drawTowerIce(ctx: CanvasRenderingContext2D): void {
   drawTowerBase(ctx);
-  // Малое каменное ложе.
-  ctx.fillStyle = PALETTE.stoneDark;
-  ctx.fillRect(22, 56, 20, 8);
-  ctx.fillStyle = PALETTE.stone;
-  ctx.fillRect(22, 56, 20, 2);
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Каменное ложе.
+  R(ctx, 22, 56, 20, 8, K);
+  R(ctx, 22, 56, 20, 1, W);
+  // Крап камня на ложе.
+  R(ctx, 25, 59, 2, 2, L);
+  R(ctx, 36, 60, 2, 1, K);
   // Центральный обелиск.
   for (let y = 0; y < 42; y++) {
     const k = y / 42;
     const half = 6 * (1 - k) + 1;
     const yy = 56 - y;
     for (let x = Math.ceil(32 - half); x < 32 + half; x++) {
-      ctx.fillStyle = PALETTE.crystal;
+      ctx.fillStyle = C;
       ctx.fillRect(x, yy, 1, 1);
     }
-    ctx.fillStyle = shade(PALETTE.crystal, 0.55);
+    ctx.fillStyle = shade(C, 0.55);
     ctx.fillRect(Math.ceil(32 - half), yy, 1, 1);
     if (k > 0.35 && k < 0.8) {
-      ctx.fillStyle = PALETTE.cloud;
+      ctx.fillStyle = W;
       ctx.fillRect(Math.ceil(32 - half) + 1, yy, 1, 2);
     }
   }
   // Боковые осколки.
-  ctx.fillStyle = PALETTE.crystal;
-  ctx.fillRect(22, 48, 4, 10);
-  ctx.fillRect(38, 46, 4, 12);
-  ctx.fillStyle = shade(PALETTE.crystal, 0.55);
-  ctx.fillRect(22, 48, 1, 10);
-  ctx.fillRect(38, 46, 1, 12);
-  // Свечение вокруг обелиска.
-  ctx.fillStyle = 'rgba(102,224,255,0.30)';
-  ctx.fillRect(22, 18, 2, 30);
-  ctx.fillRect(40, 22, 2, 26);
-  ctx.fillRect(27, 12, 10, 2);
+  R(ctx, 22, 48, 4, 10, C);
+  R(ctx, 38, 46, 4, 12, C);
+  R(ctx, 22, 48, 1, 10, K);
+  R(ctx, 38, 46, 1, 12, K);
+  // Слабое свечение по бокам.
+  R(ctx, 19, 22, 1, 26, C);
+  R(ctx, 44, 26, 1, 22, C);
 }
 
 /** Прямоугольник-заливка, короткий хелпер для силуэтов. */
@@ -693,531 +723,705 @@ function R(
 }
 
 /**
- * Goblin 40×48: средний, зелёный, с копьём справа.
- * frame: 0 стоит, 1 шаг (сдвиг корпуса + смена ног).
+ * Goblin-истукан 40×48: широкий сутулый силуэт с копьём.
+ * frame: 1 — наклон корпуса и смена рук.
  */
 function drawGoblin(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -2 : 0;
-  const S = PALETTE.grass;
-  const D = PALETTE.grassDark;
-  // Ноги (шаг чередуется).
-  if (frame === 0) {
-    R(ctx, 15, 40 + oy, 4, 6, D);
-    R(ctx, 22, 40 + oy, 4, 6, D);
-  } else {
-    R(ctx, 14, 40 + oy, 4, 6, D);
-    R(ctx, 23, 38 + oy, 4, 8, D);
-  }
-  // Торс.
-  R(ctx, 13, 24 + oy, 14, 16, S);
-  R(ctx, 13, 24 + oy, 2, 16, D);
-  R(ctx, 13, 37 + oy, 14, 3, D); // пояс
-  // Руки.
-  R(ctx, 10, 26 + oy, 3, 10, S);
-  R(ctx, 27, 26 + oy + (frame === 1 ? -2 : 0), 3, 10, S);
-  // Голова + уши.
-  R(ctx, 14, 12 + oy, 12, 12, S);
-  R(ctx, 8, 14 + oy, 6, 3, S);
-  R(ctx, 26, 14 + oy, 6, 3, S);
-  R(ctx, 8, 14 + oy, 6, 1, D);
-  R(ctx, 26, 14 + oy, 6, 1, D);
-  // Глаза.
-  R(ctx, 17, 16 + oy, 2, 3, PALETTE.gold);
-  R(ctx, 22, 16 + oy, 2, 3, PALETTE.gold);
+  const lean = frame === 1 ? 1 : 0;
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
   // Копьё справа.
-  R(ctx, 32, 8 + oy, 2, 36, PALETTE.earth);
-  R(ctx, 31, 4 + oy, 4, 5, PALETTE.stone);
-  R(ctx, 31, 8 + oy, 4, 1, PALETTE.stoneDark);
+  R(ctx, 33, 6 + oy, 2, 38, L);
+  R(ctx, 32, 2 + oy, 4, 5, W);
+  // Ноги.
+  R(ctx, 12 + lean, 40 + oy, 5, 6, K);
+  R(ctx, 22 - lean, 40 + oy, 5, 6, K);
+  // Широкий сутулый торс.
+  R(ctx, 9 + lean, 22 + oy, 22, 19, S);
+  // Рим-лайт слева.
+  R(ctx, 9 + lean, 24 + oy, 1, 15, W);
+  // Крап камня.
+  R(ctx, 15 + lean, 28 + oy, 2, 2, L);
+  R(ctx, 23 + lean, 33 + oy, 2, 1, L);
+  R(ctx, 19 + lean, 36 + oy, 2, 1, K);
+  // Сутулая голова.
+  R(ctx, 12 + lean, 12 + oy, 15, 11, S);
+  R(ctx, 12 + lean, 12 + oy, 15, 1, W);
+  // Циановые прорехи-трещины вместо глаз.
+  R(ctx, 15 + lean, 16 + oy, 3, 2, C);
+  R(ctx, 21 + lean, 16 + oy, 3, 2, C);
+  R(ctx, 18 + lean, 19 + oy + (frame === 1 ? 1 : 0), 2, 3, C);
+  // Руки.
+  R(ctx, 6 + lean, 26 + oy, 3, 10, S);
+  R(ctx, 31 + lean, 26 + oy - (frame === 1 ? 2 : 0), 3, 10, S);
 }
 
-/** Troll 56×52: широкий сутулый, земляная шкура, каменные наплечники. */
+/**
+ * Troll-горгулья 56×52: сутулая туша с крыльями-обрубками.
+ * frame: 1 — наклон и взмах лап.
+ */
 function drawTroll(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -2 : 0;
   const lean = frame === 1 ? 2 : 0;
-  const S = PALETTE.earth;
-  const D = PALETTE.earthDark;
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Крылья-обрубки.
+  R(ctx, 2 + lean, 14 + oy, 8, 12, S);
+  R(ctx, 44 + lean, 14 + oy, 8, 12, S);
+  R(ctx, 2 + lean, 14 + oy, 1, 12, W);
+  R(ctx, 4 + lean, 17 + oy, 2, 3, C);
+  R(ctx, 48 + lean, 19 + oy, 2, 3, C);
   // Ноги-тумбы.
-  R(ctx, 16 + lean, 42 + oy, 8, 8, D);
-  R(ctx, 32 - lean, 42 + oy, 8, 8, D);
-  // Широкий торс.
-  R(ctx, 10 + lean, 18 + oy, 36, 26, S);
-  R(ctx, 10 + lean, 18 + oy, 3, 26, D);
-  // Живот светлее.
-  R(ctx, 20 + lean, 28 + oy, 16, 12, PALETTE.road);
-  // Наплечники.
-  R(ctx, 6 + lean, 16 + oy, 10, 8, PALETTE.stoneDark);
-  R(ctx, 40 + lean, 16 + oy, 10, 8, PALETTE.stoneDark);
-  R(ctx, 6 + lean, 16 + oy, 10, 2, PALETTE.stone);
-  R(ctx, 40 + lean, 16 + oy, 10, 2, PALETTE.stone);
+  R(ctx, 16 + lean, 42 + oy, 9, 8, K);
+  R(ctx, 31 - lean, 42 + oy, 9, 8, K);
+  // Широкая сутулая туша.
+  R(ctx, 10 + lean, 16 + oy, 36, 27, S);
+  // Рим-лайт слева.
+  R(ctx, 10 + lean, 18 + oy, 1, 23, W);
+  // Крап камня.
+  R(ctx, 18 + lean, 24 + oy, 3, 2, L);
+  R(ctx, 32 + lean, 32 + oy, 3, 2, L);
+  R(ctx, 24 + lean, 38 + oy, 4, 1, K);
+  // Вдавленная голова.
+  R(ctx, 22 + lean, 8 + oy, 12, 9, S);
+  // Трещины вместо глаз, светлый клык.
+  R(ctx, 24 + lean, 11 + oy, 3, 2, C);
+  R(ctx, 29 + lean, 11 + oy, 3, 2, C);
+  R(ctx, 26 + lean, 14 + oy + (frame === 1 ? 1 : 0), 4, 1, W);
   // Лапы.
-  R(ctx, 6 + lean, 24 + oy + (frame === 1 ? 2 : 0), 5, 16, S);
-  R(ctx, 45 + lean, 24 + oy - (frame === 1 ? 2 : 0), 5, 16, S);
-  // Маленькая голова сверху.
-  R(ctx, 22 + lean, 8 + oy, 12, 10, S);
-  R(ctx, 22 + lean, 8 + oy, 12, 2, D);
-  // Надбровье + глаза.
-  R(ctx, 23 + lean, 12 + oy, 10, 2, D);
-  R(ctx, 24 + lean, 14 + oy, 2, 2, PALETTE.gold);
-  R(ctx, 30 + lean, 14 + oy, 2, 2, PALETTE.gold);
-  // Клыки.
-  R(ctx, 25 + lean, 17 + oy, 2, 2, PALETTE.roadLight);
-  R(ctx, 29 + lean, 17 + oy, 2, 2, PALETTE.roadLight);
+  R(ctx, 6 + lean, 26 + oy + (frame === 1 ? 2 : 0), 5, 15, S);
+  R(ctx, 45 + lean, 26 + oy - (frame === 1 ? 2 : 0), 5, 15, S);
 }
-
-/** Imp 32×40: мелкий колючий, тёмный, с хвостом. */
+/**
+ * Imp-ползун 32×40: низкий длинный овал с гримасой.
+ * frame: 1 — приподнят, гримаса шире.
+ */
 function drawImp(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -2 : 0;
-  const hop = frame === 1 ? -1 : 0;
-  const S = PALETTE.stoneDark;
-  const D = PALETTE.void;
-  // Ножки.
-  R(ctx, 11, 32 + oy, 3, 6, D);
-  R(ctx, 18, 32 + oy, 3, 6, D);
-  // Тельце.
-  R(ctx, 10, 18 + oy, 12, 15, S);
-  R(ctx, 10, 18 + oy, 2, 15, D);
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Низкий длинный овал.
+  for (let y = 0; y < 14; y++) {
+    const half = 12 * Math.sin((Math.PI * (y + 1)) / 15);
+    for (let x = Math.ceil(16 - half); x < 16 + half; x++) {
+      ctx.fillStyle = S;
+      ctx.fillRect(x, y + 18 + oy, 1, 1);
+    }
+  }
+  // Рим-лайт сверху.
+  R(ctx, 10, 20 + oy, 12, 1, W);
+  // Крап камня.
+  R(ctx, 12, 25 + oy, 2, 1, L);
+  R(ctx, 19, 28 + oy, 2, 1, L);
+  R(ctx, 15, 30 + oy, 2, 1, K);
+  // Ножки-ползуны.
+  R(ctx, 10, 30 + oy, 5, 3, K);
+  R(ctx, 17, 30 + oy, 5, 3, K);
+  // Гримаса: циановые прорехи.
+  R(ctx, 9, 22 + oy, 3, 2, C);
+  R(ctx, 20, 22 + oy, 3, 2, C);
+  R(ctx, 12, 27 + oy, 8 + (frame === 1 ? 2 : 0), 1, C);
   // Шипы на спине.
-  R(ctx, 6, 20 + oy, 4, 2, D);
-  R(ctx, 6, 25 + oy, 4, 2, D);
-  R(ctx, 22, 20 + oy, 4, 2, D);
-  R(ctx, 22, 25 + oy, 4, 2, D);
-  // Шипы на голове.
-  R(ctx, 12, 10 + oy + hop, 2, 6, D);
-  R(ctx, 15, 8 + oy + hop, 2, 8, D);
-  R(ctx, 18, 10 + oy + hop, 2, 6, D);
-  // Голова.
-  R(ctx, 11, 14 + oy + hop, 10, 8, S);
-  // Глаза.
-  R(ctx, 13, 16 + oy + hop, 2, 3, PALETTE.gold);
-  R(ctx, 18, 16 + oy + hop, 2, 3, PALETTE.gold);
-  // Хвост.
-  R(ctx, 22, 30 + oy, 6, 2, D);
-  R(ctx, 26, 28 + oy, 2, 4, D);
+  R(ctx, 12, 16 + oy, 2, 3, S);
+  R(ctx, 17, 15 + oy, 2, 4, S);
+  R(ctx, 22, 16 + oy, 2, 3, S);
 }
 
-/** Снаряды 16×16. */
+/** Снаряды 16×16, тёмная доктрина. */
 function drawProjArrow(ctx: CanvasRenderingContext2D): void {
-  R(ctx, 2, 7, 9, 2, PALETTE.gold);
-  R(ctx, 11, 6, 3, 4, PALETTE.gold);
-  R(ctx, 14, 7, 2, 2, PALETTE.roadLight);
-  R(ctx, 2, 9, 9, 1, shade(PALETTE.gold, 0.7));
+  // Циановая стрела: древко из двух линий + голова.
+  R(ctx, 1, 7, 10, 2, DARK_PALETTE.road_seam);
+  R(ctx, 11, 5, 3, 6, DARK_PALETTE.road_seam);
+  R(ctx, 13, 7, 1, 2, '#b9bdc4');
 }
 
 function drawProjCannon(ctx: CanvasRenderingContext2D): void {
+  // Тёплое ядро с хвостом.
+  R(ctx, 0, 7, 4, 2, '#7a3c14');
+  R(ctx, 3, 6, 4, 4, '#c25e1e');
   for (let y = 0; y < 16; y++) {
     for (let x = 0; x < 16; x++) {
-      const d = Math.hypot(x - 7.5, y - 7.5);
-      if (d > 6) continue;
-      ctx.fillStyle = d > 4.5 ? PALETTE.stoneDark : PALETTE.void;
+      const d = Math.hypot(x - 9.5, y - 7.5);
+      if (d > 5) continue;
+      ctx.fillStyle = d > 2.5 ? '#ff9a3c' : '#ffd75e';
       ctx.fillRect(x, y, 1, 1);
     }
   }
-  R(ctx, 5, 4, 2, 2, PALETTE.cloud);
 }
 
 function drawProjIce(ctx: CanvasRenderingContext2D): void {
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Циановый осколок.
   for (let y = 0; y < 16; y++) {
-    const half = 6 * (1 - Math.abs(y - 7.5) / 8);
+    const half = 5 * (1 - Math.abs(y - 7.5) / 8);
     for (let x = Math.ceil(8 - half); x < 8 + half; x++) {
-      ctx.fillStyle = PALETTE.crystal;
+      ctx.fillStyle = C;
       ctx.fillRect(x, y, 1, 1);
     }
   }
-  R(ctx, 7, 4, 2, 8, PALETTE.cloud);
+  // Шипы по бокам и светлая сердцевина.
+  R(ctx, 0, 5, 3, 1, C);
+  R(ctx, 13, 5, 3, 1, C);
+  R(ctx, 0, 10, 3, 1, C);
+  R(ctx, 13, 10, 3, 1, C);
+  R(ctx, 7, 3, 2, 10, W);
 }
 
-/** Spore 32×40: парящая спора с крылышками, бледное тельце, тёмная сердцевина. */
+/**
+ * Spore-призрак 32×40: круглое облако с лицом.
+ * frame: 1 — облако выше, хвост длиннее.
+ */
 function drawSpore(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -2 : 0;
-  const wingY = (frame === 1 ? 12 : 16) + oy;
-  // Крылышки по бокам.
-  R(ctx, 2, wingY, 8, 2, PALETTE.cloud);
-  R(ctx, 22, wingY, 8, 2, PALETTE.cloud);
-  R(ctx, 4, wingY - 2, 4, 2, PALETTE.cloud);
-  R(ctx, 24, wingY - 2, 4, 2, PALETTE.cloud);
-  // Тельце-пушок.
-  for (let y = 0; y < 20; y++) {
-    const half = 9 * Math.sin((Math.PI * (y + 1)) / 21) + 1;
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Круглое облако.
+  for (let y = 0; y < 24; y++) {
+    const half = 11 * Math.sin((Math.PI * (y + 1)) / 25);
     for (let x = Math.ceil(16 - half); x < 16 + half; x++) {
-      ctx.fillStyle = PALETTE.roadLight;
-      ctx.fillRect(x, y + 14 + oy, 1, 1);
+      ctx.fillStyle = S;
+      ctx.fillRect(x, y + 8 + oy, 1, 1);
     }
   }
-  // Крап-споры на тельце.
-  R(ctx, 12, 20 + oy, 2, 2, PALETTE.earth);
-  R(ctx, 19, 24 + oy, 2, 2, PALETTE.earth);
-  R(ctx, 14, 27 + oy, 2, 1, PALETTE.earth);
-  // Сердцевина-глаз.
-  R(ctx, 14, 21 + oy, 4, 4, PALETTE.void);
-  R(ctx, 15, 22 + oy, 2, 2, PALETTE.gold);
-  // Ножки-тычинки снизу.
-  R(ctx, 13, 33 + oy, 2, 4, PALETTE.earthDark);
-  R(ctx, 17, 33 + oy, 2, 4, PALETTE.earthDark);
+  // Рим-лайт сверху.
+  R(ctx, 16, 12 + oy, 5, 1, W);
+  // Крап камня.
+  R(ctx, 12, 18 + oy, 2, 1, L);
+  R(ctx, 19, 25 + oy, 2, 1, L);
+  R(ctx, 15, 28 + oy, 2, 1, K);
+  // Лицо: циановые прорехи и рот-трещина.
+  R(ctx, 11, 16 + oy, 3, 4, C);
+  R(ctx, 18, 16 + oy, 3, 4, C);
+  R(ctx, 14, 23 + oy, 4, 1, C);
+  // Хвост-призрак снизу.
+  R(ctx, 10, 32 + oy, 4, 5, S);
+  R(ctx, 18, 32 + oy, 4, 5 + (frame === 1 ? 2 : 0), S);
 }
-
-/** Puffling 44×44: пушистый шар с рваным контуром. Кадр 1 — сплющен. */
+/**
+ * Puffling-масса 44×44: бесформенный комок с отростками.
+ * frame: 1 — комок шире и ниже.
+ */
 function drawPuffling(ctx: CanvasRenderingContext2D, frame: number): void {
   const cx = 22;
   const cy = frame === 1 ? 26 : 24;
   const rx = frame === 1 ? 19 : 17;
   const ry = frame === 1 ? 14 : 16;
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Отростки.
+  R(ctx, cx - 23, cy - 6, 6, 3, S);
+  R(ctx, cx + 17, cy - 8, 6, 3, S);
+  R(ctx, cx - 5, cy - ry - 4, 3, 5, S);
+  R(ctx, cx - 12, cy + ry - 2, 4, 4, S);
+  // Бесформенный комок.
   for (let y = 0; y < 44; y++) {
     for (let x = 0; x < 44; x++) {
       const dx = (x - cx) / rx;
       const dy = (y - cy) / ry;
       const d = dx * dx + dy * dy;
       if (d > 1) continue;
-      // Рваный пушистый край.
       if (d > 0.82 && ((x * 7 + y * 13) % 5 === 0)) continue;
-      ctx.fillStyle = d > 0.86 ? PALETTE.stoneDark : PALETTE.roadLight;
+      ctx.fillStyle = d > 0.86 ? K : S;
       ctx.fillRect(x, y, 1, 1);
     }
   }
-  // Мордочка.
-  const my = cy - 2;
-  R(ctx, cx - 7, my, 3, 4, PALETTE.void);
-  R(ctx, cx + 4, my, 3, 4, PALETTE.void);
-  R(ctx, cx - 6, my + 1, 1, 2, PALETTE.gold);
-  R(ctx, cx + 5, my + 1, 1, 2, PALETTE.gold);
-  R(ctx, cx - 2, my + 6, 4, 2, PALETTE.earthDark);
-  // Хохолок.
-  R(ctx, cx - 1, cy - ry - 3, 2, 4, PALETTE.stoneDark);
+  // Рим-лайт сверху.
+  R(ctx, cx - 8, cy - ry + 2, 10, 1, W);
+  // Крап камня.
+  R(ctx, cx - 11, cy - 2, 2, 2, L);
+  R(ctx, cx + 6, cy + 4, 2, 1, L);
+  R(ctx, cx - 2, cy + 7, 3, 1, K);
+  // Циановые трещины.
+  R(ctx, cx - 9, cy - 3, 4, 2, C);
+  R(ctx, cx + 3, cy + 1 + (frame === 1 ? 1 : -1), 5, 1, C);
+  R(ctx, cx, cy - 7, 2, 3, C);
 }
 
-/** Truffle 52×52: гриб с широкой шляпой в пятнах, толстая ножка. */
+/**
+ * Truffle-панцирный 52×52: шар с бронёй-чешуёй.
+ * frame: 1 — наклон панциря.
+ */
 function drawTruffle(ctx: CanvasRenderingContext2D, frame: number): void {
   const lean = frame === 1 ? 2 : 0;
   const cx = 26 + lean;
-  // Ножка.
-  R(ctx, cx - 7, 28, 14, 20, PALETTE.road);
-  R(ctx, cx - 7, 28, 3, 20, shade(PALETTE.road, 0.8));
-  R(ctx, cx - 9, 46, 18, 4, shade(PALETTE.road, 0.85));
-  // Пластинки под шляпой.
-  R(ctx, cx - 20, 24, 40, 5, PALETTE.stoneDark);
-  // Шляпа-купол.
-  for (let y = 0; y < 24; y++) {
-    const k = y / 24;
-    const half = 24 * Math.sin((Math.PI * (1 - k)) / 2);
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Ножки.
+  R(ctx, cx - 10, 38, 6, 8, K);
+  R(ctx, cx + 4, 38, 6, 8, K);
+  // Шар-панцирь.
+  for (let y = 0; y < 30; y++) {
+    const half = 20 * Math.sin((Math.PI * (y + 1)) / 31);
     for (let x = Math.ceil(cx - half); x < cx + half; x++) {
-      ctx.fillStyle = k > 0.75 ? shade(PALETTE.earth, 1.15) : PALETTE.earth;
-      ctx.fillRect(x, y + 2, 1, 1);
+      ctx.fillStyle = S;
+      ctx.fillRect(x, y + 8, 1, 1);
     }
   }
-  // Контур шляпы.
-  ctx.fillStyle = PALETTE.earthDark;
-  for (let y = 0; y < 24; y++) {
-    const k = y / 24;
-    const half = 24 * Math.sin((Math.PI * (1 - k)) / 2);
-    ctx.fillRect(Math.ceil(cx - half), y + 2, 1, 1);
-    ctx.fillRect(Math.floor(cx + half) - 1, y + 2, 1, 1);
+  // Чешуя: тёмные ряды.
+  for (let r = 0; r < 4; r++) {
+    R(ctx, cx - 14 + (r % 2) * 4, 14 + r * 5, 9, 1, K);
+    R(ctx, cx + 1 - (r % 2) * 4, 14 + r * 5, 9, 1, K);
   }
-  // Пятна на шляпе.
-  R(ctx, cx - 14, 8, 5, 4, PALETTE.roadLight);
-  R(ctx, cx + 6, 6, 4, 4, PALETTE.roadLight);
-  R(ctx, cx - 2, 13, 6, 3, PALETTE.roadLight);
-  R(ctx, cx - 13, 15, 3, 3, PALETTE.roadLight);
-  // Глаза-щёлки на ножке.
-  R(ctx, cx - 5, 34, 3, 2, PALETTE.void);
-  R(ctx, cx + 2, 34, 3, 2, PALETTE.void);
+  // Рим-лайт слева.
+  R(ctx, cx - 15, 16, 1, 12, W);
+  // Крап камня.
+  R(ctx, cx - 8, 22, 2, 2, L);
+  R(ctx, cx + 7, 30, 2, 1, L);
+  // Циановые трещины панциря.
+  R(ctx, cx - 4, 18, 2, 8, C);
+  R(ctx, cx + 2, 26 + (frame === 1 ? 2 : 0), 6, 2, C);
 }
 
-/** Jelly 40×44: желейный куб, кадр 1 шире и ниже (wobble). */
+/**
+ * Jelly-осколок 40×44: ромбовидный силуэт с трещиной.
+ * frame: 1 — шире и ниже (wobble).
+ */
 function drawJelly(ctx: CanvasRenderingContext2D, frame: number): void {
   const w = frame === 1 ? 32 : 28;
   const h = frame === 1 ? 30 : 34;
   const x0 = 20 - w / 2;
   const y0 = 40 - h;
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Ромб.
   for (let y = 0; y < h; y++) {
-    const inset = y < 4 ? 4 - y : 0;
-    for (let x = inset; x < w - inset; x++) {
-      ctx.fillStyle = PALETTE.roadLight;
-      ctx.fillRect(x0 + x, y0 + y, 1, 1);
+    const half = (w / 2) * (1 - Math.abs((2 * y) / h - 1));
+    const rowW = Math.max(1, Math.floor(half * 2));
+    const rowX = Math.round(x0 + w / 2 - half);
+    for (let x = 0; x < rowW; x++) {
+      ctx.fillStyle = S;
+      ctx.fillRect(rowX + x, y0 + y, 1, 1);
     }
   }
-  ctx.fillStyle = PALETTE.crystal;
-  ctx.fillRect(x0 + 5, y0 + 5, 3, h - 12);
-  ctx.fillRect(x0 + 5, y0 + 5, 8, 3);
-  R(ctx, x0 + 10, y0 + 14, 3, 4, PALETTE.void);
-  R(ctx, x0 + 18, y0 + 14, 3, 4, PALETTE.void);
-  R(ctx, x0 + 11, y0 + 15, 1, 2, PALETTE.gold);
-  R(ctx, x0 + 19, y0 + 15, 1, 2, PALETTE.gold);
+  // Рим-лайт на левой грани.
+  R(ctx, x0 + 7, y0 + 10, 1, 10, W);
+  // Крап камня.
+  R(ctx, x0 + 9, y0 + 8, 2, 2, L);
+  R(ctx, x0 + 16, y0 + 20, 2, 1, K);
+  // Циановая трещина зигзагом.
+  for (let i = 0; i < 7; i++) {
+    R(ctx, x0 + w / 2 + (i % 2 === 0 ? -1 : 1), y0 + 6 + i * 3, 2, 3, C);
+  }
 }
 
-/** Jellymini 24×28: малая копия jelly. */
+/**
+ * Jellymini-осколок 24×28: малая копия jelly.
+ * frame: 1 — шире и ниже (wobble).
+ */
 function drawJellymini(ctx: CanvasRenderingContext2D, frame: number): void {
   const w = frame === 1 ? 19 : 17;
   const h = frame === 1 ? 18 : 20;
   const x0 = 12 - w / 2;
   const y0 = 26 - h;
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Ромб.
   for (let y = 0; y < h; y++) {
-    const inset = y < 3 ? 3 - y : 0;
-    for (let x = inset; x < w - inset; x++) {
-      ctx.fillStyle = PALETTE.roadLight;
-      ctx.fillRect(x0 + x, y0 + y, 1, 1);
+    const half = (w / 2) * (1 - Math.abs((2 * y) / h - 1));
+    const rowW = Math.max(1, Math.floor(half * 2));
+    const rowX = Math.round(x0 + w / 2 - half);
+    for (let x = 0; x < rowW; x++) {
+      ctx.fillStyle = S;
+      ctx.fillRect(rowX + x, y0 + y, 1, 1);
     }
   }
-  ctx.fillStyle = PALETTE.crystal;
-  ctx.fillRect(x0 + 3, y0 + 3, 2, h - 7);
-  R(ctx, x0 + 6, y0 + 8, 2, 3, PALETTE.void);
-  R(ctx, x0 + 11, y0 + 8, 2, 3, PALETTE.void);
+  // Рим-лайт и трещина.
+  R(ctx, x0 + 4, y0 + 7, 1, 6, W);
+  R(ctx, x0 + 6, y0 + 6, 2, 2, L);
+  for (let i = 0; i < 4; i++) {
+    R(ctx, x0 + w / 2 + (i % 2 === 0 ? -1 : 0), y0 + 4 + i * 3, 2, 3, C);
+  }
 }
 
-/** Caramel 36×44: конфета-овал в фантике с twist-концами. */
+/**
+ * Caramel-смоляной 36×44: куб с каплями.
+ * frame: 1 — капли длиннее.
+ */
 function drawCaramel(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -2 : 0;
-  // Twist-концы фантика.
-  for (let i = 0; i < 5; i++) {
-    R(ctx, 2 + i, 20 + oy + i, 2, 2, PALETTE.earthDark);
-    R(ctx, 32 - i, 20 + oy + i, 2, 2, PALETTE.earthDark);
-  }
-  // Овал-корпус.
-  for (let y = 0; y < 24; y++) {
-    const half = 11 * Math.sin((Math.PI * (y + 1)) / 25);
-    for (let x = Math.ceil(18 - half); x < 18 + half; x++) {
-      ctx.fillStyle = PALETTE.gold;
-      ctx.fillRect(x, y + 10 + oy, 1, 1);
-    }
-  }
-  // Полоски карамели.
-  R(ctx, 12, 12 + oy, 3, 20, PALETTE.earth);
-  R(ctx, 21, 12 + oy, 3, 20, PALETTE.earth);
-  R(ctx, 12, 12 + oy, 12, 2, shade(PALETTE.gold, 1.2));
-  // Глаза.
-  R(ctx, 15, 19 + oy, 2, 3, PALETTE.void);
-  R(ctx, 20, 19 + oy, 2, 3, PALETTE.void);
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Куб.
+  R(ctx, 9, 12 + oy, 18, 22, S);
+  // Рим-лайт сверху и слева.
+  R(ctx, 9, 12 + oy, 18, 1, W);
+  R(ctx, 9, 12 + oy, 1, 22, W);
+  // Тёмная грань справа.
+  R(ctx, 25, 12 + oy, 2, 22, K);
+  // Крап камня.
+  R(ctx, 14, 18 + oy, 2, 2, L);
+  R(ctx, 20, 26 + oy, 2, 1, L);
+  // Капли смолы снизу.
+  R(ctx, 12, 34 + oy, 3, 4, S);
+  R(ctx, 21, 34 + oy, 3, 6 + (frame === 1 ? 2 : 0), S);
+  R(ctx, 17, 34 + oy, 2, 3, S);
+  // Циановые трещины.
+  R(ctx, 13, 18 + oy, 2, 6, C);
+  R(ctx, 19, 24 + oy + (frame === 1 ? 1 : 0), 5, 2, C);
 }
 
-/** Chocgolem 56×56: шоколадная глыба с трещинами, каменные кулаки. */
+/**
+ * Chocgolem-жилковый 56×56: крупный силуэт, кровавая жила через тело.
+ * frame: 1 — наклон и смена кулаков.
+ */
 function drawChocgolem(ctx: CanvasRenderingContext2D, frame: number): void {
   const lean = frame === 1 ? 2 : 0;
-  R(ctx, 16 + lean, 44, 8, 10, PALETTE.earthDark);
-  R(ctx, 32 - lean, 44, 8, 10, PALETTE.earthDark);
-  R(ctx, 12 + lean, 16, 32, 30, PALETTE.earth);
-  R(ctx, 12 + lean, 16, 32, 3, shade(PALETTE.earth, 1.2));
-  R(ctx, 12 + lean, 16, 3, 30, PALETTE.earthDark);
-  // Трещины светлее.
-  R(ctx, 22 + lean, 22, 2, 14, PALETTE.roadLight);
-  R(ctx, 30 + lean, 28, 6, 2, PALETTE.roadLight);
-  R(ctx, 33 + lean, 20, 2, 8, PALETTE.roadLight);
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  const BLOOD = '#8a2f34';
+  // Ноги.
+  R(ctx, 16 + lean, 44, 8, 10, K);
+  R(ctx, 32 - lean, 44, 8, 10, K);
+  // Глыба-торс.
+  R(ctx, 12 + lean, 16, 32, 30, S);
+  // Рим-лайт слева и сверху.
+  R(ctx, 12 + lean, 16, 1, 30, W);
+  R(ctx, 12 + lean, 16, 32, 1, W);
+  // Крап камня.
+  R(ctx, 17 + lean, 22, 3, 2, L);
+  R(ctx, 35 + lean, 34, 3, 2, L);
+  R(ctx, 24 + lean, 40, 4, 1, K);
+  // Кровавая жила через тело.
+  R(ctx, 26 + lean, 16, 3, 28, BLOOD);
+  R(ctx, 20 + lean, 30, 16, 3, BLOOD);
+  // Циановые трещины рядом с жилой.
+  R(ctx, 31 + lean, 20, 2, 8, C);
+  R(ctx, 22 + lean, 34 + (frame === 1 ? 2 : 0), 5, 2, C);
   // Кулаки.
-  R(ctx, 4 + lean, 30 + (frame === 1 ? 3 : 0), 9, 10, PALETTE.stoneDark);
-  R(ctx, 43 + lean, 30 - (frame === 1 ? 3 : 0), 9, 10, PALETTE.stoneDark);
-  R(ctx, 4 + lean, 30 + (frame === 1 ? 3 : 0), 9, 2, PALETTE.stone);
-  R(ctx, 43 + lean, 30 - (frame === 1 ? 3 : 0), 9, 2, PALETTE.stone);
-  // Брови и глаза.
-  R(ctx, 20 + lean, 22, 16, 3, PALETTE.earthDark);
-  R(ctx, 22 + lean, 25, 3, 3, PALETTE.gold);
-  R(ctx, 31 + lean, 25, 3, 3, PALETTE.gold);
+  R(ctx, 4 + lean, 30 + (frame === 1 ? 3 : 0), 9, 10, S);
+  R(ctx, 43 + lean, 30 - (frame === 1 ? 3 : 0), 9, 10, S);
+  R(ctx, 4 + lean, 30 + (frame === 1 ? 3 : 0), 9, 1, W);
+  R(ctx, 43 + lean, 30 - (frame === 1 ? 3 : 0), 9, 1, W);
+  // Надбровье и глаза-щёлки.
+  R(ctx, 20 + lean, 22, 16, 3, K);
+  R(ctx, 22 + lean, 25, 3, 2, C);
+  R(ctx, 31 + lean, 25, 3, 2, C);
 }
 
-/** Candyfairy 32×44: кроха в золотом платье, крылья машут по кадрам. */
+/**
+ * Candyfairy-мраморная оса 32×44: крылья как светящиеся прорехи в камне.
+ * frame: 1 — крылья выше, тельце приподнято.
+ */
 function drawCandyfairy(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -2 : 0;
-  const wy = frame === 1 ? 10 : 16;
-  // Крылья.
-  R(ctx, 1, wy + oy, 9, 6, PALETTE.cloud);
-  R(ctx, 22, wy + oy, 9, 6, PALETTE.cloud);
-  R(ctx, 3, wy + oy - 3, 5, 3, PALETTE.cloud);
-  R(ctx, 24, wy + oy - 3, 5, 3, PALETTE.cloud);
-  // Платье-треугольник.
-  for (let y = 0; y < 14; y++) {
-    const half = 2 + y * 0.55;
-    for (let x = Math.ceil(16 - half); x < 16 + half; x++) {
-      ctx.fillStyle = PALETTE.gold;
-      ctx.fillRect(x, y + 22 + oy, 1, 1);
-    }
-  }
-  R(ctx, 13, 30 + oy, 6, 2, PALETTE.earth);
-  // Голова и пучок.
-  R(ctx, 12, 12 + oy, 8, 8, PALETTE.roadLight);
-  R(ctx, 14, 8 + oy, 4, 4, PALETTE.earthDark);
-  R(ctx, 13, 15 + oy, 2, 2, PALETTE.void);
-  R(ctx, 17, 15 + oy, 2, 2, PALETTE.void);
-  // Палочка.
-  R(ctx, 23, 22 + oy, 2, 10, PALETTE.earthDark);
-  R(ctx, 22, 19 + oy, 4, 4, PALETTE.crystal);
+  const wy = (frame === 1 ? 10 : 16) + oy;
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Крылья-прорехи в камне.
+  R(ctx, 1, wy, 10, 2, C);
+  R(ctx, 21, wy, 10, 2, C);
+  R(ctx, 3, wy - 3, 6, 2, C);
+  R(ctx, 23, wy - 3, 6, 2, C);
+  // Каменное тельце.
+  R(ctx, 12, 20 + oy, 8, 16, S);
+  // Рим-лайт слева.
+  R(ctx, 12, 20 + oy, 1, 16, W);
+  // Крап камня.
+  R(ctx, 15, 26 + oy, 2, 2, L);
+  R(ctx, 16, 32 + oy, 2, 1, K);
+  // Голова с трещиной.
+  R(ctx, 12, 12 + oy, 8, 8, S);
+  R(ctx, 14, 15 + oy, 4, 2, C);
+  // Жало.
+  R(ctx, 15, 36 + oy, 2, 5, K);
 }
 
-/** Balloon 36×48: шар-конверт с корзиной на стропах. */
+/**
+ * Balloon-пепельный пузырь 36×48: сфера с шипами и каменной гондолой.
+ * frame: 1 — пузырь выше.
+ */
 function drawBalloon(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -2 : 0;
-  // Конверт.
-  for (let y = 0; y < 22; y++) {
-    const half = 14 * Math.sin((Math.PI * (y + 2)) / 25);
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Сфера.
+  for (let y = 0; y < 24; y++) {
+    const half = 13 * Math.sin((Math.PI * (y + 1)) / 25);
     for (let x = Math.ceil(18 - half); x < 18 + half; x++) {
-      ctx.fillStyle = PALETTE.crystal;
+      ctx.fillStyle = S;
       ctx.fillRect(x, y + 2 + oy, 1, 1);
     }
   }
-  // Полосы.
-  R(ctx, 12, 3 + oy, 3, 20, PALETTE.cloud);
-  R(ctx, 21, 3 + oy, 3, 20, PALETTE.cloud);
-  R(ctx, 16, 4 + oy, 4, 6, PALETTE.cloud);
-  // Стропы.
-  R(ctx, 12, 24 + oy, 2, 10, PALETTE.earthDark);
-  R(ctx, 22, 24 + oy, 2, 10, PALETTE.earthDark);
-  // Корзина.
-  R(ctx, 11, 34 + oy, 14, 8, PALETTE.earth);
-  R(ctx, 11, 34 + oy, 14, 2, shade(PALETTE.earth, 1.2));
-  R(ctx, 13, 36 + oy, 2, 6, PALETTE.earthDark);
-  R(ctx, 17, 36 + oy, 2, 6, PALETTE.earthDark);
-  R(ctx, 21, 36 + oy, 2, 6, PALETTE.earthDark);
-  // Пассажир-глаза.
-  R(ctx, 15, 30 + oy, 2, 2, PALETTE.void);
-  R(ctx, 19, 30 + oy, 2, 2, PALETTE.void);
+  // Шипы.
+  R(ctx, 2, 11 + oy, 4, 2, S);
+  R(ctx, 30, 11 + oy, 4, 2, S);
+  R(ctx, 16, 0 + oy, 4, 3, S);
+  R(ctx, 6, 4 + oy, 3, 3, S);
+  R(ctx, 27, 4 + oy, 3, 3, S);
+  // Рим-лайт слева.
+  R(ctx, 8, 10 + oy, 1, 8, W);
+  // Крап камня.
+  R(ctx, 13, 8 + oy, 2, 2, L);
+  R(ctx, 21, 18 + oy, 2, 1, L);
+  // Циановые трещины.
+  R(ctx, 14, 10 + oy, 2, 5, C);
+  R(ctx, 20, 14 + oy + (frame === 1 ? 1 : 0), 5, 2, C);
+  // Стропы и гондола.
+  R(ctx, 14, 26 + oy, 2, 6, K);
+  R(ctx, 20, 26 + oy, 2, 6, K);
+  R(ctx, 13, 32 + oy, 10, 6, S);
+  R(ctx, 13, 32 + oy, 10, 1, W);
 }
 
-/** Cloudsheep 48×40: овца из облачных клубов, тёмная морда. */
+/**
+ * Cloudsheep-туманная овца 48×40: комья шерсти, четыре ноги, рогатая голова.
+ * frame: 1 — шаг ног.
+ */
 function drawCloudsheep(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -1 : 0;
-  const puff = (x: number, y: number, r: number): void => {
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  const blob = (x: number, y: number, r: number): void => {
     for (let yy = -r; yy <= r; yy++) {
       for (let xx = -r; xx <= r; xx++) {
         if (xx * xx + yy * yy <= r * r) {
-          ctx.fillStyle = PALETTE.cloud;
+          ctx.fillStyle = S;
           ctx.fillRect(x + xx, y + yy + oy, 1, 1);
         }
       }
     }
   };
-  puff(16, 18, 8);
-  puff(26, 14, 9);
-  puff(34, 19, 7);
-  puff(24, 22, 8);
-  // Морда.
-  R(ctx, 32, 20 + oy, 10, 9, PALETTE.stoneDark);
-  R(ctx, 34, 22 + oy, 2, 3, PALETTE.gold);
-  R(ctx, 38, 22 + oy, 2, 3, PALETTE.gold);
-  R(ctx, 30, 18 + oy, 4, 3, PALETTE.stoneDark);
-  // Ножки (шаг чередуется).
+  blob(16, 18, 8);
+  blob(26, 14, 9);
+  blob(32, 20, 7);
+  // Рим-лайт на спине.
+  R(ctx, 20, 7 + oy, 8, 1, W);
+  // Крап камня.
+  R(ctx, 20, 14 + oy, 2, 2, L);
+  R(ctx, 27, 19 + oy, 2, 1, L);
+  // Четыре ноги (шаг чередуется).
   if (frame === 0) {
-    R(ctx, 14, 30, 3, 8, PALETTE.stoneDark);
-    R(ctx, 28, 30, 3, 8, PALETTE.stoneDark);
+    R(ctx, 12, 28, 3, 9, K);
+    R(ctx, 20, 28, 3, 9, K);
+    R(ctx, 28, 28, 3, 9, K);
+    R(ctx, 35, 28, 3, 9, K);
   } else {
-    R(ctx, 13, 30, 3, 8, PALETTE.stoneDark);
-    R(ctx, 29, 28, 3, 10, PALETTE.stoneDark);
+    R(ctx, 11, 28, 3, 9, K);
+    R(ctx, 21, 26, 3, 11, K);
+    R(ctx, 27, 28, 3, 9, K);
+    R(ctx, 36, 26, 3, 11, K);
   }
+  // Рогатая голова справа.
+  R(ctx, 36, 13 + oy, 9, 10, S);
+  R(ctx, 33, 10 + oy, 4, 3, W);
+  R(ctx, 42, 10 + oy, 4, 3, W);
+  // Трещины на морде.
+  R(ctx, 38, 17 + oy, 2, 3, C);
+  R(ctx, 42, 17 + oy, 2, 3, C);
 }
 
-/** Stormling 40×44: грозовая туча с молнией. */
+/**
+ * Stormling-грозовой сгусток 40×44: молнии как трещины.
+ * frame: 1 — молния длиннее.
+ */
 function drawStormling(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -2 : 0;
-  const puff = (x: number, y: number, r: number, c: string): void => {
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  const blob = (x: number, y: number, r: number): void => {
     for (let yy = -r; yy <= r; yy++) {
       for (let xx = -r; xx <= r; xx++) {
         if (xx * xx + yy * yy <= r * r) {
-          ctx.fillStyle = c;
+          ctx.fillStyle = S;
           ctx.fillRect(x + xx, y + yy + oy, 1, 1);
         }
       }
     }
   };
-  puff(14, 14, 7, PALETTE.stoneDark);
-  puff(24, 11, 8, PALETTE.stoneDark);
-  puff(20, 18, 7, PALETTE.void);
-  puff(24, 11, 5, PALETTE.stoneDark);
-  // Глаза-молнии.
-  R(ctx, 16, 13 + oy, 3, 3, PALETTE.gold);
-  R(ctx, 23, 13 + oy, 3, 3, PALETTE.gold);
-  // Молния из тучи (длина по кадру).
+  blob(14, 14, 7);
+  blob(24, 11, 8);
+  blob(20, 19, 7);
+  // Рим-лайт сверху.
+  R(ctx, 20, 4 + oy, 7, 1, W);
+  // Крап камня.
+  R(ctx, 14, 12 + oy, 2, 2, L);
+  R(ctx, 24, 16 + oy, 2, 1, L);
+  // Трещины вместо глаз.
+  R(ctx, 15, 13 + oy, 3, 2, C);
+  R(ctx, 23, 13 + oy, 3, 2, C);
+  // Молния-трещина из сгустка (длина по кадру).
   const len = frame === 1 ? 16 : 11;
   for (let i = 0; i < len; i++) {
-    R(ctx, 20 + (i % 2 === 0 ? 0 : -2), 22 + oy + i, 3, 1, PALETTE.gold);
+    R(ctx, 20 + (i % 2 === 0 ? 0 : -2), 24 + oy + i, 3, 1, C);
   }
 }
 
-/** Fluffdragon 56×48: пушистый змей с крыльями, рогами и хвостом. */
+/**
+ * Fluffdragon-сланцевый змей 56×48: длинный извив, крылья-обрубки.
+ * frame: 1 — извив смещён, крылья выше.
+ */
 function drawFluffdragon(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -2 : 0;
-  const wy = frame === 1 ? 6 : 12;
-  // Крылья вверх/вниз.
-  R(ctx, 18, wy + oy, 12, 3, PALETTE.cloud);
-  R(ctx, 20, wy + oy - 4, 8, 4, PALETTE.cloud);
-  // Тело-колбаса.
-  R(ctx, 8, 24 + oy, 34, 12, PALETTE.roadLight);
-  R(ctx, 8, 24 + oy, 34, 3, shade(PALETTE.roadLight, 1.1));
-  R(ctx, 8, 33 + oy, 34, 3, PALETTE.earth);
-  // Пушковые вихры.
-  R(ctx, 12, 21 + oy, 3, 3, PALETTE.cloud);
-  R(ctx, 24, 21 + oy, 3, 3, PALETTE.cloud);
-  R(ctx, 34, 21 + oy, 3, 3, PALETTE.cloud);
-  // Хвост с кисточкой.
-  R(ctx, 4, 27 + oy, 5, 4, PALETTE.roadLight);
-  R(ctx, 1, 25 + oy, 4, 4, PALETTE.gold);
+  const wy = (frame === 1 ? 6 : 12) + oy;
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Крылья-обрубки.
+  R(ctx, 22, wy, 10, 8, S);
+  R(ctx, 24, wy - 4, 6, 5, S);
+  R(ctx, 24, wy, 6, 2, C);
+  // Длинный извив: три звена.
+  R(ctx, 6, 26 + oy, 30, 10, S);
+  R(ctx, 20, 20 + oy, 26, 10, S);
+  R(ctx, 10, 32 + oy - (frame === 1 ? 2 : 0), 30, 8, S);
+  // Рим-лайт сверху среднего звена.
+  R(ctx, 24, 20 + oy, 14, 1, W);
+  // Чешуя-крап.
+  R(ctx, 12, 29 + oy, 3, 2, L);
+  R(ctx, 28, 24 + oy, 3, 2, L);
+  R(ctx, 18, 34 + oy, 3, 1, K);
+  // Хвост с шипом.
+  R(ctx, 2, 27 + oy, 5, 4, S);
+  R(ctx, 0, 25 + oy, 3, 3, W);
   // Голова.
-  R(ctx, 40, 22 + oy, 12, 13, PALETTE.roadLight);
-  R(ctx, 40, 22 + oy, 12, 3, shade(PALETTE.roadLight, 1.1));
+  R(ctx, 42, 18 + oy, 12, 12, S);
+  R(ctx, 42, 18 + oy, 12, 1, W);
   // Рожки.
-  R(ctx, 42, 17 + oy, 3, 5, PALETTE.earthDark);
-  R(ctx, 47, 17 + oy, 3, 5, PALETTE.earthDark);
-  // Глаз и ноздря.
-  R(ctx, 44, 26 + oy, 3, 4, PALETTE.void);
-  R(ctx, 45, 27 + oy, 1, 2, PALETTE.gold);
-  R(ctx, 50, 31 + oy, 2, 2, PALETTE.earthDark);
+  R(ctx, 44, 13 + oy, 3, 5, K);
+  R(ctx, 49, 13 + oy, 3, 5, K);
+  // Трещины вдоль тела и глаз-щелка.
+  R(ctx, 14, 29 + oy, 6, 1, C);
+  R(ctx, 28, 33 + oy + (frame === 1 ? 1 : 0), 5, 1, C);
+  R(ctx, 46, 22 + oy, 3, 2, C);
 }
 
-/** Clownfish 40×36: рыбка боком, хвост виляет по кадрам. */
+/**
+ * Clownfish-фонарь 40×36: рыба со светящимся выростом.
+ * frame: 1 — хвост вверх, вырост ярче.
+ */
 function drawClownfish(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -1 : 0;
   const tailY = frame === 1 ? -3 : 3;
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
   // Хвост-треугольник.
   for (let i = 0; i < 8; i++) {
-    R(ctx, 2 + i, 16 + oy + tailY + Math.floor(i / 2), 2, 8 - i, PALETTE.earth);
+    R(ctx, 2 + i, 16 + oy + tailY + Math.floor(i / 2), 2, 8 - i, S);
   }
   // Тело.
   for (let y = 0; y < 18; y++) {
     const half = 9 * Math.sin((Math.PI * (y + 1)) / 19);
     for (let x = Math.ceil(24 - half); x < 24 + half; x++) {
-      ctx.fillStyle = PALETTE.gold;
+      ctx.fillStyle = S;
       ctx.fillRect(x, y + 9 + oy, 1, 1);
     }
   }
-  // Белые полосы с тёмной окантовкой.
-  for (const sy of [13, 20]) {
-    R(ctx, 17, sy + oy, 13, 1, PALETTE.void);
-    R(ctx, 17, sy + oy + 1, 13, 3, PALETTE.cloud);
-    R(ctx, 17, sy + oy + 4, 13, 1, PALETTE.void);
-  }
-  // Плавник и глаз.
-  R(ctx, 22, 5 + oy, 5, 5, PALETTE.earth);
-  R(ctx, 29, 14 + oy, 3, 4, PALETTE.void);
-  R(ctx, 30, 15 + oy, 1, 2, PALETTE.cloud);
+  // Рим-лайт сверху.
+  R(ctx, 18, 10 + oy, 7, 1, W);
+  // Крап камня.
+  R(ctx, 20, 16 + oy, 2, 2, L);
+  R(ctx, 26, 21 + oy, 2, 1, K);
+  // Полосы-трещины.
+  R(ctx, 16, 14 + oy, 10, 1, C);
+  R(ctx, 16, 20 + oy, 10, 1, C);
+  // Плавник.
+  R(ctx, 22, 5 + oy, 5, 5, S);
+  // Светящийся вырост-фонарь.
+  R(ctx, 27, 6 + oy, 2, 5, K);
+  R(ctx, 25, 2 + oy, 6, 5, C);
+  R(ctx, 26, 3 + oy, 4, 3 + (frame === 1 ? 1 : 0), C);
 }
-
-/** Jellyfish 40×48: купол со щупальцами разной длины по кадрам. */
+/**
+ * Jellyfish-светляк 40×48: купол с щупальцами-лучами.
+ * frame: 1 — щупальца разной длины.
+ */
 function drawJellyfish(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -2 : 0;
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
   // Купол.
   for (let y = 0; y < 16; y++) {
     const half = 16 * Math.sin((Math.PI * (y + 4)) / 22);
     for (let x = Math.ceil(20 - half); x < 20 + half; x++) {
-      ctx.fillStyle = PALETTE.crystal;
+      ctx.fillStyle = S;
       ctx.fillRect(x, y + 4 + oy, 1, 1);
     }
   }
-  R(ctx, 10, 8 + oy, 4, 8, PALETTE.cloud);
-  R(ctx, 10, 8 + oy, 9, 2, PALETTE.cloud);
+  // Рим-лайт слева на куполе.
+  R(ctx, 8, 8 + oy, 1, 7, W);
+  // Крап камня.
+  R(ctx, 13, 8 + oy, 2, 2, L);
+  R(ctx, 24, 13 + oy, 2, 1, K);
+  // Трещины на куполе.
+  R(ctx, 14, 8 + oy, 2, 5, C);
+  R(ctx, 24, 10 + oy + (frame === 1 ? 1 : 0), 2, 4, C);
   // Ободок.
-  R(ctx, 5, 19 + oy, 30, 3, shade(PALETTE.crystal, 0.7));
-  // Щупальца.
+  R(ctx, 5, 19 + oy, 30, 3, K);
+  // Щупальца-лучи.
   const lens = frame === 1 ? [20, 14, 22, 14, 20] : [16, 20, 15, 20, 16];
   for (let t = 0; t < 5; t++) {
     const x = 9 + t * 6;
     for (let i = 0; i < lens[t]; i++) {
       const sway = i > 6 ? (t % 2 === 0 ? 1 : -1) : 0;
-      ctx.fillStyle = PALETTE.crystal;
+      ctx.fillStyle = i > lens[t] - 4 ? C : S;
       ctx.fillRect(x + sway, 22 + oy + i, 2, 1);
     }
   }
-  // Мордочка на куполе.
-  R(ctx, 15, 12 + oy, 3, 4, PALETTE.void);
-  R(ctx, 22, 12 + oy, 3, 4, PALETTE.void);
 }
 
-/** Seahorse 32×48: S-силуэт, бронированные кольца, хоботок и гребень. */
+/**
+ * Seahorse-рифовый страж 32×48: вертикальная спираль с гребнем.
+ * frame: 1 — спираль качнулась.
+ */
 function drawSeahorse(ctx: CanvasRenderingContext2D, frame: number): void {
   const sway = frame === 1 ? 1 : 0;
-  // Тело дугой.
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Тело-спираль: ступени со сдвигом.
   const spine: Array<[number, number, number]> = [
     [14, 8, 8],
     [16, 16, 9],
@@ -1226,211 +1430,249 @@ function drawSeahorse(ctx: CanvasRenderingContext2D, frame: number): void {
     [14, 39, 6],
   ];
   for (const [sx, sy, w] of spine) {
-    R(ctx, sx + sway, sy, w, 8, PALETTE.gold);
+    R(ctx, sx + sway, sy, w, 8, S);
   }
-  // Броневые кольца.
+  // Рим-лайт слева вверху.
+  R(ctx, 15 + sway, 10, 1, 8, W);
+  // Крап камня.
+  R(ctx, 18 + sway, 18, 2, 2, L);
+  R(ctx, 16 + sway, 34, 2, 1, K);
+  // Спиральный гребень справа.
   for (const [sx, sy, w] of spine) {
-    R(ctx, sx + sway, sy + 6, w, 2, PALETTE.stoneDark);
+    R(ctx, sx + sway + w - 2, sy + 2, 2, 4, K);
   }
-  // Хоботок и глаз.
-  R(ctx, 20 + sway, 8, 7, 4, PALETTE.gold);
-  R(ctx, 25 + sway, 9, 2, 2, PALETTE.earthDark);
-  R(ctx, 13 + sway, 10, 3, 4, PALETTE.void);
-  R(ctx, 14 + sway, 11, 1, 2, PALETTE.cloud);
+  // Хоботок и трещина вместо глаза.
+  R(ctx, 20 + sway, 8, 7, 4, S);
+  R(ctx, 13 + sway, 10, 3, 4, C);
   // Гребень-корона.
-  R(ctx, 11 + sway, 4, 2, 5, PALETTE.earthDark);
-  R(ctx, 14 + sway, 2, 2, 5, PALETTE.earthDark);
-  R(ctx, 17 + sway, 4, 2, 5, PALETTE.earthDark);
-  // Спинной плавник.
-  for (let i = 0; i < 6; i++) {
-    R(ctx, 23 + sway - Math.floor(i / 2), 22 + i * 2, 4, 2, PALETTE.cloud);
-  }
+  R(ctx, 11 + sway, 4, 2, 5, K);
+  R(ctx, 14 + sway, 2, 2, 5, S);
+  R(ctx, 17 + sway, 4, 2, 5, K);
+  // Циановая трещина по телу.
+  R(ctx, 15 + sway, 16, 2, 5, C);
+  R(ctx, 14 + sway, 30 + (frame === 1 ? 1 : 0), 4, 2, C);
   // Закрученный хвост.
-  R(ctx, 12 + sway, 44, 8, 3, PALETTE.gold);
-  R(ctx, 12 + sway, 44, 8, 1, PALETTE.stoneDark);
+  R(ctx, 12 + sway, 44, 8, 3, S);
+  R(ctx, 12 + sway, 44, 8, 1, K);
 }
 
-/** Pearlwhale 60×44: кит с фонтаном, светлое брюхо. */
+/**
+ * Pearlwhale-левиафан 60×44: огромная форма, бирюзовая прожилка.
+ * frame: 1 — фонтан выше.
+ */
 function drawPearlwhale(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -2 : 0;
-  // Туша.
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  const TURQ = '#4de3c2';
+  // Огромная туша.
   for (let y = 0; y < 24; y++) {
     const half = 24 * Math.sin((Math.PI * (y + 2)) / 27);
     for (let x = Math.ceil(28 - half); x < 28 + half; x++) {
-      ctx.fillStyle = PALETTE.stone;
+      ctx.fillStyle = S;
       ctx.fillRect(x, y + 10 + oy, 1, 1);
     }
   }
-  // Брюхо.
-  for (let y = 0; y < 8; y++) {
-    const half = 18 * Math.sin((Math.PI * (y + 1)) / 10);
-    for (let x = Math.ceil(28 - half); x < 28 + half; x++) {
-      ctx.fillStyle = PALETTE.roadLight;
-      ctx.fillRect(x, y + 26 + oy, 1, 1);
-    }
-  }
+  // Рим-лайт сверху.
+  R(ctx, 24, 10 + oy, 8, 1, W);
+  // Крап камня.
+  R(ctx, 18, 16 + oy, 3, 2, L);
+  R(ctx, 34, 26 + oy, 3, 1, L);
+  R(ctx, 24, 30 + oy, 4, 1, K);
+  // Бирюзовая прожилка вдоль тела.
+  R(ctx, 10, 18 + oy, 30, 2, TURQ);
+  R(ctx, 22, 20 + oy, 2, 6, TURQ);
+  // Циановые трещины.
+  R(ctx, 40, 14 + oy, 2, 6, C);
+  R(ctx, 34, 24 + oy + (frame === 1 ? 1 : 0), 5, 2, C);
   // Хвостовой плавник слева.
   for (let i = 0; i < 8; i++) {
-    R(ctx, 6 - Math.floor(i / 2), 12 + oy + i, 4, 2, PALETTE.stoneDark);
+    R(ctx, 6 - Math.floor(i / 2), 12 + oy + i, 4, 2, S);
   }
   // Спинной плавник.
-  R(ctx, 26, 4 + oy, 5, 7, PALETTE.stoneDark);
-  // Фонтан (выше в кадре 1).
+  R(ctx, 26, 4 + oy, 5, 7, S);
+  // Фонтан-пар (выше в кадре 1).
   const spout = frame === 1 ? 3 : 0;
-  R(ctx, 27, 0 + oy - spout, 2, 5, PALETTE.cloud);
-  R(ctx, 24, 1 + oy - spout, 2, 2, PALETTE.cloud);
-  R(ctx, 30, 1 + oy - spout, 2, 2, PALETTE.cloud);
-  // Глаз и жемчужина-щёчка.
-  R(ctx, 42, 18 + oy, 3, 4, PALETTE.void);
-  R(ctx, 43, 19 + oy, 1, 2, PALETTE.cloud);
-  R(ctx, 36, 24 + oy, 4, 4, PALETTE.crystal);
+  R(ctx, 27, 0 + oy - spout, 2, 5, C);
+  // Брюхо тёмное.
+  R(ctx, 14, 30 + oy, 28, 3, K);
 }
 
-/** Clown 36×48: колпак, круглое лицо, жабо, пуговки. */
+/**
+ * Clown-масочник 36×48: пустая светлая маска вместо лица.
+ * frame: 1 — рука поднята выше.
+ */
 function drawClown(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -1 : 0;
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
   // Колпак.
   for (let y = 0; y < 12; y++) {
     const half = 2 + y * 0.5;
     for (let x = Math.ceil(18 - half); x < 18 + half; x++) {
-      ctx.fillStyle = y % 4 < 2 ? PALETTE.gold : PALETTE.earth;
+      ctx.fillStyle = S;
       ctx.fillRect(x, y + 2 + oy, 1, 1);
     }
   }
-  R(ctx, 16, 0 + oy, 4, 3, PALETTE.crystal);
-  R(ctx, 11, 12 + oy, 14, 3, PALETTE.earthDark);
-  // Лицо.
+  R(ctx, 16, 0 + oy, 4, 3, C);
+  R(ctx, 11, 12 + oy, 14, 3, K);
+  // Пустая маска вместо лица.
   for (let y = 0; y < 14; y++) {
     const half = 10 * Math.sin((Math.PI * (y + 2)) / 17);
     for (let x = Math.ceil(18 - half); x < 18 + half; x++) {
-      ctx.fillStyle = PALETTE.roadLight;
+      ctx.fillStyle = W;
       ctx.fillRect(x, y + 15 + oy, 1, 1);
     }
   }
-  // Нос, глаза, улыбка.
-  R(ctx, 16, 21 + oy, 4, 4, PALETTE.earth);
-  R(ctx, 12, 19 + oy, 3, 3, PALETTE.void);
-  R(ctx, 21, 19 + oy, 3, 3, PALETTE.void);
-  R(ctx, 13, 26 + oy, 10, 1, PALETTE.earthDark);
-  R(ctx, 13, 25 + oy, 1, 2, PALETTE.earthDark);
-  R(ctx, 22, 25 + oy, 1, 2, PALETTE.earthDark);
-  // Жабо и тело.
-  R(ctx, 10, 29 + oy, 16, 4, PALETTE.cloud);
-  R(ctx, 12, 33 + oy, 12, 11, PALETTE.crystal);
-  R(ctx, 17, 35 + oy, 2, 3, PALETTE.gold);
-  R(ctx, 17, 40 + oy, 2, 3, PALETTE.gold);
+  // Пустые глазницы и трещина-улыбка.
+  R(ctx, 12, 19 + oy, 3, 3, K);
+  R(ctx, 21, 19 + oy, 3, 3, K);
+  R(ctx, 13, 26 + oy, 10, 1, C);
+  R(ctx, 13, 25 + oy, 1, 2, C);
+  R(ctx, 22, 25 + oy, 1, 2, C);
+  // Жабо и каменное тело.
+  R(ctx, 10, 29 + oy, 16, 4, K);
+  R(ctx, 12, 33 + oy, 12, 11, S);
+  R(ctx, 12, 33 + oy, 1, 11, W);
+  R(ctx, 17, 35 + oy, 2, 3, C);
+  R(ctx, 17, 40 + oy, 2, 3, C);
   // Руки (одна поднята по кадру).
-  R(ctx, 8, 34 + oy + (frame === 1 ? -3 : 0), 3, 8, PALETTE.crystal);
-  R(ctx, 25, 34 + oy + (frame === 1 ? 3 : 0), 3, 8, PALETTE.crystal);
+  R(ctx, 8, 34 + oy + (frame === 1 ? -3 : 0), 3, 8, S);
+  R(ctx, 25, 34 + oy + (frame === 1 ? 3 : 0), 3, 8, S);
 }
 
-/** Juggler 40×52: жонглёр, три мяча на разной высоте по кадрам. */
+/**
+ * Juggler-жонглёр костями 40×52: кости в руках и в воздухе.
+ * frame: 1 — кости на другой высоте.
+ */
 function drawJuggler(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -1 : 0;
-  // Мячи в воздухе.
-  const balls: Array<[number, number, string]> =
-    frame === 0
-      ? [
-          [8, 6, PALETTE.gold],
-          [20, 2, PALETTE.crystal],
-          [32, 6, PALETTE.earth],
-        ]
-      : [
-          [8, 2, PALETTE.gold],
-          [20, 8, PALETTE.crystal],
-          [32, 2, PALETTE.earth],
-        ];
-  for (const [bx, by, c] of balls) {
-    for (let y = -3; y <= 3; y++) {
-      for (let x = -3; x <= 3; x++) {
-        if (x * x + y * y <= 9) {
-          ctx.fillStyle = c;
-          ctx.fillRect(bx + x, by + y + oy, 1, 1);
-        }
-      }
-    }
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Кости в воздухе: стержень с набалдашниками (высоты по кадру).
+  const boneYs = frame === 0 ? [7 + oy, 3 + oy, 7 + oy] : [3 + oy, 9 + oy, 3 + oy];
+  const boneXs = [8, 20, 32];
+  for (let b = 0; b < 3; b++) {
+    const bx = boneXs[b];
+    const by = boneYs[b];
+    R(ctx, bx - 3, by, 7, 2, W);
+    R(ctx, bx - 4, by - 1, 3, 4, W);
+    R(ctx, bx + 2, by - 1, 3, 4, W);
   }
   // Шляпа-цилиндр.
-  R(ctx, 15, 14 + oy, 10, 9, PALETTE.void);
-  R(ctx, 12, 22 + oy, 16, 3, PALETTE.void);
-  R(ctx, 15, 18 + oy, 10, 2, PALETTE.gold);
-  // Лицо.
-  R(ctx, 16, 25 + oy, 8, 7, PALETTE.roadLight);
-  R(ctx, 17, 27 + oy, 2, 2, PALETTE.void);
-  R(ctx, 21, 27 + oy, 2, 2, PALETTE.void);
-  R(ctx, 18, 30 + oy, 4, 1, PALETTE.earthDark);
+  R(ctx, 15, 14 + oy, 10, 9, S);
+  R(ctx, 12, 22 + oy, 16, 3, K);
+  R(ctx, 15, 18 + oy, 10, 2, C);
+  // Лицо с трещинами.
+  R(ctx, 16, 25 + oy, 8, 7, S);
+  R(ctx, 17, 27 + oy, 2, 2, C);
+  R(ctx, 21, 27 + oy, 2, 2, C);
+  R(ctx, 18, 30 + oy, 4, 1, C);
   // Камзол и руки вверх.
-  R(ctx, 14, 32 + oy, 12, 14, PALETTE.earth);
-  R(ctx, 14, 32 + oy, 12, 2, PALETTE.gold);
-  R(ctx, 10, 24 + oy, 3, 10, PALETTE.earth);
-  R(ctx, 27, 24 + oy, 3, 10, PALETTE.earth);
-  R(ctx, 15, 46 + oy, 4, 5, PALETTE.earthDark);
-  R(ctx, 21, 46 + oy, 4, 5, PALETTE.earthDark);
+  R(ctx, 14, 32 + oy, 12, 14, S);
+  R(ctx, 14, 32 + oy, 1, 14, W);
+  R(ctx, 10, 24 + oy, 3, 10, S);
+  R(ctx, 27, 24 + oy, 3, 10, S);
+  // Крап камня.
+  R(ctx, 17, 36 + oy, 2, 2, L);
+  R(ctx, 21, 41 + oy, 2, 1, K);
+  // Ноги.
+  R(ctx, 15, 46 + oy, 4, 5, K);
+  R(ctx, 21, 46 + oy, 4, 5, K);
 }
 
-/** Magician 36×52: цилиндр, плащ, палочка со звездой. */
+/**
+ * Magician-фокусник без лица 36×52: шляпа, плащ, лица нет.
+ * frame: 1 — палочка выше.
+ */
 function drawMagician(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -1 : 0;
   const wandUp = frame === 1 ? -3 : 0;
-  // Цилиндр.
-  R(ctx, 12, 4 + oy, 12, 13, PALETTE.void);
-  R(ctx, 12, 13 + oy, 12, 3, PALETTE.gold);
-  R(ctx, 9, 16 + oy, 18, 3, PALETTE.void);
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  // Цилиндр со светящейся лентой.
+  R(ctx, 12, 4 + oy, 12, 13, S);
+  R(ctx, 12, 13 + oy, 12, 2, C);
+  R(ctx, 9, 16 + oy, 18, 3, K);
   // Плащ.
   for (let y = 0; y < 26; y++) {
     const half = 6 + y * 0.35;
     for (let x = Math.ceil(18 - half); x < 18 + half; x++) {
-      ctx.fillStyle = PALETTE.void;
+      ctx.fillStyle = S;
       ctx.fillRect(x, y + 22 + oy, 1, 1);
     }
   }
-  R(ctx, 11, 22 + oy, 14, 2, PALETTE.earthDark);
-  // Лицо и бабочка.
-  R(ctx, 14, 20 + oy, 8, 7, PALETTE.roadLight);
-  R(ctx, 15, 22 + oy, 2, 2, PALETTE.void);
-  R(ctx, 19, 22 + oy, 2, 2, PALETTE.void);
-  R(ctx, 15, 27 + oy, 6, 3, PALETTE.gold);
-  // Палочка со звездой.
-  R(ctx, 27, 26 + oy + wandUp, 2, 12, PALETTE.earth);
-  R(ctx, 25, 22 + oy + wandUp, 6, 2, PALETTE.gold);
-  R(ctx, 27, 20 + oy + wandUp, 2, 6, PALETTE.gold);
-  R(ctx, 24, 23 + oy + wandUp, 2, 2, PALETTE.gold);
-  R(ctx, 30, 23 + oy + wandUp, 2, 2, PALETTE.gold);
+  // Рим-лайт слева на плаще.
+  R(ctx, 12, 26 + oy, 1, 14, W);
+  // Крап камня.
+  R(ctx, 16, 32 + oy, 2, 2, L);
+  R(ctx, 20, 40 + oy, 2, 1, K);
+  // Под шляпой лица нет — одна трещина.
+  R(ctx, 15, 20 + oy, 6, 1, C);
+  // Палочка со звездой-трещиной.
+  R(ctx, 27, 26 + oy + wandUp, 2, 12, K);
+  R(ctx, 25, 22 + oy + wandUp, 6, 2, C);
+  R(ctx, 27, 20 + oy + wandUp, 2, 6, C);
 }
 
-/** Elephant 60×52: туша, уши, хобот (кадр 1 закручен), бивни. */
+/**
+ * Elephant-обсидиановый слон 60×52: золотая жила через тушу.
+ * frame: 1 — хобот закручен.
+ */
 function drawElephant(ctx: CanvasRenderingContext2D, frame: number): void {
   const oy = frame === 1 ? -1 : 0;
+  const S = DARK_PALETTE.ground;
+  const L = DARK_PALETTE.ground_light;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
+  const GOLD = '#d8a437';
   // Ноги-тумбы.
-  R(ctx, 14, 40 + oy, 9, 10, PALETTE.stoneDark);
-  R(ctx, 38, 40 + oy, 9, 10, PALETTE.stoneDark);
+  R(ctx, 14, 40 + oy, 9, 10, K);
+  R(ctx, 38, 40 + oy, 9, 10, K);
   // Туша.
-  R(ctx, 10, 18 + oy, 42, 24, PALETTE.stone);
-  R(ctx, 10, 18 + oy, 42, 3, shade(PALETTE.stone, 1.18));
-  R(ctx, 10, 39 + oy, 42, 3, PALETTE.stoneDark);
+  R(ctx, 10, 18 + oy, 42, 24, S);
+  // Рим-лайт на спине.
+  R(ctx, 14, 18 + oy, 30, 1, W);
+  // Золотая жила через тушу.
+  R(ctx, 14, 22 + oy, 30, 2, GOLD);
+  R(ctx, 30, 22 + oy, 2, 10, GOLD);
+  // Крап камня.
+  R(ctx, 18, 30 + oy, 2, 2, L);
+  R(ctx, 40, 34 + oy, 2, 1, K);
   // Ухо.
-  R(ctx, 36, 14 + oy, 12, 14, shade(PALETTE.stone, 0.85));
-  R(ctx, 38, 16 + oy, 8, 10, shade(PALETTE.stone, 1.1));
+  R(ctx, 36, 14 + oy, 12, 14, S);
+  R(ctx, 38, 16 + oy, 8, 10, K);
   // Голова.
-  R(ctx, 44, 20 + oy, 12, 16, PALETTE.stone);
-  // Глаз.
-  R(ctx, 48, 24 + oy, 3, 4, PALETTE.void);
-  R(ctx, 49, 25 + oy, 1, 2, PALETTE.cloud);
-  // Бивни.
-  R(ctx, 54, 30 + oy, 4, 2, PALETTE.roadLight);
-  R(ctx, 54, 34 + oy, 3, 2, PALETTE.roadLight);
+  R(ctx, 44, 20 + oy, 12, 16, S);
+  // Трещина вместо глаза.
+  R(ctx, 46, 24 + oy, 2, 4, C);
+  // Бивни-рим.
+  R(ctx, 54, 30 + oy, 4, 2, W);
+  R(ctx, 54, 34 + oy, 3, 2, W);
   // Хобот: висит или закручен.
   if (frame === 0) {
-    R(ctx, 52, 28 + oy, 5, 14, PALETTE.stone);
-    R(ctx, 52, 28 + oy, 1, 14, PALETTE.stoneDark);
+    R(ctx, 52, 28 + oy, 5, 14, S);
+    R(ctx, 52, 28 + oy, 1, 14, K);
   } else {
-    R(ctx, 52, 28 + oy, 5, 8, PALETTE.stone);
-    R(ctx, 52, 34 + oy, 8, 4, PALETTE.stone);
-    R(ctx, 52, 28 + oy, 1, 8, PALETTE.stoneDark);
+    R(ctx, 52, 28 + oy, 5, 8, S);
+    R(ctx, 52, 34 + oy, 8, 4, S);
+    R(ctx, 52, 28 + oy, 1, 8, K);
   }
   // Хвост.
-  R(ctx, 8, 24 + oy, 3, 10, PALETTE.stoneDark);
-  R(ctx, 7, 33 + oy, 4, 3, PALETTE.earthDark);
+  R(ctx, 8, 24 + oy, 3, 10, K);
 }
 
 /** Блит базового корпуса 64×88 со сдвигом вниз на off (рост вверх). */
@@ -1450,51 +1692,83 @@ function blitBase(
 
 /**
  * Дорисовка этажей выше базы (регион [0, off)).
- * Силуэт каждого tier заметно выше предыдущего.
+ * Руническое свечение усиливается с тайром; t3 = off > 24.
  */
 function drawTowerTierExtra(
   ctx: CanvasRenderingContext2D,
   kind: 'arrow' | 'cannon' | 'ice',
   off: number,
 ): void {
+  const t3 = off > 24;
+  const S = DARK_PALETTE.ground;
+  const K = DARK_PALETTE.skirt_bottom;
+  const C = DARK_PALETTE.road_seam;
+  const W = '#b9bdc4';
   if (kind === 'arrow') {
-    // Площадки со slab через каждые 16px, шест флага сквозь них, флажок сверху.
+    // Площадки-ярусы с руническими поясами.
     for (let y = off - 4; y >= 16; y -= 16) {
-      ctx.fillStyle = PALETTE.earthDark;
-      ctx.fillRect(18, y, 28, 6);
-      ctx.fillStyle = shade(PALETTE.earth, 1.2);
-      ctx.fillRect(18, y, 28, 1);
-      ctx.fillStyle = PALETTE.earth;
-      ctx.fillRect(18, y - 8, 2, 8);
-      ctx.fillRect(44, y - 8, 2, 8);
-      ctx.fillRect(18, y - 8, 28, 2);
+      R(ctx, 18, y, 28, 6, S);
+      R(ctx, 18, y, 28, 1, W);
+      R(ctx, 20, y + 3, 24, 1, C);
+      if (t3) R(ctx, 22, y + 4, 20, 1, C);
+      R(ctx, 18, y - 8, 2, 8, S);
+      R(ctx, 44, y - 8, 2, 8, S);
+      R(ctx, 18, y - 8, 28, 1, K);
     }
-    ctx.fillStyle = PALETTE.earthDark;
-    ctx.fillRect(31, 12, 2, off - 4);
-    ctx.fillStyle = PALETTE.gold;
-    for (let x = 0; x < 9; x++) {
-      ctx.fillRect(33 + x, 9, 1, 5 - Math.floor(x / 2));
+    // Мачта сквозь ярусы.
+    R(ctx, 31, 12, 2, off - 4, K);
+    if (t3) {
+      // Флаг-руна на вершине.
+      R(ctx, 33, 8, 11, 5, C);
+      R(ctx, 33, 8, 11, 1, W);
+      R(ctx, 36, 10, 2, 2, W);
+    } else {
+      R(ctx, 30, 10, 4, 2, C);
     }
   } else if (kind === 'cannon') {
-    // Верхняя сужающаяся тумба + ободок.
+    // Верхняя сужающаяся тумба + бронепояс.
     for (let y = 16; y < off; y++) {
       const k = (y - 16) / Math.max(off - 16, 1);
       const half = 11 - k * 3;
       for (let x = Math.ceil(32 - half); x < 32 + half; x++) {
-        ctx.fillStyle = PALETTE.stone;
+        ctx.fillStyle = S;
         ctx.fillRect(x, y, 1, 1);
       }
-      ctx.fillStyle = PALETTE.stoneDark;
+      ctx.fillStyle = K;
       ctx.fillRect(Math.ceil(32 - half), y, 1, 1);
-      ctx.fillRect(Math.floor(32 + half) - 1, y, 1, 1);
     }
-    ctx.fillStyle = shade(PALETTE.stone, 1.2);
-    ctx.fillRect(20, 14, 24, 3);
-    ctx.fillStyle = PALETTE.stoneDark;
-    ctx.fillRect(24, 22, 2, 2);
-    ctx.fillRect(35, 30, 2, 1);
-    ctx.fillStyle = PALETTE.gold;
-    ctx.fillRect(30, 18, 2, 2);
+    R(ctx, 20, 14, 24, 3, S);
+    R(ctx, 20, 14, 24, 1, W);
+    // Бронепояс с рунами.
+    R(ctx, 22, 20, 20, 1, C);
+    R(ctx, 25, 19, 2, 3, C);
+    R(ctx, 35, 19, 2, 3, C);
+    // Второй ствол влево-вверх (t2+).
+    for (let i = 0; i < 12; i++) {
+      const x = 30 - Math.floor(i * 0.7);
+      const y = 28 - Math.floor(i * 0.8);
+      R(ctx, x - 2, y - 2, 4, 4, K);
+    }
+    R(ctx, 16, 14, 5, 5, K);
+    R(ctx, 15, 13, 7, 1, C);
+    R(ctx, 15, 19, 7, 1, C);
+    if (t3) {
+      // Третий ствол вправо + корона.
+      for (let i = 0; i < 12; i++) {
+        const x = 34 + Math.floor(i * 0.7);
+        const y = 28 - Math.floor(i * 0.8);
+        R(ctx, x - 2, y - 2, 4, 4, K);
+      }
+      R(ctx, 43, 14, 5, 5, K);
+      R(ctx, 42, 13, 7, 1, C);
+      R(ctx, 42, 19, 7, 1, C);
+      // Корона с циановыми камнями.
+      for (const bx of [22, 28, 34, 40]) {
+        R(ctx, bx, 6, 4, 8, S);
+        R(ctx, bx, 6, 4, 1, W);
+        R(ctx, bx + 1, 9, 2, 2, C);
+      }
+    }
   } else {
     // Высокий обелиск поверх базового (сходятся по ширине на шве).
     const bot = off + 16;
@@ -1502,20 +1776,23 @@ function drawTowerTierExtra(
       const k = 1 - (y - 8) / (bot - 8);
       const half = 1 + 6 * k;
       for (let x = Math.ceil(32 - half); x < 32 + half; x++) {
-        ctx.fillStyle = PALETTE.crystal;
+        ctx.fillStyle = C;
         ctx.fillRect(x, y, 1, 1);
       }
-      ctx.fillStyle = shade(PALETTE.crystal, 0.55);
+      ctx.fillStyle = shade(C, 0.55);
       ctx.fillRect(Math.ceil(32 - half), y, 1, 1);
     }
-    ctx.fillStyle = PALETTE.cloud;
-    ctx.fillRect(27, 14, 2, 18);
-    ctx.fillStyle = PALETTE.crystal;
-    ctx.fillRect(22, off - 2, 4, 12);
-    ctx.fillRect(38, off - 6, 4, 14);
-    ctx.fillStyle = 'rgba(102,224,255,0.30)';
-    ctx.fillRect(22, 14, 2, off - 16);
-    ctx.fillRect(40, 14, 2, off - 16);
+    R(ctx, 27, 14, 2, 18, W);
+    R(ctx, 22, off - 2, 4, 12, C);
+    R(ctx, 38, off - 6, 4, 14, C);
+    if (t3) {
+      // Левитирующие осколки вокруг вершины.
+      R(ctx, 14, 18, 3, 5, C);
+      R(ctx, 47, 24, 3, 5, C);
+      R(ctx, 30, 4, 4, 4, C);
+      R(ctx, 14, 18, 3, 1, W);
+      R(ctx, 47, 24, 3, 1, W);
+    }
   }
 }
 
@@ -1649,7 +1926,19 @@ function buildTile(id: TileId): Texture {
     }
     case 'crystal': {
       const [c, ctx] = makeCanvas(48, 64);
-      drawCrystal(ctx);
+      drawCrystal(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'crystal_f0': {
+      const [c, ctx] = makeCanvas(48, 64);
+      drawCrystal(ctx, 0);
+      cv = c;
+      break;
+    }
+    case 'crystal_f1': {
+      const [c, ctx] = makeCanvas(48, 64);
+      drawCrystal(ctx, 1);
       cv = c;
       break;
     }
@@ -2048,4 +2337,27 @@ export function getRoadKeys(points: Array<{ gx: number; gy: number }>): Set<stri
     }
   }
   return keys;
+}
+
+/**
+ * Факел башни: аддитивный glow-спрайт 64×64 (не через getTile).
+ * Мерцание 0.8–1.2 с периодом 0.7 c крутит сцена (App.tickLight),
+ * здесь только тёплое радиальное пятно с blendMode 'add'.
+ */
+export function torchGlow(): Sprite {
+  const cv = document.createElement('canvas');
+  cv.width = 64;
+  cv.height = 64;
+  const ctx = cv.getContext('2d')!;
+  const g = ctx.createRadialGradient(32, 30, 2, 32, 30, 30);
+  g.addColorStop(0, 'rgba(255,154,60,0.85)');
+  g.addColorStop(0.5, 'rgba(255,154,60,0.30)');
+  g.addColorStop(1, 'rgba(255,154,60,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 64, 64);
+  const source = new CanvasSource({ resource: cv });
+  const s = new Sprite(new Texture({ source }));
+  s.blendMode = 'add';
+  s.anchor.set(0.5);
+  return s;
 }

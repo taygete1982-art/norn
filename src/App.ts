@@ -3,7 +3,7 @@ import { IsoMath } from './iso/IsoMath';
 import { World } from './ecs/world';
 import { GameStateManager } from './game/GameState';
 import { ConfigLoader } from './game/config/ConfigLoader';
-import { getTile, getRoadKeys, PAL, TileId } from './art/PixelArt';
+import { getTile, getRoadKeys, PAL, TileId, torchGlow } from './art/PixelArt';
 import {
   buildLightMap,
   buildFogVignette,
@@ -128,6 +128,10 @@ export class MainScene extends Container {
   private lightSprite: Sprite | null = null;
   private fogSprite: Sprite | null = null;
   private lightT = 0;
+  // Факелы башен и пульсация кристалла (канон #06).
+  private torchGlows = new Map<number, Sprite>();
+  private crystalSprite: Sprite | null = null;
+  private crystalFrame = 0;
   private clouds: Array<{ s: Sprite; v: number }> = [];
   // Пиксельные спрайты сущностей (reconcile по id): тени < unitLayer < dynamicLayer.
   private unitLayer = new Container();
@@ -322,6 +326,16 @@ export class MainScene extends Container {
     const amp = (LIGHT_PULSE_MAX - LIGHT_PULSE_MIN) / 2;
     this.lightSprite.alpha =
       mid + amp * Math.sin((this.lightT / LIGHT_PULSE_PERIOD) * Math.PI * 2);
+    // Пульсация кристалла: кадры f0/f1 ~2 раза в секунду.
+    const cf = Math.floor(this.lightT * 2) % 2;
+    if (cf !== this.crystalFrame && this.crystalSprite) {
+      this.crystalFrame = cf;
+      this.crystalSprite.texture = getTile(cf === 0 ? 'crystal_f0' : 'crystal_f1');
+    }
+    // Мерцание факелов башен: альфа 0.8–1.2, период 0.7 c.
+    for (const [id, gl] of this.torchGlows) {
+      gl.alpha = 1 + 0.2 * Math.sin((this.lightT / 0.7) * Math.PI * 2 + id * 1.7);
+    }
   }
 
   private buildIsland(): void {
@@ -361,6 +375,7 @@ export class MainScene extends Container {
     const crystal = new Sprite(getTile('crystal'));
     crystal.anchor.set(0.5, 0.9);
     crystal.position.set(cp.x, cp.y - 6);
+    this.crystalSprite = crystal;
     this.islandLayer.addChild(crystal);
     // Choco-плитки биома 3: шоколадные капли поверх земли.
     const chocoG = new Graphics();
@@ -505,6 +520,11 @@ export class MainScene extends Container {
       spr.destroy();
     }
     this.towerSprites.clear();
+    for (const gl of this.torchGlows.values()) {
+      this.unitLayer.removeChild(gl);
+      gl.destroy();
+    }
+    this.torchGlows.clear();
     for (const st of this.enemySprites.values()) {
       this.unitLayer.removeChild(st.s);
       st.s.destroy();
@@ -825,6 +845,14 @@ export class MainScene extends Container {
         spr.texture = getTile(wantTile);
       }
       spr.position.set(p.x, p.y + 16);
+      // Факел башни: аддитивный glow-спрайт, мерцание — в tickLight.
+      let gl = this.torchGlows.get(id);
+      if (!gl) {
+        gl = torchGlow();
+        this.unitLayer.addChild(gl);
+        this.torchGlows.set(id, gl);
+      }
+      gl.position.set(p.x, p.y - 58);
       // Карнавал: танец покачивает спрайт, начало баффа — искорки.
       const nowT = this.world.getCurrentTime();
       const dance = EnvironmentSystem.getDance(id);
@@ -845,6 +873,12 @@ export class MainScene extends Container {
         this.unitLayer.removeChild(spr);
         spr.destroy();
         this.towerSprites.delete(id);
+        const gl = this.torchGlows.get(id);
+        if (gl) {
+          this.unitLayer.removeChild(gl);
+          gl.destroy();
+          this.torchGlows.delete(id);
+        }
       }
     }
 
@@ -895,10 +929,12 @@ export class MainScene extends Container {
         'Slow',
       );
       if (slow && this.world.getCurrentTime() < slow.until) {
+        // Циановое мерцание замедления поверх спрайта.
+        const fl = 0.3 + 0.25 * (0.5 + 0.5 * Math.sin(this.world.getCurrentTime() * 10 + id));
         g.circle(p.x, p.y, 16);
-        g.fill({ color: SLOW_TINT_COLOR, alpha: 0.45 });
+        g.fill({ color: SLOW_TINT_COLOR, alpha: fl });
         g.circle(p.x, p.y, 20);
-        g.stroke({ width: 3, color: SLOW_TINT_COLOR, alpha: 0.9 });
+        g.stroke({ width: 3, color: SLOW_TINT_COLOR, alpha: Math.min(1, fl + 0.4) });
       }
       const k = Math.max(0, health.hp / health.maxHp);
       g.rect(p.x - 16, p.y - 50, 32 * k, 5);

@@ -98,7 +98,7 @@ export class EffectsLayer extends Container {
     c.scale.set(1, 0.5); // изометрия: клетка 32×16
     const g = new Graphics();
     g.circle(0, 0, Math.max(radiusPx, 4));
-    g.stroke({ width: 4, color: 0xff6b4a, alpha: 1 });
+    g.stroke({ width: 4, color: 0x35e0ff, alpha: 1 });
     c.addChild(g);
     c.scale.set(0.25, 0.125);
     this.addChild(c);
