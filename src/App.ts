@@ -1,9 +1,17 @@
-import { Application, Container, Graphics, Rectangle, Sprite, Text } from 'pixi.js';
+import { Application, CanvasSource, Container, Graphics, Rectangle, Sprite, Text, Texture } from 'pixi.js';
 import { IsoMath } from './iso/IsoMath';
 import { World } from './ecs/world';
 import { GameStateManager } from './game/GameState';
 import { ConfigLoader } from './game/config/ConfigLoader';
 import { getTile, getRoadKeys, PAL, TileId } from './art/PixelArt';
+import {
+  buildLightMap,
+  buildFogVignette,
+  updateTorches,
+  LIGHT_PULSE_MIN,
+  LIGHT_PULSE_MAX,
+  LIGHT_PULSE_PERIOD,
+} from './art/Lighting';
 import { TowerFactory } from './game/entities/TowerFactory';
 import { EnemyFactory } from './game/entities/EnemyFactory';
 import {
@@ -109,13 +117,17 @@ export class MainScene extends Container {
   private onGameEnd: ((r: GameEndResult) => void) | null = null;
   private endNotified = false;
   private iso = new IsoMath({ x: 32, y: 16 });
-  // Порядок слоёв: фон < остров < тени < сущности < fx < UI-плашка < bottom-sheet.
+  // Порядок слоёв: фон < остров < тени < сущности < свет < fx < туман < UI-плашка < bottom-sheet.
   private bgLayer = new Container();
   private islandLayer = new Container();
   private shadowStatic = new Graphics();
   private shadowDyn = new Graphics();
   private dynamicLayer = new Graphics();
   private uiLayer = new Container();
+  // Предрендер света: аддитивный слой + туман-виньетка (канон #05).
+  private lightSprite: Sprite | null = null;
+  private fogSprite: Sprite | null = null;
+  private lightT = 0;
   private clouds: Array<{ s: Sprite; v: number }> = [];
   // Пиксельные спрайты сущностей (reconcile по id): тени < unitLayer < dynamicLayer.
   private unitLayer = new Container();
@@ -147,11 +159,15 @@ export class MainScene extends Container {
     this.addChild(this.shadowStatic, this.shadowDyn);
     this.addChild(this.unitLayer);
     this.addChild(this.dynamicLayer);
-    // Эффекты: выше игрового поля, ниже HUD и меню.
-    this.addChild(this.fx);
-    this.addChild(this.uiLayer);
     this.buildBackground();
     this.buildIsland();
+    // Свет: между сущностями и EffectsLayer, аддитивный.
+    this.buildLight();
+    // Эффекты: выше игрового поля и света, ниже тумана/HUD/меню.
+    this.addChild(this.fx);
+    // Туман: поверх всего, кроме UI.
+    this.buildFog();
+    this.addChild(this.uiLayer);
     this.drawStaticShadows();
     this.buildHud();
 
@@ -194,13 +210,13 @@ export class MainScene extends Container {
     bg.height = H;
     this.bgLayer.addChild(bg);
 
-    // Два слоя облаков с разной скоростью дрейфа.
+    // Два слоя облаков с разной скоростью дрейфа (тёмные, полупрозрачные).
     const defs: Array<{ id: TileId; x: number; y: number; v: number; alpha: number }> = [
-      { id: 'cloud-1', x: 60, y: 150, v: 8, alpha: 0.5 },
-      { id: 'cloud-2', x: 420, y: 215, v: 8, alpha: 0.5 },
-      { id: 'cloud-1', x: 300, y: 110, v: 8, alpha: 0.45 },
-      { id: 'cloud-2', x: 80, y: 830, v: 20, alpha: 0.9 },
-      { id: 'cloud-1', x: 500, y: 960, v: 20, alpha: 0.9 },
+      { id: 'cloud-1', x: 60, y: 150, v: 8, alpha: 0.3 },
+      { id: 'cloud-2', x: 420, y: 215, v: 8, alpha: 0.3 },
+      { id: 'cloud-1', x: 300, y: 110, v: 8, alpha: 0.3 },
+      { id: 'cloud-2', x: 80, y: 830, v: 20, alpha: 0.3 },
+      { id: 'cloud-1', x: 500, y: 960, v: 20, alpha: 0.3 },
     ];
     for (const d of defs) {
       const s = new Sprite(getTile(d.id));
@@ -249,6 +265,63 @@ export class MainScene extends Container {
       c.s.position.x += c.v * dt;
       if (c.s.position.x > W + 40) c.s.position.x = -170;
     }
+  }
+
+  /** Позиции башен-факелов для карты света. */
+  private torchPositions(): Array<{ gx: number; gy: number }> {
+    return this.buildPoints
+      .filter((b) => b.towerId !== null)
+      .map((b) => ({ gx: b.gx, gy: b.gy }));
+  }
+
+  private lightCanvasSprite(cv: HTMLCanvasElement, blend: 'add' | 'multiply'): Sprite {
+    const source = new CanvasSource({ resource: cv });
+    const s = new Sprite(new Texture({ source }));
+    s.blendMode = blend;
+    return s;
+  }
+
+  /** Аддитивный слой света: свечение кристалла + тёплые пятна факелов башен. */
+  private buildLight(): void {
+    const end = PATH[PATH.length - 1];
+    const cv = buildLightMap(
+      this.gridW,
+      this.gridH,
+      { gx: end.gx, gy: end.gy },
+      this.torchPositions(),
+    );
+    this.lightSprite = this.lightCanvasSprite(cv, 'add');
+    this.lightSprite.position.set(ORIGIN_X - cv.width / 2, ORIGIN_Y);
+    this.addChild(this.lightSprite);
+  }
+
+  /** Туман-виньетка на весь кадр: маскирует кромки острова. */
+  private buildFog(): void {
+    this.fogSprite = this.lightCanvasSprite(buildFogVignette(W, H), 'multiply');
+    this.addChild(this.fogSprite);
+  }
+
+  /**
+   * Перестроить lightMap по событию (постройка/продажа/апгрейд башни).
+   * Не каждый кадр — только при изменении списка факелов.
+   */
+  private refreshTorches(): void {
+    if (!this.lightSprite) return;
+    const cv = updateTorches(this.torchPositions());
+    const old = this.lightSprite.texture;
+    const source = new CanvasSource({ resource: cv });
+    this.lightSprite.texture = new Texture({ source });
+    old.destroy(true);
+  }
+
+  /** Пульсация кристалла: альфа света 0.12–0.18, период 3 c. */
+  private tickLight(dt: number): void {
+    if (!this.lightSprite) return;
+    this.lightT += dt;
+    const mid = (LIGHT_PULSE_MIN + LIGHT_PULSE_MAX) / 2;
+    const amp = (LIGHT_PULSE_MAX - LIGHT_PULSE_MIN) / 2;
+    this.lightSprite.alpha =
+      mid + amp * Math.sin((this.lightT / LIGHT_PULSE_PERIOD) * Math.PI * 2);
   }
 
   private buildIsland(): void {
@@ -416,6 +489,7 @@ export class MainScene extends Container {
           return;
         }
         bp.towerId = TowerFactory.create(this.world, type, gx, gy);
+        this.refreshTorches();
         this.closeMenu();
       },
       onCancel: () => this.closeMenu(),
@@ -472,12 +546,14 @@ export class MainScene extends Container {
         }
         const p = this.sx(bp.gx, bp.gy);
         this.fx.spawnHitFlash(p.x, p.y - 20, 0xffd75e);
+        this.refreshTorches();
         this.closeUpgrade();
         this.openUpgradeMenu(bp);
       },
       onSell: () => {
         sellTower(this.world, towerId);
         bp.towerId = null;
+        this.refreshTorches();
         this.closeUpgrade();
       },
       onClose: () => this.closeUpgrade(),
@@ -554,6 +630,7 @@ export class MainScene extends Container {
     this.endNotified = false;
     this.world = new World();
     this.buildPoints = this.level.buildPoints.map((p) => ({ gx: p.x, gy: p.y, towerId: null }));
+    this.refreshTorches();
     WaveSpawnerSystem.reset();
     TowerAttackSystem.reset();
     EnemyFactory.resetDifficulty();
@@ -567,6 +644,7 @@ export class MainScene extends Container {
   }
 
   update(dt: number): void {
+    this.tickLight(dt);
     if (GameStateManager.getStatus() !== 'playing') {
       this.updateClouds(dt);
     this.updateWindArrows(dt);
@@ -855,7 +933,7 @@ export class MainScene extends Container {
 
 export async function createApp(): Promise<Application> {
   const app = new Application();
-  await app.init({ width: W, height: H, background: '#1a1a2e' });
+  await app.init({ width: W, height: H, background: '#000000' });
   const host = document.getElementById('app');
   if (host) host.appendChild(app.canvas);
   else document.body.appendChild(app.canvas);
